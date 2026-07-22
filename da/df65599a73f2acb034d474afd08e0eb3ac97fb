@@ -1,0 +1,19 @@
+hexclave.config.ts
+  s_b34373a5581484::t_2582bb05dec847 9,34-39,58
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "dadf65599a73f2acb034d474afd08e0eb3ac97fb",
+  "prompts": {},
+  "sessions": {
+    "s_b34373a5581484": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f88a0-2063-7802-8b00-419b8b6b7c83",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    }
+  }
+}
