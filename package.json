@@ -58,6 +58,7 @@
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "@versionless/config": "workspace:*",
+    "railway": "3.5.9",
     "tsx": "^4.22.5",
     "turbo": "^2.10.2",
     "typescript": "catalog:",

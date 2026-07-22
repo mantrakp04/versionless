@@ -19,7 +19,7 @@
   "backend": "elysia",
   "runtime": "bun",
   "frontend": ["tanstack-router"],
-  "addons": ["turborepo"],
+  "addons": ["turborepo", "fumadocs"],
   "examples": [],
   "auth": "none",
   "payments": "none",
@@ -28,4 +28,12 @@
   "api": "trpc",
   "webDeploy": "vercel",
   "serverDeploy": "vercel",
+  "addonOptions": {
+    "fumadocs": {
+      "template": "next-mdx",
+      "devPort": 3002,
+      "search": "orama",
+      "ogImage": "next-og"
+    }
+  },
 }

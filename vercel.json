@@ -31,9 +31,63 @@
           ]
         }
       ]
+    },
+    "docs": {
+      "root": "apps/docs",
+      "framework": "nextjs",
+      "installCommand": "cd ../.. && bun install",
+      "buildCommand": "bun run build"
     }
   },
   "rewrites": [
+    {
+      "source": "/docs",
+      "destination": {
+        "service": "docs"
+      }
+    },
+    {
+      "source": "/docs/(.*)",
+      "destination": {
+        "service": "docs"
+      }
+    },
+    {
+      "source": "/_next/(.*)",
+      "destination": {
+        "service": "docs"
+      }
+    },
+    {
+      "source": "/api/search",
+      "destination": {
+        "service": "docs"
+      }
+    },
+    {
+      "source": "/llms.txt",
+      "destination": {
+        "service": "docs"
+      }
+    },
+    {
+      "source": "/llms-full.txt",
+      "destination": {
+        "service": "docs"
+      }
+    },
+    {
+      "source": "/llms.mdx/docs/(.*)",
+      "destination": {
+        "service": "docs"
+      }
+    },
+    {
+      "source": "/og/docs/(.*)",
+      "destination": {
+        "service": "docs"
+      }
+    },
     {
       "source": "/api/(.*)",
       "destination": {
