@@ -23,6 +23,7 @@
     "@versionless/env": "workspace:*",
     "@versionless/ui": "workspace:*",
     "dotenv": "catalog:",
+    "evlog": "^2.22.0",
     "lucide-react": "catalog:",
     "next-themes": "catalog:",
     "react": "catalog:",

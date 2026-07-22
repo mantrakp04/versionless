@@ -1,6 +1,7 @@
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
+import evlog from "evlog/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig({
@@ -11,6 +12,12 @@ export default defineConfig({
     tsconfigPaths: true,
   },
   plugins: [
+    evlog({
+      service: "versionless-web",
+      client: {
+        service: "versionless-web",
+      },
+    }),
     tailwindcss(),
     tanstackRouter({
       target: "react",

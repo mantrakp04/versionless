@@ -4,8 +4,10 @@ import { createContext } from "@versionless/api/context";
 import { appRouter } from "@versionless/api/routers/index";
 import { env } from "@versionless/env/server";
 import { Elysia } from "elysia";
+import { evlogPlugin } from "./logger";
 
 const app = new Elysia()
+  .use(evlogPlugin)
   .use(
     cors({
       origin: env.CORS_ORIGIN,

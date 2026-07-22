@@ -21,6 +21,7 @@
     "@versionless/env": "workspace:*",
     "dotenv": "catalog:",
     "elysia": "catalog:",
+    "evlog": "^2.22.0",
     "zod": "catalog:"
   },
   "devDependencies": {
