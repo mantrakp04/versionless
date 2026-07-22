@@ -24,7 +24,6 @@ export const env = createEnv({
     CLICKHOUSE_URL: z.string().min(1),
     CORS_ORIGIN: z.url(),
     HEXCLAVE_PROJECT_ID: z.string().min(1),
-    HEXCLAVE_PUBLISHABLE_CLIENT_KEY: z.string().min(1),
     HEXCLAVE_SECRET_SERVER_KEY: z.string().min(1),
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   },
