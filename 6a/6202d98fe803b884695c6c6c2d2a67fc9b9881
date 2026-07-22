@@ -1,0 +1,21 @@
+.github/workflows/hexclave-config-sync.yml
+  s_b34373a5581484::t_0aa82ad6355eb4 24-29
+apps/server/package.json
+  s_b34373a5581484::t_c64658d286f9a2 15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "6a6202d98fe803b884695c6c6c2d2a67fc9b9881",
+  "prompts": {},
+  "sessions": {
+    "s_b34373a5581484": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f88a0-2063-7802-8b00-419b8b6b7c83",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    }
+  }
+}
