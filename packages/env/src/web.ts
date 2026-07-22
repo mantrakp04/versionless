@@ -10,6 +10,8 @@ export const env = createEnv({
   clientPrefix: "VITE_",
   client: {
     VITE_SERVER_URL: serverUrlSchema,
+    VITE_HEXCLAVE_PROJECT_ID: z.string().min(1),
+    VITE_HEXCLAVE_PUBLISHABLE_CLIENT_KEY: z.string().min(1),
   },
   runtimeEnv: (import.meta as any).env,
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,

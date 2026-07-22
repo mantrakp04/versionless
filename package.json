@@ -54,6 +54,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@hexclave/js": "^1.0.52",
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "@versionless/config": "workspace:*",
