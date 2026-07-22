@@ -1,0 +1,107 @@
+.gitignore
+  s_b05a4113399f1d::t_ec7db07e5a5958 56
+bts.jsonc
+  s_c4363f7279a1b3::t_511f2a0fdc1dd7 22,31-38
+.railway/railway.ts
+  s_b05a4113399f1d::t_3baac90520c89f 1-9,13-24
+  s_b05a4113399f1d::t_31df8f7a531204 10-12,25-42
+.railway/README.md
+  s_b05a4113399f1d::t_31df8f7a531204 1-45
+.agents/skills/railway-config/SKILL.md
+  s_b05a4113399f1d::t_31df8f7a531204 1-214
+vercel.json
+  s_c4363f7279a1b3::t_01f2daa6cc7c91 34-39,43-90
+.railway-config-pull-35145/railway.ts
+  s_b05a4113399f1d::t_5b23fc6b60e3dd 1-16
+package.json
+  s_b05a4113399f1d::t_31df8f7a531204 61
+apps/docs/package.json
+  s_c4363f7279a1b3::t_353dd4896b81fe 1-32
+skills/versionless/SKILL.md
+  s_249eb733a8767c::t_097f3c200c9de0 1-2,4-5,7,9,11-14,16-36
+  s_249eb733a8767c::t_d0975e073b0707 3,6,8,10,15
+apps/docs/.gitignore
+  s_c4363f7279a1b3::t_4a55348de2d05c 1-26
+apps/docs/README.md
+  s_c4363f7279a1b3::t_4fa7174c49d1b5 1-45
+apps/docs/content/docs/index.mdx
+  s_c4363f7279a1b3::t_43a43eac9a8463 1-13
+apps/docs/content/docs/test.mdx
+  s_c4363f7279a1b3::t_2cd7f4db4080d7 1-17
+apps/docs/next.config.mjs
+  s_c4363f7279a1b3::t_0a8d128a1cf186 1-10
+apps/docs/postcss.config.mjs
+  s_c4363f7279a1b3::t_91dcbdc526d995 1-7
+apps/docs/proxy.ts
+  s_c4363f7279a1b3::t_4ca5d2ee4de090 1-29
+apps/docs/source.config.ts
+  s_c4363f7279a1b3::t_f67019660da799 1-23
+apps/docs/src/app/(home)/layout.tsx
+  s_c4363f7279a1b3::t_8ae9282133ddc1 1-6
+apps/docs/src/app/(home)/page.tsx
+  s_c4363f7279a1b3::t_da88ce57940b53 1-16
+apps/docs/src/app/api/search/route.ts
+  s_c4363f7279a1b3::t_8dabce9c4ee513 1-7
+apps/docs/src/app/docs/[[...slug]]/page.tsx
+  s_c4363f7279a1b3::t_ad0187750e55f9 1-63
+apps/docs/src/app/docs/layout.tsx
+  s_c4363f7279a1b3::t_920dde5be3c1e6 1-11
+apps/docs/src/app/global.css
+  s_c4363f7279a1b3::t_9d674932949c26 1-12
+apps/docs/src/app/layout.tsx
+  s_c4363f7279a1b3::t_74a0b4f163b992 1-17
+apps/docs/src/app/llms-full.txt/route.ts
+  s_c4363f7279a1b3::t_650a60925820db 1-10
+apps/docs/src/app/llms.mdx/docs/[[...slug]]/route.ts
+  s_c4363f7279a1b3::t_fe6d0d1c4442ef 1-23
+apps/docs/src/app/llms.txt/route.ts
+  s_c4363f7279a1b3::t_b03c1e8b082129 1-8
+apps/docs/src/app/og/docs/[...slug]/route.tsx
+  s_c4363f7279a1b3::t_2397b3d5bc493c 1-28
+apps/docs/src/components/mdx.tsx
+  s_c4363f7279a1b3::t_4e70ce9fd55ddb 1-15
+apps/docs/src/lib/cn.ts
+  s_c4363f7279a1b3::t_da7a3feb301a49 1
+apps/docs/src/lib/layout.shared.tsx
+  s_c4363f7279a1b3::t_dc70851ee98979 1-12
+apps/docs/src/lib/shared.ts
+  s_c4363f7279a1b3::t_716e776a4532aa 1-11
+apps/docs/src/lib/source.ts
+  s_c4363f7279a1b3::t_c97aa3b7433d81 1-37
+apps/docs/tsconfig.json
+  s_c4363f7279a1b3::t_91ab44db7d5e22 1-45
+bun.lock
+  s_b05a4113399f1d::t_434c97d0bb405f 17,24-47,418-423,438-487,506-507,538-555,564-565,772-787,814-815,870,938-939,942-945,948-951,962-963,968-969,1058-1079,1124,1134-1135,1162-1163,1178-1179,1232-1233,1236-1243,1256-1257,1264-1265,1268-1269,1278-1279,1282-1283,1352-1353,1376-1377,1382-1383,1424-1425,1440-1443,1452-1453,1460-1474,1500-1501,1534-1535,1542-1547,1576-1577,1588-1589,1596-1613,1620-1621,1644-1645,1656-1659,1664-1665,1674-1675,1764-1765,1776-1779,1782-1813,1826-1895,1922-1927,1938-1939,1970-1973,1998-1999,2004-2005,2076-2077,2096-2097,2130-2137,2142-2163,2204-2205,2224-2225,2230-2231,2260-2261,2280-2281,2292-2297,2340-2343,2378-2393,2420-2425,2432-2433,2464-2465,2480-2482,2494-2495,2534-2535,2540-2541,2554-2559,2614-2615,2688-2689,2706-2707,2718-2719,2738-2739,2742-2743,2748-2749,2764-2765,2804,3088-3089,3154-3155,3168-3169,3176-3177
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "2f2f37d77ef620677f3718aef4434a72c72b0a3e",
+  "prompts": {},
+  "sessions": {
+    "s_249eb733a8767c": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "0927a8a2-1fbd-436a-96e3-650d784d1386",
+        "model": "grok-4.5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_b05a4113399f1d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f88ad-59f3-7480-9d68-eaaac9f78cfb",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_c4363f7279a1b3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f88b0-0789-7571-8cc9-aaee0b0d119c",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    }
+  }
+}
