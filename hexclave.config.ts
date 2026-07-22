@@ -6,6 +6,7 @@ export const config = defineHexclaveConfig({
       authentication: { enabled: true },
       teams: { enabled: true },
       rbac: { enabled: true },
+      "api-keys": { enabled: true },
     },
   },
   auth: {
@@ -30,6 +31,12 @@ export const config = defineHexclaveConfig({
     createPersonalTeamOnSignUp: true,
     allowClientTeamCreation: true,
   },
+  apiKeys: {
+    enabled: {
+      team: true,
+      user: false,
+    },
+  },
   rbac: {
     permissions: {
       member: {
@@ -48,6 +55,7 @@ export const config = defineHexclaveConfig({
           $remove_members: true,
           $update_team: true,
           $delete_team: true,
+          $manage_api_keys: true,
         },
       },
     },
