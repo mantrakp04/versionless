@@ -12,7 +12,7 @@
   "dependencies": {
     "@elysiajs/cors": "^1.4.2",
     "@elysiajs/trpc": "^1.1.0",
-    "@hexclave/js": "catalog:",
+    "@hexclave/js": "^1.0.52",
     "@hono/trpc-server": "^0.4.2",
     "@sinclair/typebox": "^0.34.49",
     "@trpc/server": "catalog:",
