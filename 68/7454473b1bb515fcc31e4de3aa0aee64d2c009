@@ -1,0 +1,21 @@
+packages/db/docker-compose.yml
+  s_8179439d8de6b5::t_d9f0ecf580f354 22-46,49-50
+packages/env/src/server.ts
+  s_8179439d8de6b5::t_3399bebd52883d 24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "687454473b1bb515fcc31e4de3aa0aee64d2c009",
+  "prompts": {},
+  "sessions": {
+    "s_8179439d8de6b5": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "f557299d-eb49-4cef-bbfe-cbdb844b6ba9",
+        "model": "grok-4.5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    }
+  }
+}
