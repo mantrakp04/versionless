@@ -1,0 +1,19 @@
+apps/server/tsconfig.json
+  s_b05a4113399f1d::t_a495f244c24622 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "57ed548dccce2ce23a8403369a2f2927d3ef319b",
+  "prompts": {},
+  "sessions": {
+    "s_b05a4113399f1d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f88ad-59f3-7480-9d68-eaaac9f78cfb",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    }
+  }
+}
