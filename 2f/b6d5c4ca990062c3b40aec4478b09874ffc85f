@@ -1,0 +1,41 @@
+apps/web/package.json
+  s_0525ec5f3460aa::t_bffe3c90fdb7e9 26
+apps/server/src/index.ts
+  s_0525ec5f3460aa::t_9e00cd67d2c91c 7,10
+apps/server/tsconfig.json
+  s_b05a4113399f1d::t_63576a1bfb4f0d 10-11
+apps/server/package.json
+  s_0525ec5f3460aa::t_cba9bcecc9b49b 24
+apps/server/src/logger.ts
+  s_0525ec5f3460aa::t_9e00cd67d2c91c 1-11
+apps/web/src/logger.ts
+  s_0525ec5f3460aa::t_be52d72c456a6d 1-2
+apps/web/vite.config.ts
+  s_0525ec5f3460aa::t_be52d72c456a6d 4,15-20
+bun.lock
+  s_0525ec5f3460aa::t_10384574a46684 62,88,1492-1493
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "2fb6d5c4ca990062c3b40aec4478b09874ffc85f",
+  "prompts": {},
+  "sessions": {
+    "s_0525ec5f3460aa": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f88c3-703f-7ed0-9945-a9288983674c",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_b05a4113399f1d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f88ad-59f3-7480-9d68-eaaac9f78cfb",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    }
+  }
+}
