@@ -1,48 +1,43 @@
 import { QueryCache, QueryClient } from "@tanstack/react-query";
-import { createTRPCClient, httpBatchLink } from "@trpc/client";
+import { TRPCClientError, createTRPCClient, httpBatchLink } from "@trpc/client";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import type { AppRouter } from "@versionless/api/routers/index";
 import { env } from "@versionless/env/web";
 import { toast } from "sonner";
 
-function getServerUrl(url: string) {
-  const normalized = url.endsWith("/") ? url.slice(0, -1) : url;
-
-  if (!normalized.startsWith("/")) {
-    return normalized;
-  }
-
-  if (typeof window !== "undefined") {
-    return `${window.location.origin}${normalized}`;
-  }
-
-  const processEnv = (
-    globalThis as {
-      process?: { env?: Record<string, string | undefined> };
-    }
-  ).process?.env;
-  const vercelUrl =
-    processEnv?.VERCEL_ENV === "production"
-      ? (processEnv?.VERCEL_PROJECT_PRODUCTION_URL ?? processEnv?.VERCEL_URL)
-      : (processEnv?.VERCEL_URL ?? processEnv?.VERCEL_PROJECT_PRODUCTION_URL);
-  if (vercelUrl) {
-    const origin = vercelUrl.startsWith("http") ? vercelUrl : `https://${vercelUrl}`;
-    return `${origin}${normalized}`;
-  }
-
-  return `http://localhost:3000${normalized}`;
-}
+import { hexclaveClientApp } from "@/hexclave/client";
+import { clientErrorMessage } from "@/utils/client-error";
+import { isProjectQueryUnavailable } from "@/utils/project-query";
+import { getServerUrl } from "@/utils/server-url";
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (error, query) => {
-      toast.error(error.message, {
-        action: {
-          label: "retry",
-          onClick: () => {
-            query.invalidate();
+      // Production renders telemetry-store failures inline without a duplicate
+      // toast. Development keeps the toast so the actual diagnostic remains
+      // visible even for components with a fixed inline fallback.
+      if (
+        ((error instanceof TRPCClientError &&
+          (error.data as { code?: string } | null | undefined)?.code ===
+            "PRECONDITION_FAILED") ||
+          isProjectQueryUnavailable(error)) &&
+        !import.meta.env.DEV
+      ) {
+        return;
+      }
+      toast.error(
+        clientErrorMessage(
+          error,
+          "We could not load this data. Please try again.",
+        ),
+        {
+          action: {
+            label: "retry",
+            onClick: () => {
+              query.invalidate();
+            },
           },
         },
-      });
+      );
     },
   }),
 });
@@ -51,6 +46,12 @@ export const trpcClient = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
       url: `${getServerUrl(env.VITE_SERVER_URL)}/trpc`,
+      // Hexclave session tokens ride along so the server can resolve the
+      // user (protectedProcedure); empty when signed out.
+      headers: async () => {
+        const authorization = await hexclaveClientApp.getAuthorizationHeader();
+        return authorization ? { authorization } : {};
+      },
     }),
   ],
 });

@@ -1,1 +1,85 @@
-hi
+# AGENTS.md
+
+## Task Completion Requirements
+
+- Keep local verification focused on the files and packages changed. Run the smallest relevant test set; do not run the full workspace test suite as a routine completion step.
+  - Use `bun test <test-files>` for focused tests (e.g. `bun test packages/core/test/matcher.test.ts`), or `bun test` from within the affected package directory. Type-level tests (`*.test-d.ts`, e.g. the `ClientTypes` suite) are exercised by the package's `check-types` script, not `bun test`.
+  - Changes to `packages/core`, an adapter, the CLI, or `apps/server` behavior must include and run focused tests for the changed behavior. Core and adapter changes ripple: also run the tests of packages that consume what you changed (e.g. a core pipeline change → run the affected adapter's tests too).
+  - Run the affected package's type check when available: `bun run check-types` inside the package (or `turbo run check-types -F <package>` from the root; `apps/docs` uses `types:check`).
+- Do not run repo-wide `bun run test`, `bun run check-types`, `bun run build`, or equivalent full-suite Turbo commands locally unless the user explicitly requests them. CI is responsible for the full verification suite (see `.github/workflows/ci.yml`).
+- After frontend feature development or any user-visible change to `apps/web` or `apps/docs`, the primary agent must run one integrated verification pass after integrating the work:
+  - Start the databases (`bun db:start`) and the needed apps (`bun dev:server` on :3000, `bun dev:web` on :3001, `apps/docs` on :3002, `apps/demo` on :3003 under `/demo`); seed telemetry with `bun run --cwd apps/server seed` if the insights views need data. (`bun restart-deps && bun dev` gives a fresh-DB integrated run.)
+  - Use the `agent-browser` skill to verify the affected flow in a controlled browser (e.g. <http://localhost:3001/insights>). But if u have inbuild browser prefer that.
+  - For versioning-behavior changes, also verify the wire behavior directly, e.g. `curl -H 'x-api-version: 2025-01-01' :3003/demo/users/u_1` against the current shape.
+  - Subagents must not independently launch dev servers or repeat integrated client verification unless their delegated task explicitly requires it.
+  - Stop dev servers, watchers, and containers started for verification when the focused verification is complete (`bun db:stop`).
+
+## Client Error Safety
+
+- Treat every browser-rendered error, toast, fallback, and API error payload as
+  public. Production clients must receive only concise, user-friendly copy;
+  never expose exception messages, stack traces, database or service details,
+  credentials, personal data, internal URLs, environment variables, or local
+  operator commands.
+- Keep diagnostics in server logs. In development only, show the friendly
+  message together with the actual diagnostic so local failures remain
+  actionable. Add focused tests that prove production output is scrubbed and
+  development output contains both messages.
+- Apply this rule at both boundaries: sanitize server responses before they
+  reach the browser, then use the shared client error presenter for route
+  errors, query/mutation errors, toasts, and inline fallbacks. Do not render
+  raw `error.message` or rely on framework default error components.
+- Observability UI is not exempt: production may expose safe error/status
+  flags, but raw exception text and attributes must stay server-side unless
+  each returned field is explicitly allowlisted as non-sensitive.
+
+## Package Roles
+
+- `packages/core`: The heart of versionless — version graph/registry, request/response transform pipelines, route matching, date-scheme resolver, sunsets, telemetry, `ClientTypes`. Zero runtime deps; keep it framework-agnostic.
+- `packages/adapter-elysia` / `-hono` / `-express` / `-nextjs` / `-tanstack-start` / `-trpc` / `-orpc`: Thin (~100 LOC) framework adapters over core. Behavior belongs in core; adapters only translate framework request/response surfaces.
+- `packages/cli`: `versionless snapshot / check / generate / explain / changelog / init` — Zod surface diffing and missing-compat detection for CI.
+- `packages/client`: Typed client SDK built on core's `ClientTypes`.
+- `infra/otel`: Envoy authorization gateway plus the standard OpenTelemetry Collector ClickHouse exporter. Keep OTLP codecs, batching, retries, and storage schema out of application code.
+- `packages/db`: Drizzle + PostgreSQL schema and migrations (`bun db:push` / `db:generate` / `db:migrate` / `db:studio` from the root).
+- `packages/api`: tRPC routers/context shared by server and web.
+- `packages/env`: Typed environment schemas (`server.ts`, `web.ts`). `packages/config`: shared tsconfig. `packages/ui`: shared React components/hooks/styles. Keep env/config schema-and-config-only — no runtime logic.
+- `apps/demo`: TanStack Start + oRPC demo app, served under the `/demo` base path (client AND server routes). Owns the demo change chain (`src/versions.ts`, `src/changes/`), the in-memory demo data, the CLI surface entry (`src/surface.ts` — oRPC extractor + `manual` declarations), and an unauthenticated button page simulating versioned usage. Its telemetry key belongs to the Hexclave "demo" team.
+- `apps/server`: Elysia + tRPC cloud server (Collector authorization in `src/ingest.ts`, query plane, dashboard tRPC). Dogfoods versionless on its own service API via `@versionless/api/versionless`; its telemetry key belongs to the owner's team.
+- `apps/web`: Vite/React 19/TanStack Router insights dashboard (adoption, drift, blockers). Demo release metadata comes from `demo/releases`.
+- `apps/docs`: fumadocs (Next.js) documentation site.
+
+## Database Changes
+
+The drizzle schema (`packages/db/src/schema/`) is the **parent source of the
+API wire types** (drizzle-zod → `z.infer` → surface extraction), so a DB
+change is an API change until proven otherwise. Every schema change follows
+this sequence — CI's `db-compat` job enforces each step:
+
+1. **Edit the schema**, then `bun db:generate` — the migration SQL in
+   `packages/db/src/migrations/` is committed alongside the schema change. CI
+   re-generates and fails on drift (schema change without a migration).
+2. **Keep the migration compatible** — `bun run db:check` lints the SQL
+   against expand → backfill → contract rules: no `DROP COLUMN`/`DROP TABLE`/
+   `RENAME`/type changes/`ADD COLUMN ... NOT NULL` without `DEFAULT`/
+   `SET NOT NULL`/destructive DML. A legitimate contract step gets a
+   `-- compat:allow <reason>` waiver comment on the statement (the reason is
+   mandatory and reviewed).
+3. **Migrations must be idempotent** — CI applies them twice against fresh
+   Postgres and ClickHouse. Dev keeps the `bun db:push` loop; deploys opt in
+   with `RUN_MIGRATIONS=true` (applied once at startup via
+   `@versionless/db/migrate`, journaled, race-safe).
+4. **`versionless check` must pass** — if the schema change ripples into the
+   wire surface, cover it with a registered change (`v.change` with
+   `request.up`/`response.down` + `schema` declaration) before it lands. Run
+   `bun run versionless:check` from the root; add `examples` fixtures so
+   `versionless verify` exercises the transforms.
+
+## Seed Data
+
+- `apps/server/scripts/seed-traffic.ts` (`bun run --cwd apps/server seed`) is the only source of dashboard preview data on dev — keep it truthful. Whenever a change touches storage or the wire surface — a DB schema change, an endpoint/route added, modified, or removed, a new API version or sunset, or a change to ingest/telemetry event fields — update the seed script in the same change so the seeded story exercises the new surface (its `ROUTES` list, version set, consumer mix, and event fields must reflect reality), then re-run the seed and confirm the insights UI renders it.
+- The seed resolves its team id in order: `SEED_TEAM_ID` (explicit override) → `SEED_ADMIN_ACCOUNT` (Hexclave account email; selected team, first team as fallback) → `"demo"`. New seed knobs go through `@versionless/env/server`, never raw `process.env`.
+
+## References
+
+- `skills/versionless/SKILL.md` is the canonical agent-facing description of every versionless surface; it fetches live instructions from <https://skill.versionless.com>. Prefer it over memory when working on versioning semantics.
+- The design follows Stripe's date-based API versioning model (rolling versions as chains of reversible transforms). Use Stripe's public writing on API versioning as the conceptual reference when designing change semantics, sunset behavior, and migration flows.

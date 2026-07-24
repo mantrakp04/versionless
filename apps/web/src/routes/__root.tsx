@@ -1,9 +1,15 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { HeadContent, Outlet, createRootRouteWithContext } from "@tanstack/react-router";
+import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@versionless/ui/components/sidebar";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { Toaster } from "@versionless/ui/components/sonner";
 
+import { AppScrollContainer } from "@/components/app-scroll-container";
 import Header from "@/components/header";
 import { ThemeProvider } from "@/components/theme-provider";
 import type { trpc } from "@/utils/trpc";
@@ -17,43 +23,44 @@ export interface RouterAppContext {
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
   component: RootComponent,
-  head: () => ({
-    meta: [
-      {
-        title: "versionless",
-      },
-      {
-        name: "description",
-        content: "versionless is a web application",
-      },
-    ],
-    links: [
-      {
-        rel: "icon",
-        href: "/favicon.ico",
-      },
-    ],
-  }),
 });
 
 function RootComponent() {
   return (
     <>
-      <HeadContent />
       <ThemeProvider
         attribute="class"
         defaultTheme="dark"
         disableTransitionOnChange
         storageKey="vite-ui-theme"
       >
-        <div className="grid grid-rows-[auto_1fr] h-svh">
+        <SidebarProvider>
           <Header />
-          <Outlet />
-        </div>
+          <SidebarInset className="h-svh min-w-0 overflow-hidden">
+            <header className="flex h-14 shrink-0 items-center gap-3 border-b px-4 md:hidden">
+              <SidebarTrigger />
+              <img
+                src="/versionless-logo.svg"
+                alt=""
+                aria-hidden="true"
+                className="h-5 w-auto dark:invert"
+              />
+              <span className="sr-only">versionless</span>
+            </header>
+            <AppScrollContainer>
+              <Outlet />
+            </AppScrollContainer>
+          </SidebarInset>
+        </SidebarProvider>
         <Toaster richColors />
       </ThemeProvider>
-      <TanStackRouterDevtools position="bottom-left" />
-      <ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
+      <TanStackRouterDevtools
+        position="bottom-right"
+        toggleButtonProps={{ style: { bottom: 80, right: 16 } }}
+      />
+      <div className="fixed right-16 bottom-4 z-50">
+        <ReactQueryDevtools position="bottom" buttonPosition="relative" />
+      </div>
     </>
   );
 }

@@ -7,25 +7,32 @@
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
     "dev": "bun run --hot src/index.ts",
-    "start": "bun run dist/index.mjs"
+    "start": "bun run dist/index.mjs",
+    "seed": "bun run scripts/seed-traffic.ts",
+    "test": "bun test",
+    "versionless:check": "versionless check",
+    "versionless:watch": "versionless watch"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.4.2",
     "@elysiajs/trpc": "^1.1.0",
     "@hexclave/js": "^1.0.52",
-    "@hono/trpc-server": "^0.4.2",
-    "@sinclair/typebox": "^0.34.49",
     "@trpc/server": "catalog:",
+    "@versionless/adapter-elysia": "workspace:*",
+    "@versionless/adapter-trpc": "workspace:*",
     "@versionless/api": "workspace:*",
+    "@versionless/core": "workspace:*",
     "@versionless/db": "workspace:*",
     "@versionless/env": "workspace:*",
-    "dotenv": "catalog:",
+    "demo": "workspace:*",
+    "drizzle-orm": "^0.45.2",
     "elysia": "catalog:",
     "evlog": "^2.22.0",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@types/bun": "catalog:",
+    "@versionless/cli": "workspace:*",
     "@versionless/config": "workspace:*",
     "tsdown": "^0.22.3",
     "typescript": "catalog:"

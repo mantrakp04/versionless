@@ -1,0 +1,44 @@
+{
+  "name": "demo",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./releases": "./src/releases.ts",
+    "./seed-fixtures": "./src/seed-fixtures.ts"
+  },
+  "scripts": {
+    "dev": "vite dev --port 3003",
+    "build": "vite build",
+    "check-types": "tsc --noEmit",
+    "test": "bun test",
+    "versionless:check": "versionless check",
+    "versionless:watch": "versionless watch"
+  },
+  "dependencies": {
+    "@orpc/client": "catalog:",
+    "@orpc/server": "catalog:",
+    "@tanstack/react-router": "^1.168.32",
+    "@tanstack/react-start": "^1.168.32",
+    "@versionless/adapter-orpc": "workspace:*",
+    "@versionless/adapter-tanstack-start": "workspace:*",
+    "@versionless/core": "workspace:*",
+    "@versionless/db": "workspace:*",
+    "@versionless/env": "workspace:*",
+    "nitro": "^3.0.260610-beta",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@versionless/cli": "workspace:*",
+    "@versionless/client": "workspace:*",
+    "@versionless/config": "workspace:*",
+    "@vitejs/plugin-react": "^6.0.3",
+    "expect-type": "catalog:",
+    "typescript": "catalog:",
+    "vite": "^8.1.3"
+  }
+}

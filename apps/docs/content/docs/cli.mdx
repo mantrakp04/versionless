@@ -1,0 +1,368 @@
+---
+title: The CLI
+description: API compatibility workflows and authenticated project-scoped telemetry queries.
+---
+
+The CLI closes the loop the runtime can't: it proves that every breaking
+change to your API surface has a registered transform covering it — in CI,
+before a client ever sees the break.
+
+## Setup
+
+`versionless init` writes the two files (or write them yourself):
+
+```ts
+// versionless.config.ts
+import { defineConfig } from "@versionless/cli/config";
+
+export default defineConfig({
+  entry: "./src/versionless.ts",
+  // snapshotDir: ".versionless",     // default
+  // changes: "changes/**/*.ts",      // where `generate` writes stubs
+  // instance: "versionless",         // entry export holding the core instance
+});
+```
+
+```ts
+// src/surface.ts — side-effect-free surface entry (this is the demo app's real one)
+import { defineSurface } from "@versionless/cli/surface/define";
+import { demoApi } from "./versions";           // your registered change chain
+import { rpcRouter } from "./server/rpc";       // oRPC router
+import { teamSchema, userCreateSchema, userSchema } from "./db/schema";
+import { z } from "zod";
+
+/** The registered change chain — the CLI reads coverage from this instance. */
+export const versionless = demoApi;
+
+export default defineSurface({
+  orpc: [{ router: rpcRouter, mount: "/rpc" }],   // tRPC routers work the same way
+  models: { User: userSchema, Team: teamSchema }, // named models = precise errors
+  manual: [
+    // Raw-endpoint escape hatch — for frameworks whose routes carry no
+    // schemas (TanStack Start file routes, Express), the manual list IS the
+    // wire declaration.
+    { method: "get", path: "/users", response: z.array(userSchema) },
+    { method: "post", path: "/users", body: userCreateSchema, response: userSchema },
+  ],
+});
+```
+
+Extractors exist for Elysia apps (`elysia: [app]`, schemas read from the
+routes), tRPC routers (`trpc: [{ router, mount }]`), oRPC routers
+(`orpc: [{ router, mount }]` — procedures share the `trpc:` endpoint
+namespace), and the `manual` list.
+
+The CLI sets `VERSIONLESS=1` before importing — guard your `listen()` with it.
+Named `models` matter: they let the checker say *"User.email removed in
+`GET /users/:id`"* instead of pointing at an anonymous inline shape (models
+are matched by object identity, so pass the *same* schema objects your routes
+use), and one change declaration covers the model everywhere it appears.
+**Declare response schemas on your routes** (`response: userSchema` in Elysia,
+`.output(...)` in tRPC) — the checker can only protect what the surface
+actually references.
+
+## Commands
+
+```
+versionless <command> [options]
+
+  init       Scaffold versionless.config.ts, the surface entry, and agent docs
+  snapshot   Extract the API surface and write .versionless/<version>.json
+  check      Diff head vs the last snapshot; fail on uncovered breaking changes
+  verify     Run each change's wire-shape fixtures + tolerant-reader probes
+  watch      Re-run check whenever the surface, changes, or snapshots change
+  generate   Scaffold a change file covering the uncovered diffs
+  explain    Show the transform path an old client walks for a route
+  changelog  Render the change chain as markdown
+  login      Authenticate with Hexclave
+  logout     Remove the stored login
+  whoami     Verify the current login
+  query      Run project-scoped read-only ClickHouse SQL
+```
+
+Every command accepts `--config <path>` (default: walk up from cwd looking
+for `versionless.config.ts`), `--json` (machine-readable output), and
+`-h, --help`. Command-specific flags:
+
+| Command | Flags |
+| --- | --- |
+| `snapshot` | `--version <v>` — version to stamp (default: the instance's `current` when the entry exports it, else today UTC). `--check-idempotent` — extract twice, exit 3 if the bytes differ. `--overwrite` — replace an existing snapshot whose content differs (refused by default). |
+| `check` | `--strict-lossy` — lossy changes do not cover breaking diffs (fail instead of warn). `--github` — emit `::error` / `::warning` annotations. |
+| `verify` | `--strict` — changes with transforms but no `examples` fail instead of warn. |
+| `watch` | `--strict-lossy` — forwarded to check. `--debounce <ms>` — quiet period after a file event before re-running (default: 150). No `--json` (use `check --json`). |
+| `generate` | *(globals only)* |
+| `explain <route>` | `--version <v>` — requested client version (default: the oldest release). Route forms: `"GET /users/:id"`, `trpc:user.get`, or a bare procedure `user.get`. |
+| `changelog` | `--out <file>` — write to a file instead of stdout. |
+| `query` | `--project <uuid>` — telemetry project. Supply SQL with `--sql`, `--file`, stdin (`--file -`), or a positional argument. `--params <json>` binds ClickHouse parameters; `--timeout <ms>` caps execution to 1–60 seconds; `--server-url <url>` overrides the hosted API. |
+
+## Querying project telemetry
+
+Authenticate once, then query either standard Collector table:
+
+```bash
+versionless login
+
+versionless query \
+  --project 5fbe6be8-f32e-48c6-b332-76eb36229486 \
+  --sql "SELECT EventName, count() AS requests
+         FROM otel_logs
+         GROUP BY EventName
+         ORDER BY requests DESC"
+```
+
+The CLI sends SQL to the same authenticated query boundary used by the
+dashboard. The server resolves the project and verifies membership in its
+owning Hexclave team. It then executes as a dedicated ClickHouse user with
+`SELECT` only on `otel_logs` and `otel_traces`; row policies inject the trusted
+project and team scope for every scan. Client SQL cannot override that scope.
+DDL, writes, system tables, cross-project rows, excessive result sizes, and
+long-running queries are denied at the database boundary.
+
+`--check-idempotent` is your nondeterminism detector: if two extractions of
+the same code produce different bytes (a `Date.now()` in a default, an
+unordered map), snapshots would diff forever — better to fail loudly in the
+release step.
+
+## Snapshots
+
+`snapshot` serializes the surface into a **canonical IR**: every zod/TypeBox/
+JSON-Schema shape is converted to one normalized type tree, keys sorted,
+stable-stringified — so identical surfaces are byte-identical files.
+`.versionless/<version>.json` looks like:
+
+```json
+{
+  "formatVersion": 1,
+  "version": "2026-07-21",
+  "endpoints": {
+    "GET /users/:id": {
+      "transport": "http",
+      "method": "GET",
+      "path": "/users/:id",
+      "params": { "kind": "object", "fields": { "id": { "type": { "kind": "string" } } } },
+      "responses": { "200": { "kind": "ref", "name": "User" } }
+    }
+  },
+  "models": { "User": { "kind": "object", "fields": { "...": "..." } } }
+}
+```
+
+Snapshots are **committed to git** — that's the point: `check` in CI diffs the
+live surface against the last committed one. A snapshot whose `formatVersion`
+this CLI doesn't understand exits 4 rather than mis-diffing.
+
+Each written snapshot also carries an `integrity` content hash, verified on
+every read: a hand-edited or corrupted snapshot fails loudly (exit 4) instead
+of silently skewing every diff `check` produces. In GitHub Actions, snapshots
+additionally record `provenance` (`repo` / `ref` / `sha` of the producing
+commit), so you can always trace which commit published which contract.
+Old snapshots without these fields keep loading — they're metadata, not
+surface. And because a snapshot **is** the published contract, `snapshot`
+refuses to overwrite an existing version with different content unless you
+pass `--overwrite`; same-content re-writes are always allowed (idempotent).
+
+## Verifying transforms with fixtures
+
+`check` proves every breaking diff has a covering change; `versionless verify`
+proves the covering transforms are actually **correct**. Declare wire-shape
+fixtures on a change and verify runs them:
+
+```ts
+v.change("2026-05-14", {
+  describe: "user.name split into firstName/lastName",
+  routes: ["GET /users/:id"],
+  request:  { up:   ({ name, ...r }) => ({ ...r, ...split(name) }) },
+  response: { down: ({ firstName, lastName, ...r }) => ({ ...r, name: `${firstName} ${lastName}` }) },
+  examples: [{
+    request:  { old: { name: "Ada Lovelace" }, current: { firstName: "Ada", lastName: "Lovelace" } },
+    response: { current: { id: "u_1", firstName: "Ada", lastName: "Lovelace" }, old: { id: "u_1", name: "Ada Lovelace" } },
+  }],
+});
+```
+
+Two things run per fixture:
+
+1. **Equality** — `up(request.old)` must deep-equal `request.current`, and
+   `down(response.current)` must deep-equal `response.old`.
+2. **Tolerant-reader probe** — a sentinel field is injected into the input and
+   must survive the transform. This catches the classic compat bug: a `down()`
+   that rebuilds the object field-by-field silently drops every field added to
+   the model *after* the change was written. Spread the rest (`{ ...rest }`)
+   and the probe passes; changes marked `lossy` are exempt.
+
+Changes with transforms but no `examples` are warnings (`--strict` makes them
+failures). Run `verify` next to `check` in CI.
+
+## What check catches
+
+Every diff is classified by **polarity**: a request-side change breaks when old
+clients' requests stop validating; a response-side change breaks when old
+clients receive shapes they don't expect. Removed field in a response →
+breaking, needs a `down()`. New required field in a request → breaking, needs
+an `up()`. Optional additions → fine. Enum/union additions in responses →
+warning. Constraint tightening (min/max/pattern) → warning in v0. Renames
+always appear as remove+add — declare intent with `renamed:` in the schema
+declaration.
+
+Here is real output — the demo's `User.email` field deleted with no covering
+change. Model attribution follows the model into nested positions too:
+`GET /users` returns `z.array(userSchema)`, and the checker still says
+`User.email`, not an anonymous array element:
+
+```
+$ versionless check
+comparing snapshot 2026-07-21 → head 2026-07-21
+
+GET /users
+  [breaking] field-removed: User.email in responses.200 (was string)
+    ✗ uncovered
+    declare it: schema: (s) => s.on('User', { removed: ['email'] })
+
+GET /users/:id
+  [breaking] field-removed: User.email in responses.200 (was string)
+    ✗ uncovered
+    declare it: schema: (s) => s.on('User', { removed: ['email'] })
+
+POST /users
+  [breaking] field-removed: User.email in responses.200 (was string)
+    ✗ uncovered
+    declare it: schema: (s) => s.on('User', { removed: ['email'] })
+
+trpc:demo.userCreate
+  [breaking] field-removed: User.email in output (was string)
+    ✗ uncovered
+    declare it: schema: (s) => s.on('User', { removed: ['email'] })
+
+trpc:demo.userList
+  [breaking] field-removed: User.email in output (was string)
+    ✗ uncovered
+    declare it: schema: (s) => s.on('User', { removed: ['email'] })
+
+✗ check failed (5 uncovered, 0 warning(s), 0 covered) — run `versionless generate` to scaffold the missing change
+  head version 2026-07-21 already has a snapshot — a breaking change needs a new version: bump `current` on your instance first
+```
+
+Coverage requires three things to line up: the **declaration** (model +
+field), the **route** (when the change scopes itself), and the **direction**
+(a response break needs `hasDown`, a request break needs `hasUp` — declaring
+the right schema with the wrong transform gets its own error). `lossy: true`
+downgrades failure to a warning (`--strict-lossy` restores it). Declarations
+that match *no* diff also warn — that's a typo detector.
+
+## The bump → generate → fill → re-check loop
+
+A breaking change ships in a **new version**: coverage only considers changes
+strictly newer than the last snapshot, and core refuses to register a change
+newer than the instance's `current`. So the first step is always to bump
+`current` (e.g. to today) — `generate` refuses to run against an
+already-snapshotted head, because that stub could never cover anything.
+
+With `current` bumped, don't write the change file by hand:
+
+```
+$ versionless generate
+✓ scaffolded changes/2026-07-24-generated.ts
+next steps:
+  1. fill in describe + the TODO transforms
+  2. re-run `versionless check` until it passes
+  3. run your test suite
+```
+
+The stub arrives with the affected `routes`/`procedures`, the `schema`
+declaration, and typed TODO bodies pre-filled — a header comment lists every
+diff it must cover. It imports your entry's instance, and `check` imports
+every file matched by the `changes:` glob before reading the chain, so the
+scaffold registers itself with no extra wiring. Your only job is the
+transform logic:
+
+```ts
+/**
+ * Generated by `versionless generate` — fill in the TODOs.
+ *
+ * Uncovered diffs this change must cover:
+ *   - [breaking] field-removed: User.email in responses.200 of GET /users (string -> ?)
+ *   - [breaking] field-removed: User.email in responses.200 of GET /users/:id (string -> ?)
+ *   ...
+ */
+import { versionless as v } from "../src/versionless";
+
+export default v.change("2026-07-24", {
+  describe: "TODO: describe this change",
+  routes: ["GET /users", "GET /users/:id", "POST /users"],
+  procedures: ["demo.userCreate", "demo.userList"],
+  schema: (s) => {
+    s
+      .on("User", { removed: ["email"] });
+  },
+  response: {
+    down: (body) => {
+      // TODO: convert the CURRENT response shape back into the old one
+      return body;
+    },
+  },
+});
+```
+
+Fill it in, re-run `check` (must exit 0), run your tests, then run
+`versionless snapshot` and commit the new `.versionless/<version>.json`
+alongside the change file. `versionless watch` runs the check loop for you: it
+re-executes `check` on every save of the config, entry, change files, or
+snapshots (each run in a fresh process, so nothing is stale). See
+[For AI agents](/docs/for-agents) for the same loop written as an agent
+contract, including a filled-in example.
+
+## Exit codes (the CI contract)
+
+| Code | Meaning |
+| --- | --- |
+| 0 | Clean, covered, or warnings only |
+| 1 | Uncovered breaking changes |
+| 2 | Config/usage error |
+| 3 | Extraction failed (entry import threw, or `--check-idempotent` diverged) |
+| 4 | Snapshot format-version mismatch |
+| 5 | Authentication failed (`login` / `whoami`) |
+| 6 | Analytics query failed (`query`) |
+
+```yaml
+# .github/workflows/ci.yml
+jobs:
+  compat:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bunx versionless check --github   # ::error annotations on the PR
+```
+
+## Debugging with explain
+
+```
+$ versionless explain "GET /users" --version 2025-01-01
+GET /users
+  requested version: 2025-01-01
+  effective version: 2025-01-01
+  matched routeKey:  GET /users
+  path (1 step(s), oldest first):
+    1. jump 2025-01-01 -> 2026-07-21 — direct 2025-01-01 -> current for GET /users
+       transforms: response.down
+  transformCount: 1
+  passthrough: no
+  lossy: no
+  sunset: after 2026-12-31 (still served, headers advertised)
+```
+
+This is the ground truth for "why is this client seeing this shape" — it
+prints the exact chain-vs-jump path the pipeline compiler chose, plus
+passthrough/lossy flags and sunset status. It needs the entry to export the
+core instance (export name `versionless`, or whatever `instance:` in the
+config says).
+
+## Changelog
+
+`versionless changelog` renders the registered chain as markdown, newest
+first, one section per version with per-model field bullets. When snapshots
+exist on both sides of a change, bullets are enriched with before/after types
+(``removed `name` (was `string`)``). Lossy changes get a warning bullet.
+`--out CHANGELOG.api.md` writes it to a file — wire it into your release
+script.

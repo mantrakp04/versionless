@@ -1,0 +1,90 @@
+name: versionless
+
+services:
+  postgres:
+    image: postgres:18
+    container_name: versionless-postgres
+    environment:
+      POSTGRES_DB: versionless
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - versionless_postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:26.3-alpine
+    container_name: versionless-clickhouse
+    environment:
+      CLICKHOUSE_DB: versionless
+      CLICKHOUSE_USER: clickhouse
+      CLICKHOUSE_PASSWORD: password
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
+    # Host ports are overridable (repo-root .env or shell) for machines where
+    # another stack already holds them — keep CLICKHOUSE_URL / DATABASE_URL in
+    # apps/server/.env pointing at the same host ports.
+    ports:
+      - "${CLICKHOUSE_HTTP_PORT:-8123}:8123"
+      - "${CLICKHOUSE_NATIVE_PORT:-9000}:9000"
+    volumes:
+      - versionless_clickhouse_data:/var/lib/clickhouse
+      - versionless_clickhouse_logs:/var/log/clickhouse-server
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      test: ["CMD-SHELL", "clickhouse-client --user clickhouse --password password --query 'SELECT 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.153.0
+    container_name: versionless-otel-collector
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    environment:
+      CLICKHOUSE_ENDPOINT: tcp://clickhouse:9000
+      CLICKHOUSE_USER: clickhouse
+      CLICKHOUSE_PASSWORD: password
+      CLICKHOUSE_DATABASE: versionless
+    volumes:
+      - ./infra/otel/collector.yaml:/etc/otelcol-contrib/config.yaml:ro
+    ports:
+      # Seed-only trusted boundary; public SDK traffic goes through Envoy.
+      - "127.0.0.1:${OTLP_INTERNAL_HTTP_PORT:-14318}:4318"
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    restart: unless-stopped
+
+  otel-gateway:
+    build:
+      context: .
+      dockerfile: infra/otel/envoy.Dockerfile
+      args:
+        ENVOY_TARGET: local
+    container_name: versionless-otel-gateway
+    command: ["envoy", "-c", "/etc/envoy/envoy.yaml"]
+    ports:
+      - "${OTLP_GRPC_PORT:-4317}:4317"
+      - "${OTLP_HTTP_PORT:-4318}:4318"
+      - "${ENVOY_ADMIN_PORT:-9901}:9901"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - otel-collector
+    restart: unless-stopped
+
+volumes:
+  versionless_postgres_data:
+  versionless_clickhouse_data:
+  versionless_clickhouse_logs:

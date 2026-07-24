@@ -1,0 +1,17 @@
+{
+  "name": "versionless documentation",
+  "short_name": "versionless",
+  "description": "Documentation for date-based API versioning without route forks.",
+  "start_url": "/docs",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

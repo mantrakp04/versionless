@@ -1,0 +1,224 @@
+---
+title: Telemetry & the Dashboard
+description: Opt-in via API key — no key, no network calls; with a key, adoption curves, sunset blockers, and per-endpoint drift light up.
+---
+
+## Opt-in by design
+
+The SDK is fully functional with zero telemetry. Nothing is collected, nothing
+is sent, there is no nag — without a key or a sink, versionless makes **zero
+network calls**. Two ways to turn insight on:
+
+```ts
+// 1. Local/dev: a console sink
+import { consoleSink } from "@versionless/core";
+v.telemetry.use(consoleSink());
+// [versionless] GET GET /users/:* v=2025-06-01 key=key_abc transforms=2 status=200 3ms
+
+// 2. The dashboard: pass your versionless API key
+export const v = createVersionless({
+  project: "billing-api",
+  scheme: "date",
+  current: "2026-07-21",
+  resolve: [{ header: "x-api-version" }, { default: "current" }],
+  apiKey: process.env.VERSIONLESS_API_KEY,   // vl_<keyId>_<secret>
+  // otlpLogsUrl: "https://telemetry.internal/v1/logs", // self-host override
+});
+```
+
+With an `apiKey`, `project` is required. Core maps request events to standard
+OpenTelemetry `LogRecord`s (`eventName = "versionless.request"`) and exports
+OTLP/HTTP JSON to `/v1/logs`. It sends the project as both `service.name` and
+the `x-versionless-project` transport header. The gateway validates the key,
+binds it to the first project it is used with, and forwards the OTLP body
+unchanged to the OpenTelemetry Collector.
+
+The cloud receiver accepts standard OTLP logs and traces from any compatible
+exporter:
+
+| Transport | Endpoint |
+| --- | --- |
+| OTLP/HTTP JSON | `POST /v1/logs`, `POST /v1/traces` |
+| OTLP/HTTP protobuf | `POST /v1/logs`, `POST /v1/traces` |
+| OTLP/gRPC | standard LogsService and TraceService `Export` methods on port `4317` |
+
+HTTP requests may use `Content-Encoding: gzip`. Authenticate every transport
+with `Authorization: Bearer <versionless-api-key>`. The HTTP receiver chooses
+its response encoding from the request `Content-Type`; gRPC uses the standard
+OTLP protobuf service definitions.
+
+## Three keys, three jobs
+
+Easy to conflate, so precisely:
+
+| Term | What it is | Where it lives |
+| --- | --- | --- |
+| `project` (config) | Stable display name for this API/service. | `createVersionless({ project })` |
+| `apiKey` (config) | **Your** versionless cloud key, `vl_<keyId>_<secret>`. A secret, used only as the ingest bearer token. | `createVersionless({ apiKey })` |
+| owning account | The team resolved from the API key. The secret never reaches storage. | Ingest/store side |
+| `consumerKey` | The **API consumer's** key — read from `x-api-key` or the `apiKey` resolver's `Authorization` bearer — what the dashboard groups clients by. Store consumer key *ids*, never secret values. | Per event |
+
+## What gets recorded
+
+One OpenTelemetry event per request. Internally, `TelemetryEvent` is mapped to
+an OTLP `LogRecord`; its fields become `versionless.*` and HTTP semantic
+attributes:
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `ts` | number | Unix millis when the request finished. |
+| `method` | string | HTTP method; `"TRPC"` for procedure calls. |
+| `route` | string | Canonical pattern (`"GET /users/:*"`, `"trpc:demo.userList"`) — never a concrete path. |
+| `adapter` | string | `"elysia"` \| `"hono"` \| `"express"` \| `"trpc"`. |
+| `version` | string | Effective (normalized) version served. |
+| `requestedVersion?` | string | Raw pin the client sent — only present when it differed from the effective version. |
+| `consumerKey?` | string | The API consumer's key id. |
+| `latencyMs` | number | Request latency. |
+| `transformCount` | number | How many transforms this request ran (drift depth). |
+| `status` | number | Response status code. |
+
+Bodies are **never** part of the event type — there is nothing to leak.
+Emission is fire-and-forget in a microtask, off the request path; a sink that
+throws is disabled from erroring again and reported once via `onSinkError` — a
+sink error can never fail a request.
+
+## Sampled traces
+
+With an `apiKey`, the SDK also captures **sampled request traces** for the
+platform's Traces view — separate from request-log telemetry and sampled
+independently of the `sample` hook. Every sampled exchange ships its
+versionless span tree as a standard OTLP `ExportTraceServiceRequest`
+(exchange root, resolution, each transform, with timings and change labels)
+to `/v1/traces`:
+
+```ts
+createVersionless({
+  apiKey: process.env.VERSIONLESS_API_KEY,
+  project: "billing-api",
+  // defaults: on, 10% head sampling
+  traces: {
+    sample: 0.05,                                  // SDK-set sampling rate
+    filter: (attrs) =>                             // pre-sampling veto
+      attrs["versionless.path"] !== "/health",
+    // url: "https://telemetry.internal/v1/traces" // self-host override
+  },
+  // traces: false                                 // turn capture off
+});
+```
+
+The same privacy line holds: only spans **core itself creates** are captured
+— never spans from your own code, and never bodies, headers, or concrete
+response data. Span attributes are the versioning metadata documented on the
+[OpenTelemetry page](/docs/otel#attributes). Sampling is head-based and
+per-exchange, so a captured trace is always complete. Traces buffer and ship
+with the same batching/breaker behavior as request logs. Collector-managed
+traces and logs are both retained for 180 days.
+
+Trace capture works with or without an OTel setup: when you also pass
+`tracing: otelTracing()`, both backends observe the same spans — OTel gets
+every request into *your* observability stack, the platform gets the sampled
+subset.
+
+## How the HTTP sink behaves under stress
+
+`httpOtlpLogsSink` (attached automatically by `apiKey`, or manually with
+custom options) is built to be forgettable:
+
+- **Batching.** Request logs buffer in memory and post every 5s (`flushIntervalMs`),
+  up to 500 per batch (`maxBatchSize`). The flush timer is `unref`ed — it
+  never keeps your process alive.
+- **Ring buffer.** The buffer caps at 10,000 records (`maxBuffered`); overflow
+  drops the **oldest** records first. Failed batches are re-buffered under the
+  same rule.
+- **Circuit breaker.** Three consecutive failed sends open the breaker for
+  30s — no hammering a down ingest endpoint — then delivery resumes.
+- **Serverless.** Under `VERCEL` the sink runs in immediate mode (no timer)
+  and adapters call `flush()` post-response so request logs survive the function
+  freezing.
+
+## Custom sinks
+
+A sink is three methods, one required:
+
+```ts
+import type { TelemetryEvent, TelemetrySink } from "@versionless/core";
+
+const mySink: TelemetrySink = {
+  record(event: TelemetryEvent) {
+    // Must be synchronous, non-blocking, and never throw.
+    myBuffer.push(event);
+  },
+  async flush() { /* drain buffers; called on shutdown and per-response in serverless */ },
+  async close() { /* release resources */ },
+};
+
+v.telemetry.use(mySink);
+```
+
+`v.telemetry.emit(event)` and `v.telemetry.flush()` are available for manual
+control. Multiple sinks fan out from one emission.
+
+### ClickHouse storage
+
+The hosted and local stacks use the OpenTelemetry Collector's ClickHouse
+exporter directly. It owns protobuf/JSON decoding, gzip, OTLP/gRPC, queues,
+batching, retries, and the standard `otel_logs` and `otel_traces` schemas.
+Versionless tenant and project IDs are trusted OTel resource attributes;
+request dimensions remain ordinary `LogAttributes`, so unrelated application
+telemetry stays queryable without a separate record format.
+
+The dashboard queries these native tables through the authenticated
+`POST /v1/query` boundary. Dashboard SQL is managed by TanStack React Query in
+the web app; the API owns only authentication, project/team authorization,
+resource limits, and the restricted ClickHouse connection. The same boundary
+is available through `versionless query` for ad hoc project analysis.
+
+## Sampling
+
+```ts
+createVersionless({
+  // ...
+  sample: (event) => event.route !== "GET /health",
+});
+```
+
+The hook runs once, before fan-out to sinks; return `false` to drop. Use it
+for noise filtering or rate-based sampling — the demo server drops its own
+ingest endpoint's request logs (no self-ingestion loops) and applies a deterministic
+rate on `event.ts`.
+
+## The dashboard
+
+The hosted dashboard turns the Versionless request-log stream into three answers: **adoption**
+(requests per version per day — who's still on what), **sunset blockers** (the
+exact consumer keys and routes with traffic on versions at or below a
+candidate — an empty list is your green light), and **drift** (average/p95
+transform depth per endpoint — your force-migration shortlist).
+
+Those analytics intentionally select records whose OTel `eventName` is
+`versionless.request`; unrelated application logs must not change adoption
+counts. The **Telemetry** page is the unfiltered receiver view: it shows every
+OTLP log and span for the selected project, including service and
+instrumentation scope, severity or duration, trace/span IDs, body, errors, and
+attributes.
+
+### Projects, sign-in, and API keys
+
+Every insights view requires signing in; signed-out visitors are redirected to
+the hosted sign-in page. Telemetry is scoped to a named **project** under a
+team/account you're a member of. The project switcher groups projects by
+account, and each query verifies account membership before reading traffic.
+
+The **API keys** page mints account keys (the description/expiry are yours to
+choose; the full key is shown exactly once, on creation). Pass one as `apiKey`
+alongside `project` in `createVersionless`. On first ingest the key is bound to
+that project, so a key cannot later write into a sibling project. Revoking it
+on the dashboard stops new gateway authorization within a minute. Creating
+and revoking keys requires the account's admin role; members can view
+insights but not manage keys.
+
+Local development without an account still works: keys of the form
+`vl_<id>_<secret>` listed in `VERSIONLESS_INGEST_KEYS` are accepted by the
+authorization boundary (the demo server dogfoods this path), and the
+seed script can backfill demo traffic under your account and project with
+`SEED_TEAM_ID=<team-id> SEED_PROJECT_NAME=my-api bun run seed`.

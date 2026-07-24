@@ -1,0 +1,196 @@
+---
+title: Defining Changes
+description: Changes are reversible transforms between adjacent API versions — handlers only ever speak the latest shape.
+---
+
+## The rule
+
+Your route handlers are written against **one** shape: the current one. When you
+break the wire contract, you don't fork the handler — you register a **change**
+that converts old requests up and new responses down. This is the real change
+from the demo API, where `user.name` was split into `firstName`/`lastName`:
+
+```ts
+// changes/2026-05-14-split-user-name.ts
+import type { User, UserCreate } from "../db/schema";
+import { v } from "../versionless";
+
+/**
+ * Old wire shapes are DERIVED from the current ones — never redefined.
+ * One parent source feeds current types; changes describe deltas with Omit/&.
+ */
+export type UserV1 = Omit<User, "firstName" | "lastName"> & { name: string };
+export type UserCreateV1 = Omit<UserCreate, "firstName" | "lastName"> & { name: string };
+
+function mergeName({ firstName, lastName, ...rest }: User): UserV1 {
+  return { ...rest, name: `${firstName} ${lastName}`.trim() };
+}
+
+function splitName({ name, ...rest }: UserCreateV1): UserCreate {
+  const [firstName, ...restName] = name.split(" ");
+  return { ...rest, firstName: firstName ?? "", lastName: restName.join(" ") };
+}
+
+export default v.change("2026-05-14", {
+  describe: "user.name split into firstName/lastName",
+  routes: ["GET /users", "GET /users/:id", "POST /users"],
+  procedures: ["demo.userList", "demo.userCreate"],
+
+  request: {
+    up: (body: UserCreateV1): UserCreate => splitName(body),
+  },
+  response: {
+    down: (body: User | User[]): UserV1 | UserV1[] =>
+      Array.isArray(body) ? body.map(mergeName) : mergeName(body),
+  },
+
+  // Declares the surface diff this change covers so `versionless check` can
+  // map it to breaking changes detected in CI.
+  schema: (s) =>
+    s.on("User", { removed: ["name"], added: ["firstName", "lastName"] }),
+});
+```
+
+A request pinned to an old version flows `up()` through every change newer than
+its pin before the handler sees it; the handler's response flows `down()`
+through the same changes in reverse. A client pinned **at** a version already
+speaks that version's shape — its own change doesn't apply to it.
+
+Annotate both sides of every transform (`(body: UserCreateV1): UserCreate`).
+The type layer derives [per-version SDK types](/docs/client/client-types) from
+exactly these annotations.
+
+## Everything a change can declare
+
+| Field | What it does |
+| --- | --- |
+| `describe` | Required prose; feeds the changelog and dedupes hot-reload re-registration. |
+| `routes` | HTTP routes the transforms apply to (`"GET /users/:id"`). Param names normalize away — `"GET /users/:id"` and `"GET /users/:userId"` index the same route. |
+| `procedures` | tRPC procedure paths (`"demo.userList"`); keyed as `trpc:demo.userList` internally. |
+| `request.up` | Old wire shape → current shape, applied to request bodies (and tRPC inputs). |
+| `response.down` | Current shape → old wire shape, applied to success responses (and tRPC outputs). |
+| `error.down` | Error bodies change shape too — same pipeline, applied to responses with status ≥ 400. |
+| `input.up` / `output.down` | tRPC-flavored aliases for `request.up` / `response.down`; normalized internally, use whichever reads better. |
+| `rewrite` | Route move: `{ from: "GET /orgs/:id", to: "GET /teams/:id" }` — see [Rewrites & sunsets](/docs/concepts/rewrites-and-sunsets). |
+| `lossy` | The down-conversion loses data; `check` warns instead of failing. |
+| `stream: "passthrough"` | Streaming/SSE routes skip body transforms entirely. |
+| `schema` | Coverage declaration for the [CI checker](/docs/cli). |
+| `examples` | Wire-shape fixtures for [`versionless verify`](/docs/cli#verifying-transforms-with-fixtures): `up(old)` must equal `current`, `down(current)` must equal `old`, and (unless `lossy`) transforms must preserve unknown fields. |
+| `wire` | Phantom wire types the type layer prefers over inference — an [escape hatch](/docs/client/client-types#the-escape-hatch-wire) when annotations are impractical. |
+
+Either transform side is optional — a response-only change declares just
+`response.down`; a declaration-only change (like a pure rewrite) declares
+neither.
+
+## Async and lossy downs
+
+Sometimes a `down()` needs data the new response no longer carries. Transforms
+may be async, and receive a context as their second argument:
+`{ version, route, ctx }`, where `ctx` is the adapter's app context (Elysia
+context, Express `req`, tRPC context):
+
+```ts
+export default v.change("2026-03-01", {
+  describe: "removed embedded org from user payloads",
+  routes: ["GET /users/:id"],
+  lossy: true,
+  response: {
+    down: async (body: UserWithoutOrg, ctx): Promise<UserWithOrg> => {
+      const org = await db.orgs.findFor(body.id);
+      return { ...body, org };
+    },
+  },
+});
+```
+
+Mark a change `lossy: true` when the old shape cannot be fully reconstructed.
+`versionless check` downgrades the coverage failure to a warning (restore the
+failure with `--strict-lossy`), and the changelog flags it.
+
+A transform that throws is wrapped in a `TransformError` carrying the change
+version, route, and direction — you'll see exactly which hop of which chain
+failed, not a bare stack trace.
+
+## Streaming routes
+
+Body transforms only make sense for buffered JSON. If a changed route streams
+(SSE, chunked JSON), opt it out explicitly:
+
+```ts
+v.change("2026-06-01", {
+  describe: "event stream reshaped; old clients keep the raw stream",
+  routes: ["GET /events"],
+  stream: "passthrough",
+});
+```
+
+When any change on the compiled path declares `stream: "passthrough"`, the
+whole pipeline for that route skips `up`/`down` entirely — headers, sunsets,
+and telemetry still apply.
+
+## Registering, ordering, sealing
+
+Change files export the result of `v.change(...)`. Collect them once, in
+ascending version order:
+
+```ts
+import orgsToTeams from "./changes/2025-06-01-orgs-to-teams";
+import splitUserName from "./changes/2026-05-14-split-user-name";
+
+export const api = v.register([orgsToTeams, splitUserName] as const);
+```
+
+The rules the registry enforces:
+
+- **`v.change()` registers immediately** — `register()` doesn't add anything;
+  it validates the tuple order and attaches the phantom type carrier that
+  [`ClientTypes`](/docs/client/client-types) reads. A descending tuple logs a
+  warning because the type derivation depends on ascending order.
+- **A change can't postdate `current`.** Registering `v.change("2026-08-01", ...)`
+  while `current` is `2026-07-21` throws a `RegistrationError`.
+- **The registry seals on the first request.** The first `openExchange` call
+  (i.e. the first request an adapter serves) freezes the set of changes,
+  jumps, and sunsets, and builds the release-version index. Registering after
+  that throws: *"Cannot register ... after the registry is sealed"*. Register
+  everything at module load, before traffic.
+- **Hot reload is safe.** Re-importing a change file under `bun --hot`
+  re-invokes `v.change()` with the same version + `describe`; the registry
+  detects the duplicate and returns the already-registered instance.
+
+## Testing changes
+
+Changes are plain data — `spec.request.up` and `spec.response.down` are just
+functions, so test them directly without booting a server. Assert the
+round-trip: an old-shape body upped and then downed must come back intact.
+
+```ts
+// changes/2026-05-14-split-user-name.test.ts
+import { describe, expect, test } from "bun:test";
+import splitUserName from "./2026-05-14-split-user-name";
+
+const ctx = { version: "2025-06-01", route: "GET /users/:id" };
+
+describe("2026-05-14 split-user-name", () => {
+  test("up converts the old create shape to the current one", async () => {
+    const upped = await splitUserName.spec.request.up(
+      { name: "Ada Lovelace", email: "ada@example.com" },
+      ctx,
+    );
+    expect(upped).toEqual({
+      firstName: "Ada",
+      lastName: "Lovelace",
+      email: "ada@example.com",
+    });
+  });
+
+  test("up/down round-trip preserves the old wire shape", async () => {
+    const current = { id: "u_1", firstName: "Ada", lastName: "Lovelace", email: "ada@example.com" };
+    const downed = await splitUserName.spec.response.down(current, ctx);
+    expect(downed).toEqual({ id: "u_1", name: "Ada Lovelace", email: "ada@example.com" });
+  });
+});
+```
+
+For end-to-end coverage, the [typed client SDK](/docs/client/typed-sdk) can
+run against your app in-process (`fetch: (req) => app.handle(req)`) with a
+pinned version — full loop, no port.

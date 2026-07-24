@@ -1,0 +1,13 @@
+{
+  "pages": [
+    "index",
+    "quickstart",
+    "concepts",
+    "adapters",
+    "cli",
+    "client",
+    "telemetry",
+    "otel",
+    "for-agents"
+  ]
+}

@@ -1,0 +1,32 @@
+import { createVersionless, rateSample } from "@versionless/core";
+import { env } from "@versionless/env/demo";
+
+export const CURRENT_VERSION = "2026-07-21";
+
+/**
+ * The demo's versionless instance. The demo app dogfoods the full opt-in
+ * telemetry loop: its apiKey is a Hexclave team API key for the demo team,
+ * pointed at the versionless cloud OTLP gateway, so real button clicks show
+ * up on the demo team's dashboard in apps/web.
+ */
+export const v = createVersionless({
+  project: "versionless demo API",
+  scheme: "date",
+  current: CURRENT_VERSION,
+  resolve: [{ header: "x-api-version" }, { default: "current" }],
+  // Opt-in cloud telemetry. Without a key, zero network calls.
+  apiKey: env.DEMO_VERSIONLESS_API_KEY ?? env.VERSIONLESS_API_KEY,
+  otlpLogsUrl: env.VERSIONLESS_OTLP_LOGS_URL,
+  // Cheap deterministic sampling on the event timestamp.
+  sample: rateSample(env.TELEMETRY_SAMPLE_RATE),
+  // Cloud trace capture dogfoods too (head sampling to /v1/traces, derived
+  // from otlpLogsUrl).
+  traces: {},
+});
+
+// The floor version predates every change; it only exists as a pin target and
+// sunset anchor so the dashboard has a real "can I sunset this?" story.
+v.sunset("2025-01-01", {
+  after: "2026-12-31",
+  message: "API versions from 2025-01-01 and earlier sunset on 2026-12-31.",
+});

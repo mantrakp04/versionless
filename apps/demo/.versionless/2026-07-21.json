@@ -1,0 +1,226 @@
+{
+  "endpoints": {
+    "GET /teams": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/teams",
+      "query": null,
+      "responses": {
+        "200": {
+          "items": {
+            "kind": "ref",
+            "name": "Team"
+          },
+          "kind": "array"
+        }
+      },
+      "transport": "http"
+    },
+    "GET /teams/:id": {
+      "body": null,
+      "method": "GET",
+      "params": {
+        "fields": {
+          "id": {
+            "type": {
+              "kind": "string"
+            }
+          }
+        },
+        "kind": "object",
+        "open": true
+      },
+      "path": "/teams/:id",
+      "query": null,
+      "responses": {
+        "200": {
+          "kind": "ref",
+          "name": "Team"
+        }
+      },
+      "transport": "http"
+    },
+    "GET /users": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/users",
+      "query": null,
+      "responses": {
+        "200": {
+          "items": {
+            "kind": "ref",
+            "name": "User"
+          },
+          "kind": "array"
+        }
+      },
+      "transport": "http"
+    },
+    "GET /users/:id": {
+      "body": null,
+      "method": "GET",
+      "params": {
+        "fields": {
+          "id": {
+            "type": {
+              "kind": "string"
+            }
+          }
+        },
+        "kind": "object",
+        "open": true
+      },
+      "path": "/users/:id",
+      "query": null,
+      "responses": {
+        "200": {
+          "kind": "ref",
+          "name": "User"
+        }
+      },
+      "transport": "http"
+    },
+    "POST /users": {
+      "body": {
+        "fields": {
+          "email": {
+            "type": {
+              "kind": "string"
+            }
+          },
+          "firstName": {
+            "type": {
+              "kind": "string"
+            }
+          },
+          "lastName": {
+            "type": {
+              "kind": "string"
+            }
+          }
+        },
+        "kind": "object",
+        "open": true
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/users",
+      "query": null,
+      "responses": {
+        "200": {
+          "kind": "ref",
+          "name": "User"
+        }
+      },
+      "transport": "http"
+    },
+    "trpc:demo.userCreate": {
+      "input": {
+        "fields": {
+          "email": {
+            "type": {
+              "kind": "string"
+            }
+          },
+          "firstName": {
+            "type": {
+              "kind": "string"
+            }
+          },
+          "lastName": {
+            "type": {
+              "kind": "string"
+            }
+          }
+        },
+        "kind": "object",
+        "open": true
+      },
+      "mount": "/rpc",
+      "output": {
+        "kind": "ref",
+        "name": "User"
+      },
+      "procedure": "demo.userCreate",
+      "procedureType": "query",
+      "transport": "trpc"
+    },
+    "trpc:demo.userList": {
+      "input": null,
+      "mount": "/rpc",
+      "output": {
+        "items": {
+          "kind": "ref",
+          "name": "User"
+        },
+        "kind": "array"
+      },
+      "procedure": "demo.userList",
+      "procedureType": "query",
+      "transport": "trpc"
+    }
+  },
+  "formatVersion": 1,
+  "integrity": {
+    "algo": "fnv1a-32",
+    "hash": "a9f46211"
+  },
+  "models": {
+    "Team": {
+      "fields": {
+        "id": {
+          "type": {
+            "kind": "string"
+          }
+        },
+        "memberIds": {
+          "type": {
+            "items": {
+              "kind": "string"
+            },
+            "kind": "array"
+          }
+        },
+        "name": {
+          "type": {
+            "kind": "string"
+          }
+        }
+      },
+      "kind": "object"
+    },
+    "User": {
+      "fields": {
+        "email": {
+          "constraints": {
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "type": {
+            "format": "email",
+            "kind": "string"
+          }
+        },
+        "firstName": {
+          "type": {
+            "kind": "string"
+          }
+        },
+        "id": {
+          "type": {
+            "kind": "string"
+          }
+        },
+        "lastName": {
+          "type": {
+            "kind": "string"
+          }
+        }
+      },
+      "kind": "object"
+    }
+  },
+  "tool": "@versionless/cli@0.0.1",
+  "version": "2026-07-21"
+}

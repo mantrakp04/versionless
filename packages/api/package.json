@@ -9,13 +9,18 @@
       "default": "./src/*.ts"
     }
   },
-  "scripts": {},
+  "scripts": {
+    "test": "SKIP_ENV_VALIDATION=1 bun test"
+  },
   "dependencies": {
-    "@trpc/client": "catalog:",
+    "@clickhouse/client-web": "catalog:",
+    "@hexclave/js": "^1.0.52",
     "@trpc/server": "catalog:",
+    "@versionless/adapter-trpc": "workspace:*",
+    "@versionless/core": "workspace:*",
     "@versionless/db": "workspace:*",
     "@versionless/env": "workspace:*",
-    "dotenv": "catalog:",
+    "drizzle-orm": "^0.45.2",
     "zod": "catalog:"
   },
   "devDependencies": {

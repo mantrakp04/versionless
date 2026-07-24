@@ -1,0 +1,84 @@
+---
+title: Elysia
+description: Global plugin wiring — up-transforms before schema validation, down-transforms after, alias routes for rewrites.
+---
+
+## Wiring
+
+Mount the plugin before your routes; call `versionlessRewrites` after them
+(only needed when you have [`rewrite:` changes](/docs/concepts/rewrites-and-sunsets)):
+
+```ts
+import { Elysia } from "elysia";
+import { versionless, versionlessRewrites } from "@versionless/adapter-elysia";
+import { v } from "./versionless";
+import { userRoutes } from "./routes/users";
+import { teamRoutes } from "./routes/teams";
+
+export const app = new Elysia()
+  .use(versionless(v))
+  .use(userRoutes)       // handlers written against the current shape
+  .use(teamRoutes);
+
+versionlessRewrites(v, app);   // alias routes for `rewrite:` changes
+```
+
+This is exactly how the repo's cloud server (apps/server) wires the plugin —
+the app is exported without `.listen()` so tests and the CLI's surface
+extraction can import it side-effect-free.
+
+## Where the hooks run, and why it matters
+
+The plugin registers five global hooks:
+
+| Hook | What happens |
+| --- | --- |
+| `derive` | Opens the exchange, sets sunset headers, short-circuits `410 Gone`. |
+| `onTransform` | `up()` on JSON request bodies — **before** validation. |
+| `mapResponse` | `down()` / `downError()` on the response — **after** validation. |
+| `onError` | Maps invalid versions to 400; down-maps thrown `status(code, body)` errors. |
+| `onAfterResponse` | Emits the telemetry event; flushes on serverless. |
+
+Two timing consequences worth internalizing:
+
+- **Request schemas validate the current shape.** `up()` runs in the
+  `transform` phase, before Elysia validates `body`. Your
+  `t.Object({ firstName, lastName })` (or zod schema) validates what the
+  handler will actually receive — even when the old client sent `{ name }`.
+- **Response schemas validate the current shape too.** The down-transform runs
+  in `mapResponse`, *after* response validation. Declare
+  `response: userSchema` against the current shape; the pinned client's wire
+  shape is produced after the schema has passed. (This is also why the checker
+  can trust your response schemas — they describe what handlers really
+  return.)
+
+Elysia 1.4 exposes the matched route pattern as `ctx.route`, so core's own
+matcher never runs — route detection is exact.
+
+## Bodies
+
+Only `application/json` bodies under 1MB are transformed, in both directions.
+Buffered `Response` objects with a JSON content-type are re-written (status
+and headers preserved); `ReadableStream` responses and non-JSON payloads pass
+through untouched. Error responses (status ≥ 400, including thrown
+`status(...)` values) go through `error.down` chains instead of
+`response.down`.
+
+## Rewrites
+
+An Elysia plugin hook never runs for unrouted paths — they 404 before hooks
+fire. `versionlessRewrites(v, app)` therefore registers a real alias route for
+every rewrite's old path (e.g. `GET /orgs/:id`):
+
+- Old-pinned client → the alias re-dispatches through `app.handle` to the
+  rewritten target, headers and body preserved.
+- Current client → `404` (the old path no longer exists for them).
+
+## Sunsets and errors
+
+- Sunset-scheduled versions get `Deprecation` + `Sunset` headers on every
+  response; past the cutoff, the plugin returns
+  `410 { "error": "api_version_sunset", ... }` from `derive` — handlers never
+  run.
+- An invalid `x-api-version` returns
+  `400 { "error": "invalid_api_version", "message": ... }`.

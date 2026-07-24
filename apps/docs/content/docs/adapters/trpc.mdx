@@ -1,0 +1,112 @@
+---
+title: tRPC
+description: Procedure-keyed changes with four touch points — context, middleware, error formatter, responseMeta.
+---
+
+tRPC is procedure-keyed instead of route-keyed: changes target
+`procedures: ["demo.userList"]` and are indexed as `trpc:demo.userList`. The
+`input`/`output` aliases read naturally next to tRPC's own vocabulary:
+
+```ts
+v.change("2026-05-14", {
+  describe: "user.name split into firstName/lastName",
+  routes: ["GET /users", "GET /users/:id", "POST /users"],
+  procedures: ["demo.userList", "demo.userCreate"],   // same change, both transports
+  request:  { up:   (body: UserCreateV1): UserCreate => splitName(body) },
+  response: { down: (body: User | User[]): UserV1 | UserV1[] => ... },
+});
+```
+
+`input: { up }` / `output: { down }` are exact aliases for
+`request.up` / `response.down` — use whichever reads better.
+
+## Full wiring
+
+HTTP headers aren't visible inside procedure middleware, and one HTTP request
+may batch several procedure calls — so the wiring has four touch points. This
+is how the repo's cloud server (apps/server) wires it:
+
+```ts
+// context.ts — 1. stash the resolve inputs on the tRPC context
+import { versionlessContext, type VersionlessContext } from "@versionless/adapter-trpc";
+import { v } from "./versionless";
+
+export async function createContext({ req }: { req: Request }) {
+  return {
+    // ...your auth/session fields...
+    ...versionlessContext(v, { req }),
+  };
+}
+export type Context = Awaited<ReturnType<typeof createContext>>;
+```
+
+```ts
+// trpc.ts — 2. error formatter, 3. the procedure middleware
+import { initTRPC } from "@trpc/server";
+import { versionlessErrorFormatter, versionlessMiddleware } from "@versionless/adapter-trpc";
+import type { Context } from "./context";
+import { v } from "./versionless";
+
+export const t = initTRPC.context<Context>().create({
+  errorFormatter: versionlessErrorFormatter(v),   // error shapes are versioned too
+});
+
+export const router = t.router;
+export const publicProcedure = t.procedure;
+
+// Attach BEFORE .input(...) so up() runs pre-validation.
+export const versionedProcedure = publicProcedure.use(versionlessMiddleware());
+```
+
+```ts
+// routers/demo.ts — procedures speak the current shape only
+import { z } from "zod";
+import { userCreateSchema, userSchema } from "./schema";
+
+export const demoRouter = router({
+  userList: versionedProcedure.output(z.array(userSchema)).query(() => users),
+  userCreate: versionedProcedure
+    .input(userCreateSchema)
+    .output(userSchema)
+    .mutation(({ input }) => addUser(input)),
+});
+```
+
+```ts
+// server — 4. sunset headers on the HTTP envelope
+import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
+import { versionlessResponseMeta } from "@versionless/adapter-trpc";
+
+fetchRequestHandler({
+  endpoint: "/trpc",
+  router: appRouter,
+  req: request,
+  createContext,
+  responseMeta: versionlessResponseMeta(v),
+});
+```
+
+## What each piece does
+
+| Helper | Where | Job |
+| --- | --- | --- |
+| `versionlessContext(v, { req })` | `createContext` | Stashes the instance + a header getter on `ctx.versionless`. The middleware opens the per-procedure exchange itself, because a batched request needs one exchange *per procedure*, not per HTTP request. |
+| `versionlessMiddleware()` | `t.procedure.use(...)` | Opens the exchange for `opts.path`, ups the raw input before `.input()` validation (by overriding `getRawInput`, mirroring tRPC's own input middleware mechanism), downs the output, emits telemetry. |
+| `versionlessErrorFormatter(v)` | `initTRPC.create` | Applies registered `error.down` transforms to the error shape for old clients. |
+| `versionlessResponseMeta(v)` | `fetchRequestHandler` | Adds RFC 9745 `Deprecation` / RFC 8594 `Sunset` headers to the HTTP envelope, without compiling any transform pipeline. |
+
+## Failure modes and edge cases
+
+- **Missing context stash.** If the middleware runs without
+  `versionlessContext` in `createContext`, it warns once and serves the
+  current shape — versioning silently off, requests still work.
+- **Sunset past cutoff** surfaces as `PRECONDITION_FAILED` (tRPC has no 410
+  code), with the structured
+  `{ error: "api_version_sunset", version, sunset, message }` body in `cause`.
+- **Invalid version strings** throw `BAD_REQUEST` with the parse message.
+- **Sync-only surfaces.** tRPC v11 error formatters and `responseMeta` are
+  synchronous. If your resolve chain has an async `apiKey` resolver, or an
+  `error.down` transform is async, those two helpers pass the shape/headers
+  through unchanged — the middleware (which can await) is unaffected.
+- **Rewrites don't apply to tRPC.** Express a procedure rename as an alias
+  procedure that calls the same resolver.

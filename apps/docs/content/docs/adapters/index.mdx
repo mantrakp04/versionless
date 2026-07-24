@@ -1,0 +1,69 @@
+---
+title: Adapters
+description: Elysia, Hono, Express, Next.js, TanStack Start, tRPC, and oRPC adapters — thin wiring over one shared core contract.
+---
+
+Every adapter does the same job: open an **exchange** for the request, apply
+what it says, report back. The core owns everything else — change registry,
+pipeline compilation, version resolution, sunsets, telemetry — which is why
+each adapter is a couple hundred lines of framework-specific glue.
+
+## The shared contract
+
+Per request, in order:
+
+1. **Resolve** — the adapter hands core the method, path, matched route (when
+   the framework exposes one), and a header getter; core resolves the
+   effective version and compiles (or cache-hits) the transform pipeline.
+2. **Gate** — sunset headers go on the response; a version past its cutoff is
+   answered `410 Gone` right here, and a rewrite target re-dispatches.
+3. **`up(body)`** — the request body is converted to the current shape before
+   validation and the handler.
+4. **Handler** — your code runs against the current shape only.
+5. **`down(body)`** — the response is converted back to the pinned client's
+   shape (`downError` for status ≥ 400).
+6. **`finish()`** — exactly one telemetry event is emitted, off the request
+   path.
+
+Shared behavior across all HTTP adapters:
+
+- **JSON only, ≤ 1MB.** Only `application/json` bodies under 1MB are
+  transformed; multipart, binary, form-data, streams, and
+  `stream: "passthrough"` routes pass through untouched.
+- **Identity is free.** When no changes touch the route, or the client is at
+  `current`, the pipeline is empty and all body work is skipped.
+- **Sunsets are automatic.** Scheduled versions get `Deprecation` + `Sunset`
+  headers on every response; past the cutoff the adapter answers `410 Gone`
+  itself. See [Rewrites & sunsets](/docs/concepts/rewrites-and-sunsets).
+- **Invalid pins fail fast.** A malformed version string returns
+  `400 { "error": "invalid_api_version" }` before any handler runs.
+- **Telemetry is opt-in.** One event per request when a sink is attached;
+  without an `apiKey` or a manually attached sink, versionless makes **zero
+  network calls**. A sink error can never fail a request.
+
+## Pick your framework
+
+<Cards>
+  <Card title="Elysia" href="/docs/adapters/elysia" description="Global plugin; up-transforms run before schema validation, downs after." />
+  <Card title="Hono" href="/docs/adapters/hono" description="One middleware; reads the matched route, swaps request and response bodies." />
+  <Card title="Express" href="/docs/adapters/express" description="Classic middleware; ordering matters — express.json() first." />
+  <Card title="Next.js" href="/docs/adapters/nextjs" description="Wraps App Router route handlers per file; alias route files for rewrites." />
+  <Card title="TanStack Start" href="/docs/adapters/tanstack-start" description="Wraps server route handlers per file; alias route files for rewrites." />
+  <Card title="tRPC" href="/docs/adapters/trpc" description="Procedure-keyed changes; context + middleware + formatter + responseMeta." />
+  <Card title="oRPC" href="/docs/adapters/orpc" description="Procedure-keyed changes; context + client interceptor + adapter interceptor." />
+</Cards>
+
+## Route matching
+
+Adapters pass the framework's own matched route pattern when they can (Elysia
+`ctx.route`, Hono `matchedRoutes`, the `route` option of the Next.js and
+TanStack Start wrappers), so core's matcher never runs. Express middleware
+can't see the matched route, so core falls back to matching the raw path
+against the (small) set of routes that actually have changes. tRPC and oRPC
+skip paths entirely — changes are keyed by procedure (`trpc:demo.userList`).
+
+## Serverless
+
+On Vercel (`process.env.VERCEL`), the batched telemetry sink runs in immediate
+mode and every adapter calls `exchange.flush()` after the response, so events
+survive the function freezing.

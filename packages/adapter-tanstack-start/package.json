@@ -1,0 +1,21 @@
+{
+  "name": "@versionless/adapter-tanstack-start",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@versionless/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "@versionless/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

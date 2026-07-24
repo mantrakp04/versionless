@@ -1,0 +1,71 @@
+---
+title: Next.js
+description: Wrap App Router route handlers per file — up/down on the web Request/Response, alias route files for rewrites.
+---
+
+## Wiring
+
+```ts
+// app/users/[id]/route.ts
+import { versionless } from "@versionless/adapter-nextjs";
+import { v } from "@/versionless";
+
+export const { GET, PATCH } = versionless(v, {
+  GET: async (req, ctx) => {
+    const { id } = await ctx.params;
+    return Response.json({ id, firstName: "Ada", lastName: "Lovelace" });
+  },
+  PATCH: async (req, ctx) => { /* handlers speak the current shape */ },
+}, { route: "/users/[id]" });
+```
+
+There is no global hook in Next that can transform request bodies —
+`middleware.ts` runs on the edge before the body is readable — so the adapter
+wraps the handlers each route file exports.
+
+## How it works
+
+- **Route detection.** Pass the file's pattern via `route` (Next `[id]` /
+  `[...slug]` style or `:id` style both work) and core matches it directly.
+  Omit it and core falls back to matching the raw request path against the
+  set of changed routes, like the Express adapter.
+- **Request up.** The JSON body is read, upped, and handed to your handler as
+  a new `Request` — `req.json()` in the handler sees the current shape.
+- **Response down.** The handler's `Response` is rebuilt with the downed body
+  (status and headers preserved, `content-length` recomputed). Status ≥ 400
+  goes through `error.down` chains.
+- **Malformed JSON** despite a JSON content-type is passed through untouched,
+  so your handler surfaces its own parse error.
+
+Only `application/json` bodies under 1MB are transformed; everything else
+passes through.
+
+## Rewrites
+
+File routing means the old path needs its own route file. Create one that
+re-exports an alias:
+
+```ts
+// app/orgs/[id]/route.ts  (rewrite: "GET /orgs/:id" -> "GET /teams/:id")
+import { versionlessAlias } from "@versionless/adapter-nextjs";
+import { GET as teamsGET } from "../../teams/[id]/route";
+import { v } from "@/versionless";
+
+export const GET = versionlessAlias(v, teamsGET);
+```
+
+- Old-pinned client → forwarded to the target handler with the rewritten URL
+  (and method, if the rewrite changes it); the target opens its own exchange.
+- Current client → `404` — the old path no longer exists for them.
+
+v0 note: `ctx` is passed through as-is, so rewrites that rename path params
+need the target to read params from the URL.
+
+## Sunsets, errors, serverless
+
+- Sunset headers go on every response for scheduled versions; past the cutoff
+  the wrapper returns `410` with the structured body itself.
+- Invalid version strings return
+  `400 { "error": "invalid_api_version", "message": ... }`.
+- Under `VERCEL`, the telemetry flush is fired after `finish()` so events
+  survive the function freezing.

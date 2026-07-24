@@ -1,0 +1,22 @@
+{
+  "name": "@versionless/client",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@versionless/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "@versionless/config": "workspace:*",
+    "expect-type": "catalog:",
+    "typescript": "catalog:"
+  }
+}

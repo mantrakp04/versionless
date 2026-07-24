@@ -4,6 +4,7 @@ import { HexclaveProvider, HexclaveTheme } from "@hexclave/react";
 import { Suspense } from "react";
 import ReactDOM from "react-dom/client";
 
+import { ClientErrorState } from "./components/client-error-state";
 import Loader from "./components/loader";
 import { hexclaveClientApp } from "./hexclave/client";
 import { routeTree } from "./routeTree.gen";
@@ -13,6 +14,7 @@ const router = createRouter({
   routeTree,
   defaultPreload: "intent",
   scrollRestoration: true,
+  defaultErrorComponent: ClientErrorState,
   defaultPendingComponent: () => <Loader />,
   context: { trpc, queryClient },
   Wrap: function WrapComponent({ children }: { children: React.ReactNode }) {

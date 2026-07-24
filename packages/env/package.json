@@ -5,7 +5,9 @@
   "type": "module",
   "exports": {
     "./server": "./src/server.ts",
-    "./web": "./src/web.ts"
+    "./web": "./src/web.ts",
+    "./demo": "./src/demo.ts",
+    "./vercel": "./src/vercel.ts"
   },
   "dependencies": {
     "@t3-oss/env-core": "^0.13.11",

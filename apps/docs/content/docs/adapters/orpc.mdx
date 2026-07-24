@@ -1,0 +1,67 @@
+---
+title: oRPC
+description: Procedure-keyed changes via two interceptors — up/down around the decoded input and output, sunset headers at the adapter level.
+---
+
+## Wiring
+
+```ts
+import { RPCHandler } from "@orpc/server/fetch";
+import {
+  versionlessContext,
+  versionlessClientInterceptor,
+  versionlessAdapterInterceptor,
+} from "@versionless/adapter-orpc";
+import { v } from "./versionless";
+
+const handler = new RPCHandler(router, {
+  adapterInterceptors: [versionlessAdapterInterceptor(v)],  // sunset headers
+  clientInterceptors: [versionlessClientInterceptor()],     // up/down per procedure
+});
+
+// wherever you handle the request:
+const { matched, response } = await handler.handle(request, {
+  prefix: "/rpc",
+  context: { ...versionlessContext(v, { request }) },
+});
+```
+
+This is exactly how the repo's demo app (apps/demo) wires its oRPC surface.
+Changes are keyed by procedure, exactly like the tRPC adapter:
+
+```ts
+v.change("2026-03-01", {
+  describe: "user.create: name -> firstName/lastName",
+  procedures: ["user.create"],
+  input: { up: ... },
+  output: { down: ... },
+});
+```
+
+## How it works
+
+- **Context stash.** One HTTP request may batch several procedure calls, and
+  the exchange is procedure-keyed — so `versionlessContext` stashes the
+  instance + header getter on the context, and the client interceptor opens
+  the per-procedure exchange itself, where `path` is known. Pass `v` to
+  `versionlessClientInterceptor(v)` to override the stashed instance.
+- **`clientInterceptors`, not middleware.** oRPC middleware cannot replace
+  the input a handler receives. Client interceptors run after input decoding
+  and before output encoding — exactly where `up` and `down` belong, and
+  before `.input()` validation, so old-shape inputs pass current-shape
+  schemas.
+- **Errors.** A thrown `ORPCError` is rebuilt through `error.down` chains
+  (its `{ code, status, message, data }` shape is what your transforms see).
+  A version past its sunset cutoff throws `GONE` (410) with the structured
+  body as `data`; an invalid pin throws `BAD_REQUEST`.
+- **`adapterInterceptors` for sunset headers.** Root `interceptors` run
+  below oRPC's error-to-response conversion, so thrown errors would bypass
+  them — the adapter-level interceptor sees the final web `Response` on
+  every path and stamps `Sunset` / `Deprecation` onto it.
+
+## Telemetry
+
+One event per procedure call, with `route: "trpc:user.create"`-style keys
+(procedure-keyed routes share the `trpc:` namespace) and `adapter: "orpc"`.
+Under `VERCEL` the flush fires per call so events survive the function
+freezing.

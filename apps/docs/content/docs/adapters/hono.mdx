@@ -1,0 +1,61 @@
+---
+title: Hono
+description: One middleware registered before your routes — reads the matched route, swaps the raw request and response, alias routes for rewrites.
+---
+
+## Wiring
+
+```ts
+import { Hono } from "hono";
+import { versionless, versionlessRewrites } from "@versionless/adapter-hono";
+import { v } from "./versionless";
+
+const app = new Hono();
+app.use("*", versionless(v));       // before your routes
+app.get("/users/:id", handler);     // handlers speak the current shape
+app.post("/users", handler);
+
+versionlessRewrites(v, app);        // after routes — alias routes for `rewrite:` changes
+```
+
+## How it works
+
+- **Route detection.** Inside an `app.use("*")` middleware, `c.req.routePath`
+  is the middleware's own pattern (`/*`), not the handler's — so the adapter
+  reads `c.req.matchedRoutes` and takes the last non-wildcard pattern. When
+  none exists (404, or only catch-alls matched), core falls back to matching
+  the raw path against the set of changed routes.
+- **Request up.** The JSON body is parsed, upped, and written back by
+  replacing `c.req.raw` with a new `Request` — the same pattern Hono's own
+  `bodyLimit` middleware uses. The body cache is cleared so the handler's
+  `c.req.json()` sees the transformed body, not a stale cached one.
+- **Response down.** After `next()`, `c.res` is replaced with a new `Response`
+  carrying the downed body (status and headers preserved,
+  `content-length` recomputed). Status ≥ 400 goes through `error.down` chains.
+- **Malformed JSON** despite a JSON content-type is left untouched, so your
+  handler surfaces its own parse error instead of versionless masking it.
+
+Only `application/json` bodies under 1MB are transformed; everything else
+passes through. Rewrite-matched requests skip body work entirely — the inner
+re-dispatched request runs its own exchange.
+
+## Rewrites
+
+Hono routes before middleware can intervene on unrouted paths, so — like
+Elysia — rewrites need alias routes. `versionlessRewrites(v, app)` registers
+one per rewrite:
+
+- Old-pinned client → re-dispatched through `app.fetch` to the rewritten
+  target (method swapped if the rewrite changes it).
+- Current client → `c.notFound()`.
+
+Call it after all changes are registered and all routes are wired.
+
+## Sunsets, errors, serverless
+
+- Sunset headers go on every response for scheduled versions; past the cutoff
+  the middleware returns `410` with the structured body itself.
+- Invalid version strings return
+  `400 { "error": "invalid_api_version", "message": ... }`.
+- On Workers/Edge under `VERCEL`, the telemetry flush is handed to
+  `c.executionCtx.waitUntil`; elsewhere it settles as fire-and-forget.

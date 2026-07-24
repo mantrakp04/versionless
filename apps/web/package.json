@@ -8,28 +8,26 @@
     "build": "vite build",
     "serve": "vite preview",
     "start": "vite",
+    "test": "VITE_HEXCLAVE_PROJECT_ID=00000000-0000-4000-8000-000000000001 VITE_SERVER_URL=/api SKIP_ENV_VALIDATION=1 bun test",
     "check-types": "vite build && tsc --noEmit"
   },
   "dependencies": {
     "@hexclave/react": "^1.0.52",
-    "@hookform/resolvers": "^5.4.0",
     "@tailwindcss/vite": "^4.3.2",
     "@tanstack/react-query": "^5.101.2",
     "@tanstack/react-router": "^1.170.17",
+    "@tanstack/react-virtual": "^3.14.7",
     "@trpc/client": "catalog:",
-    "@trpc/server": "catalog:",
     "@trpc/tanstack-react-query": "^11.18.0",
     "@versionless/api": "workspace:*",
     "@versionless/env": "workspace:*",
     "@versionless/ui": "workspace:*",
-    "dotenv": "catalog:",
-    "evlog": "^2.22.0",
+    "demo": "workspace:*",
     "lucide-react": "catalog:",
     "next-themes": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "sonner": "catalog:",
-    "zod": "catalog:"
+    "sonner": "catalog:"
   },
   "devDependencies": {
     "@tanstack/react-query-devtools": "^5.101.2",
@@ -40,7 +38,6 @@
     "@types/react-dom": "catalog:",
     "@versionless/config": "workspace:*",
     "@vitejs/plugin-react": "^6.0.3",
-    "postcss": "^8.5.16",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "vite": "^8.1.3"

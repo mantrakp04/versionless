@@ -1,0 +1,61 @@
+---
+title: Express
+description: Classic middleware with one hard rule — express.json() first, versionless before your routes, compression after.
+---
+
+## Wiring
+
+Mount order matters:
+
+```ts
+import express from "express";
+import compression from "compression";
+import { versionless } from "@versionless/adapter-express";
+import { v } from "./versionless";
+
+const app = express();
+
+app.use(express.json());     // 1. body parser FIRST — the adapter transforms
+                             //    req.body, and express.json()'s default 1MB
+                             //    cap is the body-size rule here
+app.use(versionless(v));     // 2. versionless BEFORE routes, and LAST among
+                             //    body-touching middleware
+app.use(compression());      // 3. compression (and friends) AFTER
+app.get("/users/:id", handler);  // 4. routes — current shape only
+```
+
+If `express.json()` isn't mounted first, `req.body` is undefined and no
+request transform can run (responses still transform).
+
+## How it works
+
+- **Route detection.** Global middleware never sees `req.route`, so the
+  adapter omits `matchedRoute` and core matches the raw path against its
+  segment-compiled patterns — only for the (small) set of routes that actually
+  have changes. Everything else is identity.
+- **Request up.** `req.body` is replaced with the upped value — only for
+  parsed plain JSON objects/arrays (Buffers and class instances pass through).
+- **Response down.** `res.json` and `res.send` are patched per-request (bound
+  originals live in `res.locals.versionlessOriginals`, so the patch never
+  leaks across requests). Object payloads are downed —
+  `error.down` chains when `res.statusCode` ≥ 400 — then serialized; strings
+  and buffers pass straight through.
+- **Escape hatch.** The exchange is exposed as `res.locals.versionless` for
+  handlers that need the resolved version or transform access directly.
+
+## Rewrites
+
+No alias-route step here: the middleware runs before the router, so a rewrite
+just mutates `req.url` (query string preserved) and calls `next()` — the
+router re-matches against the new path. One v0 caveat: rewrites preserve the
+HTTP method; method-changing rewrites are ignored by this adapter.
+
+## Sunsets, errors, telemetry
+
+- Sunset headers are set on every response for scheduled versions; past the
+  cutoff the middleware responds `410` with the structured body before your
+  routes run.
+- Invalid version strings get
+  `400 { "error": "invalid_api_version", "message": ... }`.
+- The telemetry event fires on the response `finish` event; on `VERCEL` the
+  sink is flushed per-response.

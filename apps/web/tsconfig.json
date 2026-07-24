@@ -11,7 +11,11 @@
     "rootDirs": ["."],
     "paths": {
       "@/*": ["./src/*"],
-      "@versionless/ui/*": ["../../packages/ui/src/*"]
+      "@versionless/ui/*": ["../../packages/ui/src/*"],
+      "recharts": ["../../packages/ui/node_modules/recharts"],
+      "date-fns": ["../../packages/ui/node_modules/date-fns"],
+      "clsx": ["../../packages/ui/node_modules/clsx"],
+      "tailwind-merge": ["../../packages/ui/node_modules/tailwind-merge"]
     }
   }
 }

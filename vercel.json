@@ -6,7 +6,7 @@
       "root": "apps/web",
       "framework": "vite",
       "installCommand": "cd ../.. && bun install",
-      "buildCommand": "VITE_SERVER_URL=/api bun run build",
+      "buildCommand": "bun run build",
       "rewrites": [
         {
           "source": "/(.*)",
@@ -37,6 +37,11 @@
       "framework": "nextjs",
       "installCommand": "cd ../.. && bun install",
       "buildCommand": "bun run build"
+    },
+    "demo": {
+      "root": "apps/demo",
+      "installCommand": "cd ../.. && bun install",
+      "buildCommand": "bun run build"
     }
   },
   "rewrites": [
@@ -65,6 +70,12 @@
       }
     },
     {
+      "source": "/SKILL.md",
+      "destination": {
+        "service": "docs"
+      }
+    },
+    {
       "source": "/llms.txt",
       "destination": {
         "service": "docs"
@@ -72,6 +83,18 @@
     },
     {
       "source": "/llms-full.txt",
+      "destination": {
+        "service": "docs"
+      }
+    },
+    {
+      "source": "/robots.txt",
+      "destination": {
+        "service": "docs"
+      }
+    },
+    {
+      "source": "/sitemap.xml",
       "destination": {
         "service": "docs"
       }
@@ -92,6 +115,18 @@
       "source": "/api/(.*)",
       "destination": {
         "service": "server"
+      }
+    },
+    {
+      "source": "/demo",
+      "destination": {
+        "service": "demo"
+      }
+    },
+    {
+      "source": "/demo/(.*)",
+      "destination": {
+        "service": "demo"
       }
     },
     {

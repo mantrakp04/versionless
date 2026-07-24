@@ -1,0 +1,138 @@
+---
+title: Typed SDK
+description: "@versionless/client — a tiny fetch client whose request and response types follow the version it's pinned to, derived from the server's change chain."
+---
+
+`@versionless/client` is a zero-dependency fetch wrapper with one trick: you
+hand it your server's registered change chain as a *type*, pin a version, and
+every `request()` call is typed as the wire shapes **that version** actually
+speaks — no codegen, no OpenAPI step. The derivation is
+[`ClientTypes`](/docs/client/client-types); this page is the runtime client
+built on top of it.
+
+## Creating a client
+
+`createClient` is **curried**: the outer call takes the type parameters (the
+API type and the current-shape map), the inner call takes runtime options —
+so the pinned version is inferred from the options literal:
+
+```ts
+import { createClient } from "@versionless/client";
+import type { demoApi } from "@versionless/api/demo/versions";
+import type { Team, User } from "@versionless/db/schema/demo";
+
+type DemoApi = typeof demoApi;
+
+// Current shapes for routes the change chain doesn't touch (or to anchor the
+// current side) — derived from the db types, never handwritten.
+type Shapes = {
+  "GET /users/:id": { response: User };
+  "GET /teams/:id": { response: Team };
+};
+
+const client = createClient<DemoApi, Shapes>()({
+  baseUrl: "http://localhost:3000",
+  version: "2025-06-01",          // pinned — sent as x-api-version
+  apiKey: "key_sdk_dogfood",      // optional — sent as x-api-key
+});
+```
+
+The full options:
+
+| Option | What it does |
+| --- | --- |
+| `baseUrl` | Prefix for every request. |
+| `version` | Pin — sent as `x-api-version` on every request. Must be a [known version](/docs/client/client-types): a registered change version, `current`, or `"floor"`. |
+| `apiKey` | Consumer key — sent as `x-api-key` (what the telemetry dashboard groups by). |
+| `headers` | Extra headers merged into every request. |
+| `fetch` | Injectable transport — e.g. an in-process `app.handle` for tests. |
+
+## Making requests
+
+Routes are the same `"METHOD /path"` strings the server's changes use. Path
+params, query, and body are all typed per route:
+
+```ts
+// response typed as the 2025-06-01 wire shape:
+// { id: string; email: string; name: string } — not firstName/lastName
+const user = await client.request("GET /users/:id", { params: { id: "u_1" } });
+
+// body typed as the OLD create shape: { name, email } — firstName would error
+const created = await client.request("POST /users", {
+  body: { name: "Alan Turing", email: "alan@sdk.example.com" },
+});
+
+// query params are plain strings
+await client.request("GET /users", { query: { limit: "10" } });
+```
+
+- `params` is **required** (and typed with the exact param names) when the
+  route has `:params`; a missing param throws before any network call.
+- Routes with no applicable change fall through to the shape you supplied in
+  `Shapes` — `GET /teams/:id` above returns `Team`.
+- Values are JSON-encoded; the body sets `content-type: application/json`.
+
+## Version pinning, including "floor"
+
+The pin is a type-level and runtime contract at once: `version: "2025-06-01"`
+types every call as that version's wire shapes *and* sends
+`x-api-version: 2025-06-01` so the server applies the matching transforms.
+
+`version: "floor"` is the sentinel for "before the first change" — every
+transform in the chain applies, and the types are the oldest wire shapes. One
+runtime caveat: `"floor"` isn't a date, so **no `x-api-version` header is
+sent**. Pair it with server-side pinning (an `apiKey` resolver that returns a
+pre-first-change date) — otherwise the server's `default` resolver serves the
+current shape while your types say otherwise.
+
+Omitting `version` also sends no header: you get whatever the server's
+resolve chain decides (typically `current`).
+
+## Errors
+
+Non-2xx responses throw a `VersionlessClientError` carrying everything you
+need to handle it:
+
+```ts
+import { VersionlessClientError } from "@versionless/client";
+
+try {
+  await client.request("GET /users/:id", { params: { id: "nope" } });
+} catch (err) {
+  if (err instanceof VersionlessClientError) {
+    err.status;   // 404
+    err.body;     // parsed JSON error body (already down-transformed by the server)
+    err.route;    // "GET /users/:id"
+  }
+}
+```
+
+Error bodies arrive in your pinned version's shape too — the server's
+`error.down` chains ran before the response left.
+
+## Injectable fetch: full-loop tests without a port
+
+The `fetch` option replaces the transport. The demo's own test suite runs the
+typed client against the real Elysia app **in-process**:
+
+```ts
+import { expect, test } from "bun:test";
+import { expectTypeOf } from "expect-type";
+import { createClient } from "@versionless/client";
+import { app } from "../src/app";   // the Elysia app, no .listen()
+
+const client = createClient<DemoApi, Shapes>()({
+  baseUrl: "http://localhost",
+  version: "2025-06-01",
+  fetch: (req: Request) => app.handle(req),   // no port, no server
+});
+
+test("pinned client gets the derived old wire type", async () => {
+  const user = await client.request("GET /users/:id", { params: { id: "u_1" } });
+  expectTypeOf(user).toEqualTypeOf<UserV1 | UserV1[]>();
+  expect(user).toMatchObject({ id: "u_1", name: "Ada Lovelace" });
+});
+```
+
+This exercises the entire loop — resolver, up/down pipeline, adapter, handler
+— with both runtime assertions and type assertions from one test.

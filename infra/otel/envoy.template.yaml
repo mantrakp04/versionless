@@ -1,0 +1,154 @@
+static_resources:
+  listeners:
+    - name: otlp_grpc
+      address:
+        socket_address: { address: 0.0.0.0, port_value: 4317 }
+      filter_chains:
+        - filters:
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: otlp_grpc
+                codec_type: HTTP2
+                route_config:
+                  name: otlp_grpc
+                  virtual_hosts:
+                    - name: collector
+                      domains: ["*"]
+                      routes:
+                        - match: { prefix: "/" }
+                          route:
+                            cluster: collector_grpc
+                            timeout: 30s
+                http_filters:
+                  - name: envoy.filters.http.ext_authz
+                    typed_config: &authz
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+                      failure_mode_allow: false
+                      http_service:
+                        server_uri:
+                          uri: {{AUTH_URI}}
+                          cluster: {{AUTH_CLUSTER}}
+                          timeout: 2s
+                        path_override: {{AUTH_PATH}}
+                        authorization_response:
+                          allowed_upstream_headers:
+                            patterns:
+                              - exact: x-versionless-team-id
+                              - exact: x-versionless-project-id
+                      allowed_headers:
+                        patterns:
+                          - exact: authorization
+                          - exact: x-versionless-project
+                  - name: envoy.filters.http.router
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+    - name: otlp_http
+      address:
+        socket_address: { address: 0.0.0.0, port_value: 4318 }
+      filter_chains:
+        - filters:
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: otlp_http
+                codec_type: AUTO
+                route_config:
+                  name: otlp_http
+                  virtual_hosts:
+                    - name: collector
+                      domains: ["*"]
+                      routes:
+                        - match: { path: "/healthz" }
+                          direct_response: { status: 200 }
+                          typed_per_filter_config:
+                            envoy.filters.http.ext_authz:
+                              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                              disabled: true
+                        - match:
+                            prefix: "/"
+                            headers:
+                              - name: ":method"
+                                string_match: { exact: "OPTIONS" }
+                          direct_response: { status: 204 }
+                          typed_per_filter_config:
+                            envoy.filters.http.ext_authz:
+                              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                              disabled: true
+                          response_headers_to_add:
+                            - header:
+                                key: access-control-allow-origin
+                                value: "*"
+                            - header:
+                                key: access-control-allow-methods
+                                value: "POST, OPTIONS"
+                            - header:
+                                key: access-control-allow-headers
+                                value: "authorization, content-type, content-encoding, x-versionless-project"
+                            - header:
+                                key: access-control-max-age
+                                value: "86400"
+                        - match: { prefix: "/" }
+                          route:
+                            cluster: collector_http
+                            timeout: 30s
+                http_filters:
+                  - name: envoy.filters.http.ext_authz
+                    typed_config: *authz
+                  - name: envoy.filters.http.router
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+{{AUTH_PROXY_LISTENER}}
+
+  clusters:
+{{AUTH_PROXY_CLUSTER}}
+    - name: versionless_auth
+      connect_timeout: 2s
+      type: STRICT_DNS
+      load_assignment:
+        cluster_name: versionless_auth
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: {{AUTH_HOST}}
+                      port_value: {{AUTH_PORT}}
+{{AUTH_TLS}}
+
+    - name: collector_http
+      connect_timeout: 2s
+      type: STRICT_DNS
+      load_assignment:
+        cluster_name: collector_http
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: {{COLLECTOR_HOST}}
+                      port_value: 4318
+
+    - name: collector_grpc
+      connect_timeout: 2s
+      type: STRICT_DNS
+      typed_extension_protocol_options:
+        envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+          "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+          explicit_http_config:
+            http2_protocol_options: {}
+      load_assignment:
+        cluster_name: collector_grpc
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: {{COLLECTOR_HOST}}
+                      port_value: 4317
+
+admin:
+  address:
+    socket_address: { address: 0.0.0.0, port_value: 9901 }

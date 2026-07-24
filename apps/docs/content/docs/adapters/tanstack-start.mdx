@@ -1,0 +1,83 @@
+---
+title: TanStack Start
+description: Wrap server route handlers per file — up/down on the web Request/Response, alias route files for rewrites.
+---
+
+## Wiring
+
+```ts
+// routes/users/$id.ts
+import { createFileRoute } from "@tanstack/react-router";
+import { versionless } from "@versionless/adapter-tanstack-start";
+import { v } from "~/versionless";
+
+export const Route = createFileRoute("/users/$id")({
+  server: {
+    handlers: versionless(v, {
+      GET: async ({ request, params }) =>
+        Response.json({ id: params.id, firstName: "Ada", lastName: "Lovelace" }),
+    }, { route: "/users/$id" }),
+  },
+});
+```
+
+Request middleware can't swap the body a handler reads, so the adapter wraps
+the `server.handlers` map of a route file. This is exactly how the repo's
+demo app (apps/demo) wires its HTTP surface — it defines the wrapped maps in
+one module so route files mount them and wire tests dispatch to them
+directly.
+
+## How it works
+
+- **Route detection.** Pass the file's pattern via `route` (TanStack `$id` /
+  trailing `$` style or `:id` style both work) and core matches it directly.
+  Omit it and core falls back to matching the raw request path against the
+  set of changed routes, like the Express adapter.
+- **Request up.** The JSON body is read, upped, and handed to your handler as
+  a new `Request` on the handler context — `request.json()` sees the current
+  shape.
+- **Response down.** The handler's `Response` is rebuilt with the downed body
+  (status and headers preserved, `content-length` recomputed). Status ≥ 400
+  goes through `error.down` chains.
+- **Malformed JSON** despite a JSON content-type is passed through untouched,
+  so your handler surfaces its own parse error.
+
+Only `application/json` bodies under 1MB are transformed; everything else
+passes through.
+
+## Rewrites
+
+File routing means the old path needs its own route file. Create one that
+aliases the new route's handler:
+
+```ts
+// routes/orgs/$id.ts  (rewrite: "GET /orgs/:id" -> "GET /teams/:id")
+import { versionlessAlias } from "@versionless/adapter-tanstack-start";
+import { teamsGET } from "~/server/teams";
+
+export const Route = createFileRoute("/orgs/$id")({
+  server: {
+    handlers: { GET: versionlessAlias(v, teamsGET, { route: "/orgs/$id" }) },
+  },
+});
+```
+
+- Old-pinned client → forwarded to the target handler with the rewritten URL
+  (and method, if the rewrite changes it); the target opens its own exchange.
+- Current client → `404` — the old path no longer exists for them.
+- Pass `route` like the main wrapper: it lets core match the file's pattern
+  directly, which is required when the app serves under a base path (e.g.
+  Vite `base: "/demo/"`) — the raw URL path would never match the rewrite's
+  old route.
+
+v0 note: `params` are passed through as-is, so rewrites that rename path
+params need the target to read from the URL.
+
+## Sunsets, errors, serverless
+
+- Sunset headers go on every response for scheduled versions; past the cutoff
+  the wrapper returns `410` with the structured body itself.
+- Invalid version strings return
+  `400 { "error": "invalid_api_version", "message": ... }`.
+- Under `VERCEL`, the telemetry flush is fired after `finish()` so events
+  survive the function freezing.

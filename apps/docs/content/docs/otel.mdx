@@ -1,0 +1,104 @@
+---
+title: OpenTelemetry
+description: Span-level instrumentation for every step of the versioning pipeline — resolution, planning, and each transform — with proper context propagation.
+---
+
+## One config key
+
+The same way Prisma ships instrumentation for the OTel SDK, versionless
+exposes its pipeline internals as spans. Core never imports OpenTelemetry —
+it calls a zero-dep `Tracing` interface, and `@versionless/otel` bridges that
+interface to `@opentelemetry/api`:
+
+```ts
+import { createVersionless } from "@versionless/core";
+import { otelTracing } from "@versionless/otel";
+
+export const v = createVersionless({
+  scheme: "date",
+  current: "2026-07-21",
+  resolve: [{ header: "x-api-version" }, { default: "current" }],
+  tracing: otelTracing(),   // hooks every step into the active OTel SDK
+});
+```
+
+`@opentelemetry/api` is a peer dependency. With no SDK registered the bridge
+resolves to the API's no-op tracer; with `tracing` unset entirely, core skips
+all span work — zero overhead either way.
+
+`otelTracing()` uses the global tracer provider by default; pass your own
+with `otelTracing({ tracer })`, or rename the instrumentation scope with
+`{ tracerName, tracerVersion }`.
+
+## The span tree
+
+One request pinned two versions back, with two response transforms:
+
+```
+http.request                        ← your framework's instrumentation
+└─ versionless.exchange             ← the whole versioning exchange
+   ├─ versionless.resolve           ← resolver chain (incl. async apiKey lookups)
+   ├─ versionless.transform.up      ← one per change, request direction
+   ├─ versionless.transform.down    ← one per change, newest-first
+   │  └─ user.lookup                ← spans from YOUR code inside a transform
+   └─ versionless.transform.down
+```
+
+Propagation is handled end to end:
+
+- `versionless.exchange` starts on the **ambient active context**, so it
+  parents under your framework's HTTP span when a context manager is
+  registered (`AsyncLocalStorageContextManager` in Node/Bun).
+- Each transform span is the **active context while the transform runs** —
+  instrumented calls inside your `up`/`down` functions (fetch, database,
+  another service) nest under the exact change that made them.
+- Async is first-class: async `apiKey` resolvers and async transforms end
+  their spans when the promise settles, and rejections are recorded as span
+  exceptions with `ERROR` status before rethrowing.
+
+## Attributes
+
+| Span | Attributes |
+| --- | --- |
+| `versionless.exchange` | `versionless.adapter`, `versionless.method` + `versionless.path` (or `versionless.procedure` for tRPC), `versionless.route`, `versionless.version`, `versionless.version.requested`, `versionless.clamped`, `versionless.transform_count`, `versionless.rewrite`, `versionless.sunset` (`"warning"` \| `"gone"`), `versionless.status` |
+| `versionless.resolve` | `versionless.version.source` (`header` \| `query` \| `apiKey` \| `default`), `versionless.version`, `versionless.version.requested` |
+| `versionless.transform.up` / `.down` / `.error` | `versionless.change` (the change version or jump label), `versionless.route` |
+
+A failing transform records the `TransformError` — which change, which
+route, which direction — on its own span, so a bad migration shows up as one
+red span pointing at the exact registered change.
+
+## Tracing vs. telemetry vs. cloud traces
+
+Three independent surfaces, enable any combination:
+
+- **[Telemetry](/docs/telemetry)** is aggregate and cloud-facing: one small
+  event per request to power adoption, blockers, and drift on the dashboard.
+- **OTel tracing** (this page) is per-request and stays in *your*
+  observability stack: spans flow to whatever your OTel SDK exports to
+  (Jaeger, Honeycomb, Datadog, …).
+- **[Cloud traces](/docs/telemetry#sampled-traces)** ship an SDK-sampled
+  subset of the same versionless spans (default 10%, `traces.sample`) to the
+  platform's Traces view — only core's own spans, never yours. `traces:
+  false` turns it off.
+
+When both `tracing` and cloud traces are active they observe the same span
+stream via an internal fan-out; the OTel backend keeps context propagation,
+capture only does bookkeeping.
+
+## Custom backends
+
+`tracing` accepts any implementation of core's structural interface — two
+methods, no versionless-cloud involvement:
+
+```ts
+import type { Tracing } from "@versionless/core";
+
+const myTracing: Tracing = {
+  startSpan(name, attrs) { /* long-lived exchange root */ },
+  withSpan(name, attrs, parent, fn) { /* scoped step; end when fn settles */ },
+};
+```
+
+This is the same seam `@versionless/otel` is built on, so a Sentry or
+custom-APM bridge is ~50 lines.

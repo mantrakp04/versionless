@@ -1,0 +1,157 @@
+---
+title: Client Types
+description: Per-version wire types derived at the type level from your transform annotations — typed SDKs for every version, no codegen.
+---
+
+## The idea
+
+For a client pinned at version P on route R, the wire types are already
+implied by the change chain: the request type is the **first applicable
+change's `up()` parameter** (ups run oldest-first, and the client speaks the
+oldest shape), and the response type is the **first applicable change's
+`down()` return** (downs run newest-first, so the oldest change's down
+produces what the client sees). No function composition needed — the type
+layer filters the tuple and reads the endpoints:
+
+```ts
+import type { ClientTypes } from "@versionless/core";
+
+const api = v.register([orgsToTeams, splitUserName] as const);
+
+type OldWire = ClientTypes<typeof api, "2025-06-01">;
+// OldWire["GET /users/:id"]["response"]  ->  UserV1 | UserV1[]
+//   = { id: string; email: string; name: string } (or an array of it)
+// — exactly the down() return type of the 2026-05-14 change.
+
+type Floor = ClientTypes<typeof api, "floor">;
+// "floor" = before the first change: every transform applies.
+```
+
+Note the response type above is a union: the demo's `down` is annotated
+`(body: User | User[]) => UserV1 | UserV1[]` because it serves both the list
+and detail routes. The derivation reads your annotations verbatim — write
+per-route changes (or narrower annotations) if you want narrower types.
+
+`register([...] as const)` carries the tuple for these derivations — keep it
+in ascending version order (the runtime warns if not).
+
+## The contract you must hold up
+
+- **Annotate your transforms.** `up: (body: OldShape): NewShape => ...` and
+  `down: (body: NewShape): OldShape => ...`. Unannotated transforms infer
+  `any`/`unknown` and the derivation degrades accordingly.
+- **Pin points are known versions.** `KnownVersion<Api>` is a registered
+  change version, `current`, or `"floor"`. There is no type-level date
+  arithmetic; the runtime's nearest-release normalization has no type-level
+  equivalent, so `"2025-09-01"` (not a release) is rejected at compile time
+  even though the runtime would serve it.
+- **Chains are validated.** If change A's `up` output isn't assignable to
+  change B's `up` input, the derived type is a `ChainError` instead of a
+  silent lie.
+
+## Debugging a ChainError
+
+When a chain doesn't compose, the route's derived type becomes
+
+```ts
+ChainError<Produced, Expected>
+// { __versionless_chain_mismatch: { produced: Produced; expected: Expected } }
+```
+
+so any use of it fails loudly. Example: change A's `up` returns
+`{ fullName: string }` but the next change's `up` expects `{ name: string }`:
+
+```ts
+type Broken = ClientTypes<typeof api, "floor">["POST /users"];
+//   ^? ChainError<{ fullName: string }, { name: string }>
+//      "produced" is what the earlier up() emits,
+//      "expected" is what the next up() wants — fix one of the two.
+```
+
+Surface these in a type-test file so CI catches incompatible chains at `tsc`
+time — see the test-d setup below.
+
+## The escape hatch: `wire`
+
+When annotation is impractical (heavily generic transforms, gradual adoption),
+declare the wire types directly and the type layer prefers them over
+inference:
+
+```ts
+v.change("2026-05-14", {
+  describe: "user.name split",
+  routes: ["GET /users/:id"],
+  request:  { up:   (body: any) => splitName(body) },
+  response: { down: (body: any) => mergeName(body) },
+  wire: {} as {
+    request:  { old: { name: string; email: string } };
+    response: { old: { id: string; name: string; email: string } };
+  },
+});
+```
+
+`wire` is a phantom — it never exists at runtime; the `{} as ...` cast is the
+intended usage.
+
+## Supplying current shapes
+
+Core only knows the deltas. For routes with no applicable change (or to give
+the current shape a name), pass a `CurrentShape` map as the third parameter:
+
+```ts
+import type { ClientTypes, CurrentShape } from "@versionless/core";
+import type { Team, User } from "./db/schema";
+
+type Shapes = {
+  "GET /users/:id": { request: never; response: User };
+  "GET /teams/:id": { request: never; response: Team };
+};
+
+type Current = ClientTypes<typeof api, "2026-07-21", Shapes>;
+// Current["GET /users/:id"]["response"] -> User    (no transforms at current)
+// Current["GET /teams/:id"]["response"] -> Team    (no changes touch the route)
+```
+
+Derive these from your single parent source (drizzle/zod inference), never by
+hand — the [typed SDK](/docs/client/typed-sdk) threads the same map through
+its second type parameter.
+
+Jumps participate naturally: when a jump starts exactly at P, its annotated
+endpoints are the wire types. Mixed jump+chain paths fall back to `wire`
+declarations in v0.
+
+## Exports
+
+From `@versionless/core` (all type-only):
+
+| Export | What it is |
+| --- | --- |
+| `ClientTypes<Api, P, Shapes?>` | Whole-API map: route key → `{ request, response }` for pin P. |
+| `RouteClientTypes<Cs, R, P, Shape?>` | Single-route version of the same derivation. |
+| `KnownVersion<Api>` | The valid pin points: registered change versions, `current`, `"floor"`. |
+| `CurrentShape` | `{ request?: unknown; response?: unknown }` — one entry of the shapes map. |
+| `ChainError<Produced, Expected>` | The mismatch marker described above. |
+
+## CI type tests with expect-type
+
+Wire-type regressions are `tsc` errors if you assert them. Add a test file
+(bun runs it like any other test; the assertions are compile-time):
+
+```ts
+// test/wire-types.test-d.ts
+import { test } from "bun:test";
+import { expectTypeOf } from "expect-type";
+import type { ClientTypes } from "@versionless/core";
+import type { demoApi } from "@versionless/api/demo/versions";
+import type { UserV1 } from "@versionless/api/demo/changes/2026-05-14-split-user-name";
+
+type Old = ClientTypes<typeof demoApi, "2025-06-01">;
+
+test("2025-06-01 clients get the pre-split user shape", () => {
+  expectTypeOf<Old["GET /users/:id"]["response"]>().toEqualTypeOf<UserV1 | UserV1[]>();
+  expectTypeOf<Old["POST /users"]["request"]>().toMatchTypeOf<{ name: string }>();
+});
+```
+
+If someone edits a shipped transform's annotations — or registers a change
+that breaks chain composition — this file stops compiling and CI goes red.

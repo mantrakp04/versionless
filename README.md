@@ -1,123 +1,79 @@
 # versionless
 
-This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines React, TanStack Router, Elysia, TRPC, and more.
+**Stripe's date-based API versioning as a library.** Handlers only ever speak
+the *latest* wire shape; versions are a chain of reversible transforms applied
+at the edge. No v1/v2 route forks, ever.
 
-## Features
+```
+request (pinned 2025-05-14)
+  → up(change₁) → up(change₂) → ... → handler sees CURRENT shape
+  → handler returns CURRENT shape
+  → down(changeₙ) → ... → down(change₁) → response in 2025-05-14 shape
+```
 
-- **TypeScript** - For type safety and improved developer experience
-- **TanStack Router** - File-based routing with full type safety
-- **TailwindCSS** - Utility-first CSS for rapid UI development
-- **Shared UI package** - shadcn/ui primitives live in `packages/ui`
-- **Elysia** - Type-safe, high-performance framework
-- **tRPC** - End-to-end type-safe APIs
-- **Bun** - Runtime environment
-- **Drizzle** - TypeScript-first ORM
-- **PostgreSQL** - Database engine
-- **Turborepo** - Optimized monorepo build system
+```ts
+v.change("2026-05-14", {
+  describe: "user.name split into firstName/lastName",
+  routes: ["GET /users/:id", "POST /users"],
+  request:  { up:   ({ name, ...r }: { name: string }) => ({ ...r, ...split(name) }) },
+  response: { down: ({ firstName, lastName, ...r }) => ({ ...r, name: `${firstName} ${lastName}` }) },
+  schema: (s) => s.on("User", { removed: ["name"], added: ["firstName", "lastName"] }),
+});
+```
 
-## Getting Started
+## Packages
 
-First, install the dependencies:
+| Package | What it is |
+| --- | --- |
+| `@versionless/core` | Version graph, transform pipelines, route matching, resolvers, sunsets, telemetry. Zero runtime deps. |
+| `@versionless/adapter-elysia` · `-hono` · `-express` · `-nextjs` · `-tanstack-start` · `-trpc` · `-orpc` | Thin adapters (~100 LOC each) over one core. |
+| `@versionless/cli` | `versionless snapshot / check / verify / generate / explain / changelog / init` — missing-compat detection and transform-integrity fixtures in CI. |
+| OpenTelemetry Collector | Standard OTLP/HTTP + gRPC ingestion and ClickHouse export (`otel_logs`, `otel_traces`). |
+
+Plus the demo/cloud apps: `apps/server` (Elysia + tRPC, dogfoods the whole
+loop against itself), `apps/web` (insights dashboard), `apps/docs` (fumadocs).
+
+## Quickstart (this repo)
 
 ```bash
 bun install
+bun db:start        # postgres + clickhouse + OTel Collector/gateway
+bun run --cwd apps/server seed    # 30 days of synthetic telemetry
+bun dev             # server :3000, web :3001, docs :3002
 ```
 
-## Database Setup
-
-This project uses PostgreSQL with Drizzle ORM.
-
-1. Make sure you have a PostgreSQL database set up.
-2. Update your `apps/server/.env` file with your PostgreSQL connection details.
-
-3. Apply the schema to your database:
+Try the versioning:
 
 ```bash
-bun run db:push
+curl :3000/users/u_1                              # current shape: firstName/lastName
+curl -H 'x-api-version: 2025-01-01' :3000/users/u_1   # old shape: name
+curl -H 'x-api-version: 2025-01-01' :3000/orgs/t_1    # rewritten to /teams/:id
+curl -sD - -o /dev/null -H 'x-api-version: 2025-01-01' :3000/users/u_1 | grep -iE 'sunset|deprecation'
 ```
 
-Then, run the development server:
+Dashboard: <http://localhost:3001/insights> · Docs: <http://localhost:3002/docs>
+
+## Checks
 
 ```bash
-bun run dev
+bun run check-types   # includes the type-level ClientTypes test suite
+bun run test          # bun test across all packages (turbo)
 ```
 
-Open [http://localhost:3001](http://localhost:3001) in your browser to see the web application.
-The API is running at [http://localhost:3000](http://localhost:3000).
+## Stack
 
-## UI Customization
+Bun workspaces + Turborepo · Elysia + tRPC server · Vite/React 19/TanStack
+Router web · Drizzle + PostgreSQL · ClickHouse (telemetry) · fumadocs ·
+deployed via Vercel (`vercel.json`; see `bun run deploy:*`).
 
-React web apps in this stack share shadcn/ui primitives through `packages/ui`.
-
-- Change design tokens and global styles in `packages/ui/src/styles/globals.css`
-- Update shared primitives in `packages/ui/src/components/*`
-- Adjust shadcn aliases or style config in `packages/ui/components.json` and `apps/web/components.json`
-
-### Add more shared components
-
-Run this from the project root to add more primitives to the shared UI package:
-
-```bash
-npx shadcn@latest add accordion dialog popover sheet table -c packages/ui
-```
-
-Import shared components like this:
-
-```tsx
-import { Button } from "@versionless/ui/components/button";
-```
-
-### Add app-specific blocks
-
-If you want to add app-specific blocks instead of shared primitives, run the shadcn CLI from `apps/web`.
-
-## Deployment
-
-### Vercel Services
-
-- Target: web + server
-- Config: `vercel.json`
-- Link the project first: bun run deploy:setup
-- Local Vercel dev: bun run dev:vercel
-- Sync preview env: bun run env:preview
-- Sync production env: bun run env:production
-- Dry-run check (no upload): bun run deploy:check
-- Preview deploy: bun run deploy
-- Production deploy: bun run deploy:prod
-- Web requests under `/api/*` route to the server service and are rewritten before reaching the backend.
-  Vercel Services share project environment variables, but deploys do not upload local `.env` files automatically. Link the project with `vercel link`, then run the env sync command before your first deploy (otherwise the deployment starts with no env vars), or pass one-off envs with `vercel deploy -e KEY=value`.
-  Pass Vercel CLI flags to the env sync command directly, for example: `bun run env:production --scope your-team`.
-
-For more details, see the guide on [Deploying to Vercel](https://www.better-t-stack.dev/docs/guides/vercel).
-
-## Project Structure
-
-```
-versionless/
-├── apps/
-│   ├── web/         # Frontend application (React + TanStack Router)
-│   └── server/      # Backend API (Elysia, TRPC)
-├── packages/
-│   ├── ui/          # Shared shadcn/ui components and styles
-│   ├── api/         # API layer / business logic
-│   └── db/          # Database schema & queries
-```
-
-## Available Scripts
-
-- `bun run dev`: Start all applications in development mode
-- `bun run build`: Build all applications
-- `bun run dev:web`: Start only the web application
-- `bun run dev:server`: Start only the server
-- `bun run check-types`: Check TypeScript types across all apps
-- `bun run db:push`: Push schema changes to database
-- `bun run db:generate`: Generate database client/types
-- `bun run db:migrate`: Run database migrations
-- `bun run db:studio`: Open database studio UI
-- `bun run deploy:setup`: Link this repo to a Vercel project (first-time setup)
-- `bun run dev:vercel`: Run the Vercel Services dev environment locally
-- `bun run env:preview`: Sync local env files to the Vercel preview environment
-- `bun run env:production`: Sync local env files to the Vercel production environment
-- `bun run deploy`: Create a Vercel preview deployment
-- `bun run deploy:prod`: Deploy to Vercel production
-- `bun run deploy:check`: Dry-run a deploy to preview framework detection and included files without uploading
+Database scripts: `bun db:push` / `db:studio` / `db:start` / `db:stop`.
+Schema changes ship as committed drizzle migrations: `bun db:generate` (SQL +
+journal), `bun run db:check` (expand/contract compat lint), `db:migrate`
+(idempotent). CI's `db-compat` job applies migrations twice against fresh
+Postgres and requires `versionless check` to pass; after those checks pass on
+`main`, `migrate-production` applies the committed migrations using the
+`DATABASE_URL` secret available to the GitHub `Production` environment. A DB
+change is an API change until proven otherwise (see AGENTS.md → Database
+Changes).
+Env sync for deploys: `bun run env:preview` / `env:production` (see
+`scripts/sync-vercel-env.ts`).

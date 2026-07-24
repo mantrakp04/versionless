@@ -1,0 +1,27 @@
+{
+  "name": "@versionless/adapter-orpc",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@versionless/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "@orpc/server": "^1"
+  },
+  "devDependencies": {
+    "@orpc/client": "catalog:",
+    "@orpc/server": "catalog:",
+    "@types/bun": "catalog:",
+    "@versionless/config": "workspace:*",
+    "typescript": "catalog:",
+    "zod": "catalog:"
+  }
+}

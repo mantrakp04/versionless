@@ -1,0 +1,157 @@
+{
+  "endpoints": {
+    "ALL /internal/otlp/auth": {
+      "body": null,
+      "method": "ALL",
+      "params": null,
+      "path": "/internal/otlp/auth",
+      "query": null,
+      "responses": {},
+      "transport": "http"
+    },
+    "ALL /internal/otlp/auth/*": {
+      "body": null,
+      "method": "ALL",
+      "params": null,
+      "path": "/internal/otlp/auth/*",
+      "query": null,
+      "responses": {},
+      "transport": "http"
+    },
+    "ALL /trpc/*": {
+      "body": null,
+      "method": "ALL",
+      "params": null,
+      "path": "/trpc/*",
+      "query": null,
+      "responses": {},
+      "transport": "http"
+    },
+    "GET /": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/",
+      "query": null,
+      "responses": {},
+      "transport": "http"
+    },
+    "OPTIONS /": {
+      "body": null,
+      "method": "OPTIONS",
+      "params": null,
+      "path": "/",
+      "query": null,
+      "responses": {},
+      "transport": "http"
+    },
+    "OPTIONS /*": {
+      "body": null,
+      "method": "OPTIONS",
+      "params": null,
+      "path": "/*",
+      "query": null,
+      "responses": {},
+      "transport": "http"
+    },
+    "POST /v1/query": {
+      "body": {
+        "fields": {
+          "params": {
+            "optional": true,
+            "type": {
+              "kind": "record",
+              "value": {
+                "kind": "union",
+                "options": [
+                  {
+                    "kind": "string"
+                  },
+                  {
+                    "kind": "number"
+                  },
+                  {
+                    "kind": "boolean"
+                  }
+                ]
+              }
+            }
+          },
+          "projectId": {
+            "constraints": {
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "type": {
+              "format": "uuid",
+              "kind": "string"
+            }
+          },
+          "query": {
+            "constraints": {
+              "maxLength": 100000,
+              "minLength": 1
+            },
+            "type": {
+              "kind": "string"
+            }
+          },
+          "timeoutMs": {
+            "constraints": {
+              "maximum": 60000,
+              "minimum": 1000
+            },
+            "optional": true,
+            "type": {
+              "kind": "integer"
+            }
+          }
+        },
+        "kind": "object",
+        "open": true
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/v1/query",
+      "query": null,
+      "responses": {},
+      "transport": "http"
+    },
+    "trpc:healthCheck": {
+      "input": null,
+      "mount": "/trpc",
+      "output": null,
+      "procedure": "healthCheck",
+      "procedureType": "query",
+      "transport": "trpc"
+    },
+    "trpc:projects.list": {
+      "input": {
+        "fields": {
+          "teamId": {
+            "constraints": {
+              "minLength": 1
+            },
+            "type": {
+              "kind": "string"
+            }
+          }
+        },
+        "kind": "object",
+        "open": true
+      },
+      "mount": "/trpc",
+      "output": null,
+      "procedure": "projects.list",
+      "procedureType": "query",
+      "transport": "trpc"
+    }
+  },
+  "formatVersion": 1,
+  "integrity": {
+    "algo": "fnv1a-32",
+    "hash": "4c032ee7"
+  },
+  "models": {},
+  "tool": "@versionless/cli@0.0.1",
+  "version": "2026-07-24"
+}

@@ -1,0 +1,32 @@
+{
+  "name": "@versionless/cli",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "bin": {
+    "versionless": "./bin/versionless.ts"
+  },
+  "dependencies": {
+    "@versionless/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@orpc/server": "catalog:",
+    "@trpc/server": "catalog:",
+    "@types/bun": "catalog:",
+    "@versionless/api": "workspace:*",
+    "@versionless/config": "workspace:*",
+    "elysia": "catalog:",
+    "typescript": "catalog:",
+    "zod": "catalog:"
+  }
+}

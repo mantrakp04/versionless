@@ -1,0 +1,191 @@
+---
+title: Version Resolution
+description: How a request's version is resolved, normalized, and mapped to a transform path — chained changes by default, jump transforms when you define them.
+---
+
+The examples on this page use the demo API's real versions: changes at
+`2025-06-01` and `2026-05-14`, a jump from `2025-01-01`, and
+`current: "2026-07-21"`.
+
+## Resolving the pinned version
+
+Each request resolves its version through the chain you configure — first
+resolver that yields a value wins:
+
+```ts
+export const v = createVersionless({
+  scheme: "date",              // or "semver" (runtime-only in v0)
+  current: "2026-07-21",
+  resolve: [
+    { header: "x-api-version" },                    // explicit pin
+    { query: "api-version" },                       // ?api-version=2026-05-14
+    { apiKey: (key) => db.pinnedVersion(key) },     // per-key pinning, Stripe-style
+    { default: "current" },                         // unpinned = latest
+  ],
+});
+```
+
+Four resolver kinds:
+
+- `{ header }` — read the version from a request header.
+- `{ query }` — read it from a query parameter.
+- `{ apiKey }` — look up a per-consumer pin. The consumer's key is read from
+  `Authorization: Bearer ...` or `x-api-key` by default; override with
+  `keyFrom`. The lookup may be async — the whole chain stays synchronous (the
+  hot path for header-pinned clients) unless an async resolver actually fires.
+  A key that resolves here is also recorded as `consumerKey` in
+  [telemetry](/docs/telemetry).
+- `{ default }` — a fixed fallback: `"current"` or a literal version.
+
+The literal `"current"` is accepted anywhere a version is (a client can send
+`x-api-version: current`). An invalid version string is rejected with
+`400 { "error": "invalid_api_version" }` before any handler runs.
+
+## Effective versions
+
+Clients may pin dates that aren't release versions. A requested version
+normalizes to the **nearest release at or before it** — where releases are the
+distinct change/jump versions plus `current`:
+
+| Requested | Effective | Why |
+| --- | --- | --- |
+| `2026-05-14` | `2026-05-14` | Exact release. |
+| `2025-09-01` | `2025-06-01` | Nearest release at or before it. |
+| `2026-07-01` | `2026-05-14` | Same rule. |
+| `2024-11-30` | `2024-11-30` | Predates every release: nothing to normalize to; every change applies either way. |
+
+This bounds the compiled-pipeline cache at `routes × releases` and matches
+Stripe's semantics. Telemetry records both the requested and effective
+versions, so drift is visible in the dashboard.
+
+## Forward compatibility (clients from the future)
+
+A client can also pin a version **newer** than the server's `current` — a
+freshly-generated SDK talking to a not-yet-deployed server, or a server
+rollback. The server can't invent a wire shape it doesn't know about, so
+`onFutureVersion` picks the policy:
+
+```ts
+createVersionless({
+  scheme: "date",
+  current: "2026-07-21",
+  resolve: [{ header: "x-api-version" }, { default: "current" }],
+  onFutureVersion: "clamp", // default; or "reject"
+});
+```
+
+- **`"clamp"`** (default) serves `current` and advertises the drift on every
+  response: `x-api-version-served: 2026-07-21` plus
+  `x-api-version-requested: 2027-01-01` when clamping happened. Clients keep
+  working; the mismatch is observable instead of silent.
+- **`"reject"`** throws `FutureVersionError` (stable code `VERSION_AHEAD`),
+  which adapters map to a 400 telling the client both the requested and the
+  served version. Pick this when serving an older shape to a newer client
+  could corrupt data.
+
+Every versionless error carries a stable machine-readable `code`
+(`VERSION_INVALID`, `VERSION_AHEAD`, `VERSION_SUNSET`, `TRANSFORM_FAILED`),
+mirrored in the response body and the `x-versionless-error` header — codes are
+append-only and never change meaning, so clients can branch on them safely.
+
+## Chained transforms (the default)
+
+For a client pinned at `2025-06-01` on `GET /users/:id` (changes at
+`2026-05-14` apply; `2025-06-01`'s own change does not):
+
+```
+request:  2025-06-01 shape → up(2026-05-14) → handler (current shape)
+response: handler → down(2026-05-14) → 2025-06-01 shape
+```
+
+Each change only knows its two adjacent shapes. Three years of changes compose
+for free. The pipeline for each `(route, effective version)` pair is compiled
+once and cached, so the per-request cost is a map hit plus n function calls —
+and a client at `current` gets the empty pipeline (zero transforms, nothing
+compiled).
+
+## Jump transforms (priority overrides)
+
+Chaining is the default, but when the composed path is awkward or lossy you
+can define a **direct jump** between two versions. The demo does this for its
+oldest cohort:
+
+```ts
+v.jump({
+  from: "2025-01-01",
+  to: "2026-07-21",          // straight to current
+  describe: "direct 2025-01-01 -> current for GET /users",
+  routes: ["GET /users"],
+  response: {
+    down: (body: User[]): UserV1[] =>
+      body.map(({ firstName, lastName, ...rest }) => ({
+        ...rest,
+        name: `${firstName} ${lastName}`.trim(),
+      })),
+  },
+});
+```
+
+Resolution is a **greedy hop walk**, per route:
+
+1. Start at the client's effective version.
+2. If a jump starts exactly here (and lands at or before `current`), take it —
+   the **longest** jump wins on ties — and skip every chained change it spans.
+3. Otherwise apply the next chained change.
+4. Repeat until no step moves you forward.
+
+So on `GET /users`: a client at `2025-01-01` applies **only** the jump's one
+`down`; a client at `2025-06-01` (where no jump starts) walks the ordinary
+chain through `2026-05-14`. Downs mirror the same path in reverse, so up and
+down always agree. Every edge moves strictly forward, so the walk is
+deterministic and cycle-free.
+
+## Debugging with explain
+
+`versionless explain` prints the exact path the compiler chose — the ground
+truth for "why is this client seeing this shape". The jump route:
+
+```
+$ versionless explain "GET /users" --version 2025-01-01
+GET /users
+  requested version: 2025-01-01
+  effective version: 2025-01-01
+  matched routeKey:  GET /users
+  path (1 step(s), oldest first):
+    1. jump 2025-01-01 -> 2026-07-21 — direct 2025-01-01 -> current for GET /users
+       transforms: response.down
+  transformCount: 1
+  passthrough: no
+  lossy: no
+  sunset: after 2026-12-31 (still served, headers advertised)
+```
+
+And the chained route, same pin:
+
+```
+$ versionless explain "GET /users/:id" --version 2025-01-01
+GET /users/:*
+  requested version: 2025-01-01
+  effective version: 2025-01-01
+  matched routeKey:  GET /users/:*
+  path (1 step(s), oldest first):
+    1. change 2026-05-14 — user.name split into firstName/lastName
+       transforms: request.up, response.down
+  transformCount: 2
+  passthrough: no
+  lossy: no
+  sunset: after 2026-12-31 (still served, headers advertised)
+```
+
+(`GET /users/:id` prints as `GET /users/:*` — param names normalize away in
+route keys.) See [the CLI](/docs/cli#debugging-with-explain) for the full
+command reference.
+
+## Scheme notes
+
+- `date` versions are strict `YYYY-MM-DD` (impossible calendar dates are
+  rejected), and their lexicographic order **is** their chronological order —
+  the CLI snapshots and telemetry SQL rely on this.
+- `semver` (`MAJOR.MINOR.PATCH`, no prerelease tags) is supported by the
+  runtime; the CLI and dashboard assume the date scheme in v0 and say so
+  explicitly rather than mis-comparing.

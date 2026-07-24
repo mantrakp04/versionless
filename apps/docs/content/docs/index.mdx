@@ -1,13 +1,84 @@
 ---
-title: Hello World
-description: Your first document
+title: versionless
+description: Stripe-style date-based API versioning as a library — handlers speak the latest shape, versions are reversible transforms at the edge.
 ---
 
-Welcome to the docs! You can start writing documents in `/content/docs`.
+## The mental model
 
-## What is Next?
+You never fork route handlers. Handlers only ever speak the **latest** wire
+shape, and versions are a chain of reversible transforms applied at the edge:
+
+```
+request (pinned 2025-06-01)
+  → up(change 2026-05-14) → up(...) → handler sees the CURRENT shape
+  → handler returns the CURRENT shape
+  → down(...) → down(change 2026-05-14) → response in 2025-06-01 shape
+```
+
+A client pinned to an old version just gets more transforms applied. No
+`/v1`/`/v2` route trees, ever. This is the versioning model Stripe has run
+internally for a decade — versionless packages it as a library for Elysia,
+Hono, Express, and tRPC.
+
+## Sixty seconds of setup
+
+```ts
+// src/versionless.ts
+import { createVersionless } from "@versionless/core";
+
+export const v = createVersionless({
+  project: "my-api",
+  scheme: "date",
+  current: "2026-07-21",
+  resolve: [
+    { header: "x-api-version" },                    // explicit pin
+    { apiKey: (key) => db.pinnedVersion(key) },     // per-key pinning, Stripe-style
+    { default: "current" },                         // unpinned = latest
+  ],
+  // Optional: pass an apiKey to light up the hosted dashboard with live
+  // adoption/sunset/drift telemetry. Without it: zero network calls.
+});
+```
+
+```ts
+// wire the adapter (Elysia shown; Hono/Express/tRPC in the adapters docs)
+import { versionless } from "@versionless/adapter-elysia";
+app.use(versionless(v));
+```
+
+```ts
+// break the contract? register a change instead of forking the handler
+v.change("2026-05-14", {
+  describe: "user.name split into firstName/lastName",
+  routes: ["GET /users/:id", "POST /users"],
+  request:  { up:   ({ name, ...r }) => ({ ...r, ...splitName(name) }) },
+  response: { down: ({ firstName, lastName, ...r }) => ({ ...r, name: `${firstName} ${lastName}` }) },
+});
+```
+
+That is the whole runtime story. The [quickstart](/docs/quickstart) walks
+through it end to end, including what pinned and current curl requests
+actually return.
+
+## What's in the box
 
 <Cards>
-  <Card title="Learn more about Next.js" href="https://nextjs.org/docs" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.dev" />
+  <Card title="Quickstart" href="/docs/quickstart" description="Install, first change, mounted adapter, and a pinned curl — in ten minutes." />
+  <Card title="Defining changes" href="/docs/concepts/defining-changes" description="Transforms, error shapes, async and lossy downs, registration and sealing." />
+  <Card title="Version resolution" href="/docs/concepts/version-resolution" description="Effective versions, chained transforms, jump priority, the pipeline cache." />
+  <Card title="Rewrites & sunsets" href="/docs/concepts/rewrites-and-sunsets" description="Route moves for old clients, RFC 8594/9745 headers, hard 410s." />
+  <Card title="Adapters" href="/docs/adapters" description="Elysia, Hono, Express, tRPC — thin wiring over one shared core." />
+  <Card title="The CLI" href="/docs/cli" description="snapshot / check / generate — missing-compat detection in CI." />
+  <Card title="Typed client SDK" href="/docs/client/typed-sdk" description="A fetch client whose types follow the pinned version, no codegen." />
+  <Card title="Telemetry" href="/docs/telemetry" description="Opt-in API key, adoption curves, sunset blockers, drift." />
+  <Card title="For AI agents" href="/docs/for-agents" description="The maintenance workflow agents follow while changing code." />
 </Cards>
+
+## Why this instead of /v2
+
+- **One handler, one shape.** No drift between five copies of the same route.
+- **CI-enforced compatibility.** `versionless check` diffs your real schema
+  surface against the last snapshot and fails when a breaking change has no
+  covering transform — before your users find out.
+- **Sunsets with receipts.** RFC 8594/9745 headers now, hard 410 later, and a
+  dashboard that tells you exactly which consumers still block the removal.

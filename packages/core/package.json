@@ -1,0 +1,23 @@
+{
+  "name": "@versionless/core",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "@versionless/config": "workspace:*",
+    "expect-type": "catalog:",
+    "typescript": "catalog:"
+  }
+}

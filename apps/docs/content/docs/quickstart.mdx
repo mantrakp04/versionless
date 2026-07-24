@@ -1,0 +1,172 @@
+---
+title: Quickstart
+description: Install versionless, register your first change, mount an adapter, and watch a pinned client get the old wire shape — in about ten minutes.
+---
+
+This walkthrough builds the smallest complete versionless setup: one route,
+one breaking change, two clients on different versions hitting the same
+handler. Elysia is used here; the [other adapters](/docs/adapters) differ only
+in the wiring step.
+
+## 1. Install
+
+```bash
+bun add @versionless/core @versionless/adapter-elysia
+```
+
+## 2. Create the instance
+
+One instance per API. `current` is the version your handlers speak today;
+`resolve` is the chain that decides which version each request gets.
+
+```ts
+// src/versionless.ts
+import { createVersionless } from "@versionless/core";
+
+export const v = createVersionless({
+  project: "my-api",
+  scheme: "date",
+  current: "2026-07-21",
+  resolve: [
+    { header: "x-api-version" },   // explicit pin wins
+    { default: "current" },        // unpinned clients get the latest
+  ],
+});
+```
+
+No API key is configured, so this makes **zero network calls** — telemetry is
+strictly [opt-in](/docs/telemetry).
+
+## 3. Write the handler against the current shape
+
+Handlers only ever see the latest wire shape. There is nothing
+version-related in them:
+
+```ts
+// src/routes/users.ts
+import { Elysia, t } from "elysia";
+
+const users = [
+  { id: "u_1", firstName: "Ada", lastName: "Lovelace", email: "ada@example.com" },
+];
+
+export const userRoutes = new Elysia()
+  .get("/users/:id", ({ params, status }) => {
+    const user = users.find((u) => u.id === params.id);
+    return user ?? status(404, { error: "user_not_found" });
+  }, { params: t.Object({ id: t.String() }) })
+  .post("/users", ({ body }) => ({ id: "u_2", ...body }), {
+    body: t.Object({ firstName: t.String(), lastName: t.String(), email: t.String() }),
+  });
+```
+
+## 4. Register your first change
+
+Suppose the API used to serve a single `name` field and you split it into
+`firstName`/`lastName` on 2026-05-14. Instead of forking the handler, you
+describe how to convert between the two shapes:
+
+```ts
+// changes/2026-05-14-split-user-name.ts
+import { v } from "../src/versionless";
+
+export default v.change("2026-05-14", {
+  describe: "user.name split into firstName/lastName",
+  routes: ["GET /users/:id", "POST /users"],
+
+  request: {
+    // old wire shape -> current wire shape (annotate both sides)
+    up: (body: { name: string; email: string }): { firstName: string; lastName: string; email: string } => {
+      const [firstName, ...rest] = body.name.split(" ");
+      return { firstName: firstName ?? "", lastName: rest.join(" "), email: body.email };
+    },
+  },
+  response: {
+    // current wire shape -> old wire shape
+    down: ({ firstName, lastName, ...rest }: { id: string; firstName: string; lastName: string; email: string }) => ({
+      ...rest,
+      name: `${firstName} ${lastName}`.trim(),
+    }),
+  },
+});
+```
+
+Clients pinned **before** 2026-05-14 get both transforms. Clients pinned at
+or after it already speak the new shape, so nothing applies.
+
+## 5. Mount the adapter
+
+Import the change file (registering is a side effect of `v.change`), then
+mount the plugin before your routes:
+
+```ts
+// src/app.ts
+import { Elysia } from "elysia";
+import { versionless } from "@versionless/adapter-elysia";
+import { v } from "./versionless";
+import { userRoutes } from "./routes/users";
+import "../changes/2026-05-14-split-user-name";
+
+export const app = new Elysia()
+  .use(versionless(v))
+  .use(userRoutes)
+  .listen(3000);
+```
+
+## 6. Pin a version and watch the shapes change
+
+An unpinned (or current-pinned) client gets the shape the handler returned:
+
+```bash
+$ curl -s localhost:3000/users/u_1
+{"id":"u_1","firstName":"Ada","lastName":"Lovelace","email":"ada@example.com"}
+```
+
+The same request pinned to a pre-split version gets the old shape — same
+handler, one `down()` applied at the edge:
+
+```bash
+$ curl -s -H 'x-api-version: 2025-06-01' localhost:3000/users/u_1
+{"id":"u_1","email":"ada@example.com","name":"Ada Lovelace"}
+```
+
+Requests work the same way in the other direction. The old client keeps
+sending `name`, and `up()` converts it before validation and the handler:
+
+```bash
+$ curl -s -H 'x-api-version: 2025-06-01' -H 'content-type: application/json' \
+    -d '{"name":"Grace Hopper","email":"grace@example.com"}' localhost:3000/users
+{"id":"u_2","email":"grace@example.com","name":"Grace Hopper"}
+```
+
+Note the response came back in the old shape too — the pinned client never
+learns the API changed.
+
+An invalid pin is rejected before any handler runs:
+
+```bash
+$ curl -s -H 'x-api-version: not-a-date' localhost:3000/users/u_1
+{"error":"invalid_api_version","message":"Invalid API version \"not-a-date\" for scheme \"date\" (expected \"YYYY-MM-DD\")"}
+```
+
+## 7. Add the CLI
+
+The runtime serves old clients; the [CLI](/docs/cli) proves in CI that every
+breaking schema change has a covering transform, and scaffolds the change
+file when one is missing:
+
+```bash
+bun add -d @versionless/cli
+bunx versionless init       # writes versionless.config.ts + the surface entry
+bunx versionless snapshot   # commit .versionless/<version>.json to git
+bunx versionless check      # the CI gate
+```
+
+## Where to next
+
+<Cards>
+  <Card title="Defining changes" href="/docs/concepts/defining-changes" description="Everything a change can declare — error shapes, async downs, lossy, streams." />
+  <Card title="Version resolution" href="/docs/concepts/version-resolution" description="How pins normalize and how transform paths are chosen." />
+  <Card title="The CLI" href="/docs/cli" description="snapshot / check / generate / explain / changelog, wired into CI." />
+  <Card title="Typed client SDK" href="/docs/client/typed-sdk" description="Consume your API with per-version types derived from the change chain." />
+</Cards>

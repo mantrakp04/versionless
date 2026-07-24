@@ -1,0 +1,124 @@
+---
+title: Rewrites & Sunsets
+description: Route moves that keep old paths alive for old clients, and version retirement with RFC 8594/9745 headers and a hard 410 after the cutoff.
+---
+
+## Route rewrites
+
+Renaming a route is a breaking change like any other — so it's declared as a
+change. The demo renamed `/orgs` to `/teams` on `2025-06-01`:
+
+```ts
+// changes/2025-06-01-orgs-to-teams.ts
+import { v } from "../versionless";
+
+export default v.change("2025-06-01", {
+  describe: "orgs renamed to teams (/orgs/* now served by /teams/*)",
+  rewrite: { from: "GET /orgs/:id", to: "GET /teams/:id" },
+  schema: (s) => s.on("Team", { routesRemoved: ["GET /orgs/:id"] }),
+});
+```
+
+The semantics:
+
+- A client whose effective version is **strictly before** the change version
+  and who calls `GET /orgs/o_1` is transparently re-dispatched to
+  `GET /teams/o_1`. Path params carry over by name from `from` to `to`.
+- A **current** client calling the old path gets a plain `404` — the route no
+  longer exists for them.
+- Rewrites apply before route matching, and the re-dispatched request opens
+  its own exchange — so transforms registered on the *target* route still
+  apply to the rewritten request.
+- Rewrites don't apply to tRPC; express a procedure rename as an alias
+  procedure instead.
+
+### Adapter wiring
+
+Express needs nothing extra: the middleware mutates `req.url` before the
+router matches. Elysia and Hono route *before* middleware-style hooks can
+intervene, so an unrouted old path would 404 before versionless ever runs.
+Both adapters ship a `versionlessRewrites` helper that registers alias routes
+for every rewrite — call it after your routes are wired:
+
+```ts
+import { versionless, versionlessRewrites } from "@versionless/adapter-elysia";
+
+const app = new Elysia()
+  .use(versionless(v))
+  .use(teamRoutes);       // the NEW route, "/teams/:id"
+
+versionlessRewrites(v, app);  // registers "GET /orgs/:id" as an alias
+```
+
+If you skip this, old-pinned clients calling the old path fall through to the
+framework's 404. Details per framework: [Elysia](/docs/adapters/elysia),
+[Hono](/docs/adapters/hono), [Express](/docs/adapters/express).
+
+## Sunsets
+
+Serving every version forever is a choice, not a requirement. Schedule a
+retirement:
+
+```ts
+v.sunset("2025-01-01", {
+  after: "2026-12-31",
+  message: "API versions from 2025-01-01 and earlier sunset on 2026-12-31.",
+});
+```
+
+A sunset on version X applies to **every effective version ≤ X**. When several
+sunsets apply, the earliest cutoff wins — it's the binding constraint.
+
+### Before the cutoff: standards-compliant warning headers
+
+Every response to a sunset-scheduled version carries two headers:
+
+```
+Deprecation: @1798761599          # RFC 9745 — unix timestamp
+Sunset: Thu, 31 Dec 2026 23:59:59 GMT   # RFC 8594 — HTTP date
+```
+
+Both point at the end of the sunset day (23:59:59.999 UTC). Well-behaved
+clients and API gateways surface these automatically.
+
+### After the cutoff: 410 Gone
+
+Strictly after that instant, the adapter answers `410 Gone` itself — the
+handler never runs:
+
+```json
+{
+  "error": "api_version_sunset",
+  "version": "2025-01-01",
+  "sunset": "2026-12-31",
+  "message": "API versions from 2025-01-01 and earlier sunset on 2026-12-31."
+}
+```
+
+(tRPC has no 410; the middleware throws `PRECONDITION_FAILED` with this body
+in `cause` — see the [tRPC adapter](/docs/adapters/trpc).)
+
+### Testing with an injectable clock
+
+The gone-flip is time-dependent, so the clock is injectable:
+
+```ts
+const v = createVersionless({
+  scheme: "date",
+  current: "2026-07-21",
+  resolve: [{ header: "x-api-version" }, { default: "current" }],
+  clock: () => new Date("2027-01-01T00:00:00Z"),  // it's after the cutoff now
+});
+```
+
+With that clock, a request pinned to `2025-01-01` gets the 410 immediately —
+no waiting for New Year's Eve in CI. (Sunset verdicts are cached for 60
+seconds per version, so per-request cost is a map hit.)
+
+### Should I sunset?
+
+That's a data question: which consumers still send traffic on versions at or
+below the candidate? With [telemetry](/docs/telemetry) enabled, the
+dashboard's sunset-blockers view answers it per consumer key and route.
+`versionless explain <route> --version <v>` shows the sunset status a given
+pin currently gets.

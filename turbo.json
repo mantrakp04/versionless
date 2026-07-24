@@ -13,7 +13,15 @@
     "check-types": {
       "dependsOn": ["^check-types"]
     },
+    "test": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$"]
+    },
     "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "versionless:watch": {
       "cache": false,
       "persistent": true
     },
@@ -23,27 +31,15 @@
     "db:generate": {
       "cache": false
     },
+    "db:check": {
+      "cache": false
+    },
     "db:migrate": {
-      "cache": false,
-      "persistent": true
+      "cache": false
     },
     "db:studio": {
       "cache": false,
       "persistent": true
-    },
-    "db:start": {
-      "cache": false,
-      "persistent": true
-    },
-    "db:stop": {
-      "cache": false
-    },
-    "db:watch": {
-      "cache": false,
-      "persistent": true
-    },
-    "db:down": {
-      "cache": false
     }
   }
 }
