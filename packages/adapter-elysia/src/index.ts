@@ -6,6 +6,7 @@ const ADAPTER = "elysia";
 
 interface State {
   exchange: Exchange;
+  finished?: boolean;
 }
 
 interface ElysiaishCtx {
@@ -34,6 +35,22 @@ function statusOf(set: ElysiaishCtx["set"]): number {
 
 function identity(ex: Exchange): boolean {
   return ex.transformCount === 0 && ex.routeKey === null;
+}
+
+function finish(
+  state: State,
+  status: number,
+  waitUntil?: (pending: Promise<void>) => void,
+): void {
+  if (state.finished) return;
+  state.finished = true;
+  state.exchange.finish({ status, waitUntil });
+}
+
+function errorStatus(ctx: { error: unknown; set: ElysiaishCtx["set"] }): number {
+  if (typeof ctx.set.status === "number") return ctx.set.status;
+  if (ctx.error instanceof ElysiaCustomStatusResponse) return Number(ctx.error.code);
+  return 500;
 }
 
 export interface VersionlessElysiaOptions {
@@ -81,56 +98,56 @@ export function versionless(v: Versionless, options: VersionlessElysiaOptions = 
     .mapResponse({ as: "global" }, async (ctx) => {
       const st = (ctx as unknown as { versionless?: State }).versionless;
       if (!st) return;
-      const ex = st.exchange;
-      if (ex.passthrough || ex.transformCount === 0) return;
-      let r: unknown = (ctx as unknown as { response: unknown }).response;
-      if (r instanceof ElysiaCustomStatusResponse) r = r.response;
-      if (r === null || typeof r !== "object") return;
-      const s = statusOf(ctx.set);
-      if (r instanceof Response) {
-        // Only buffered JSON responses under the cap are transformed; streams
-        // (no content-length) and non-JSON pass through untouched.
-        const ct = r.headers.get("content-type");
-        const len = r.headers.get("content-length");
-        if (!len || !isTransformableJson(ct, len)) return;
-        const payload: unknown = await r.clone().json().catch(() => undefined);
-        if (payload === null || typeof payload !== "object") return;
-        const t = r.status >= 400 ? await ex.downError(payload) : await ex.down(payload);
-        const headers = new Headers(r.headers);
-        headers.delete("content-length");
-        return new Response(JSON.stringify(t), { status: r.status, headers });
+      try {
+        const ex = st.exchange;
+        if (ex.passthrough || ex.transformCount === 0) return;
+        let r: unknown = (ctx as unknown as { response: unknown }).response;
+        if (r instanceof ElysiaCustomStatusResponse) r = r.response;
+        if (r === null || typeof r !== "object") return;
+        const s = statusOf(ctx.set);
+        if (r instanceof Response) {
+          // Only buffered JSON responses under the cap are transformed; streams
+          // (no content-length) and non-JSON pass through untouched.
+          const ct = r.headers.get("content-type");
+          const len = r.headers.get("content-length");
+          if (!len || !isTransformableJson(ct, len)) return;
+          const payload: unknown = await r.clone().json().catch(() => undefined);
+          if (payload === null || typeof payload !== "object") return;
+          const t = r.status >= 400 ? await ex.downError(payload) : await ex.down(payload);
+          const headers = new Headers(r.headers);
+          headers.delete("content-length");
+          return new Response(JSON.stringify(t), { status: r.status, headers });
+        }
+        if (r instanceof ReadableStream) return;
+        const t = s >= 400 ? await ex.downError(r) : await ex.down(r);
+        return new Response(JSON.stringify(t), {
+          status: s,
+          headers: { "content-type": "application/json" },
+        });
+      } finally {
+        finish(st, statusOf(ctx.set), options.waitUntil);
       }
-      if (r instanceof ReadableStream) return;
-      const t = s >= 400 ? await ex.downError(r) : await ex.down(r);
-      return new Response(JSON.stringify(t), {
-        status: s,
-        headers: { "content-type": "application/json" },
-      });
     })
     .onError({ as: "global" }, async (ctx) => {
-      const wire = toWireError(ctx.error);
-      if (wire) {
-        ctx.set.status = wire.status;
-        Object.assign(ctx.set.headers, wire.headers);
-        return wire.body;
-      }
       const st = (ctx as unknown as { versionless?: State }).versionless;
-      if (!st || st.exchange.passthrough || st.exchange.transformCount === 0) return;
-      // Thrown status(code, body) errors carry a JSON-able body we can down-map.
-      if (ctx.error instanceof ElysiaCustomStatusResponse) {
-        const body: unknown = ctx.error.response;
-        if (body !== null && typeof body === "object") {
-          return status(ctx.error.code as number, (await st.exchange.downError(body)) as never);
+      try {
+        const wire = toWireError(ctx.error);
+        if (wire) {
+          ctx.set.status = wire.status;
+          Object.assign(ctx.set.headers, wire.headers);
+          return wire.body;
         }
+        if (!st || st.exchange.passthrough || st.exchange.transformCount === 0) return;
+        // Thrown status(code, body) errors carry a JSON-able body we can down-map.
+        if (ctx.error instanceof ElysiaCustomStatusResponse) {
+          const body: unknown = ctx.error.response;
+          if (body !== null && typeof body === "object") {
+            return status(ctx.error.code as number, (await st.exchange.downError(body)) as never);
+          }
+        }
+      } finally {
+        if (st) finish(st, errorStatus(ctx), options.waitUntil);
       }
-    })
-    .onAfterResponse({ as: "global" }, (ctx) => {
-      const st = (ctx as unknown as { versionless?: State }).versionless;
-      if (!st) return;
-      st.exchange.finish({
-        status: statusOf(ctx.set),
-        waitUntil: options.waitUntil,
-      });
     });
 }
 

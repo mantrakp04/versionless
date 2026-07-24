@@ -231,7 +231,6 @@ describe("@versionless/adapter-elysia", () => {
       },
     });
     expect((await app.handle(get("/users/7"))).status).toBe(200);
-    await Bun.sleep(1);
     expect(flushStarted).toBe(true);
     expect(handedOff).toBeDefined();
 
