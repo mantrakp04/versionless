@@ -59,10 +59,9 @@ export const otlpAuthorizer = createOtlpAuthorizer({
   bindKey: bindTelemetryKey,
 });
 
-// Dev visibility: log versioned requests to the console alongside the cloud loop.
-if (env.NODE_ENV === "development") {
-  v.telemetry.use(consoleSink());
-}
+// Keep a safe, body-free versionless request line in the platform runtime
+// logs as an independent diagnostic alongside the OTLP cloud export.
+v.telemetry.use(consoleSink());
 
 // The app is defined here without `.listen()` so it can be imported
 // side-effect-free (Vercel functions, tests, and the versionless CLI's
