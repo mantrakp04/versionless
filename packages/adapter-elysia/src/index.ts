@@ -69,6 +69,15 @@ export interface VersionlessElysiaOptions {
   waitUntil?: (pending: Promise<void>) => void;
 }
 
+export async function finishVersionlessResponse(
+  ctx: { set: ElysiaishCtx["set"] } & Record<string, unknown>,
+  options: VersionlessElysiaOptions = {},
+): Promise<void> {
+  const st = (ctx as unknown as { versionless?: State }).versionless;
+  if (!st || st.finished) return;
+  await finish(st, statusOf(ctx.set), options.waitUntil);
+}
+
 /** Global versioning plugin: `app.use(versionless(v))` before defining routes. */
 export function versionless(v: Versionless, options: VersionlessElysiaOptions = {}) {
   return new Elysia({ name: "versionless" })
@@ -161,12 +170,10 @@ export function versionless(v: Versionless, options: VersionlessElysiaOptions = 
       }
     })
     .onAfterResponse({ as: "global" }, async (ctx) => {
-      const st = (ctx as unknown as { versionless?: State }).versionless;
-      if (!st || st.finished) return;
       // Elysia carries global derive hooks into subsequently mounted child
       // plugins, but not mapResponse hooks. Finish those exchanges here and
       // hand the flush to the serverless platform before this task detaches.
-      await finish(st, statusOf(ctx.set), options.waitUntil);
+      await finishVersionlessResponse(ctx, options);
     });
 }
 

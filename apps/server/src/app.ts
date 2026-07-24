@@ -8,7 +8,10 @@ import { v } from "@versionless/api/versionless";
 import { env } from "@versionless/env/server";
 import { waitUntil } from "@vercel/functions";
 import { consoleSink } from "@versionless/core";
-import { versionless } from "@versionless/adapter-elysia";
+import {
+  finishVersionlessResponse,
+  versionless,
+} from "@versionless/adapter-elysia";
 import { Elysia } from "elysia";
 import {
   bindTelemetryKey,
@@ -79,6 +82,11 @@ export const app = new Elysia()
   // purpose: versioning the ingest path would loop telemetry into itself.
   .use(createOtlpAuthApp(otlpAuthorizer))
   .use(versionless(v, { waitUntil }))
+  // Root-app fallback for Elysia's mounted-plugin lifecycle scoping. The
+  // adapter finalizer is idempotent, so direct routes still emit exactly once.
+  .onAfterResponse({ as: "global" }, (ctx) =>
+    finishVersionlessResponse(ctx, { waitUntil }),
+  )
   // The query plane is a real client-facing API — mounted AFTER the plugin
   // (Elysia hooks only apply to routes registered after them) so it gets
   // version resolution and shows up in the server's own telemetry.
