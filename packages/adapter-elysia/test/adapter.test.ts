@@ -230,12 +230,18 @@ describe("@versionless/adapter-elysia", () => {
         handedOff = pending;
       },
     });
-    expect((await app.handle(get("/users/7"))).status).toBe(200);
+    let responseSettled = false;
+    const response = app.handle(get("/users/7")).finally(() => {
+      responseSettled = true;
+    });
+    await Bun.sleep(1);
     expect(flushStarted).toBe(true);
     expect(handedOff).toBeDefined();
+    expect(responseSettled).toBe(false);
 
     releaseFlush?.();
     await handedOff;
+    expect((await response).status).toBe(200);
   });
 
   test("streaming Response bodies pass through untouched for old clients", async () => {

@@ -37,14 +37,25 @@ function identity(ex: Exchange): boolean {
   return ex.transformCount === 0 && ex.routeKey === null;
 }
 
-function finish(
+async function finish(
   state: State,
   status: number,
   waitUntil?: (pending: Promise<void>) => void,
-): void {
+): Promise<void> {
   if (state.finished) return;
   state.finished = true;
-  state.exchange.finish({ status, waitUntil });
+  let flushed: Promise<void> | undefined;
+  state.exchange.finish({
+    status,
+    waitUntil: (pending) => {
+      flushed = pending;
+      waitUntil?.(pending);
+    },
+  });
+  // Elysia detaches after-response hooks from the request promise. Awaiting
+  // here keeps serverless runtimes alive even when their background-task
+  // handoff is unavailable or runs after the response has been committed.
+  await flushed;
 }
 
 function errorStatus(ctx: { error: unknown; set: ElysiaishCtx["set"] }): number {
@@ -125,7 +136,7 @@ export function versionless(v: Versionless, options: VersionlessElysiaOptions = 
           headers: { "content-type": "application/json" },
         });
       } finally {
-        finish(st, statusOf(ctx.set), options.waitUntil);
+        await finish(st, statusOf(ctx.set), options.waitUntil);
       }
     })
     .onError({ as: "global" }, async (ctx) => {
@@ -146,7 +157,7 @@ export function versionless(v: Versionless, options: VersionlessElysiaOptions = 
           }
         }
       } finally {
-        if (st) finish(st, errorStatus(ctx), options.waitUntil);
+        if (st) await finish(st, errorStatus(ctx), options.waitUntil);
       }
     });
 }
