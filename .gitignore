@@ -46,6 +46,8 @@ lerna-debug.log*
 
 # Testing
 coverage
+!packages/cli/src/coverage/
+!packages/cli/src/coverage/**
 .nyc_output
 
 # Misc
