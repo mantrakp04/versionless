@@ -1,0 +1,30 @@
+packages/cli/src/coverage/match.ts
+  s_8627433061d959::t_2a1dee9d754e92 2-12,15-27,40-41,45,50-51,59,61-62,66,68-69,72-73,76-79,82-83,85-86,91-92,104-105,109-110,121,130,150,160-163,167,170,174-177,187-188,197-198,208-212,225-228,236
+  s_03476fa2d49caf::t_6fa9d70a281c15 1,13-14,28-39,42-44,46-49,52-58,60,63-65,67,70-71,74-75,80-81,84,87-90,93-103,106-108,111-120,122-129,131-149,151-159,164-166,168-169,171-173,178-186,189-196,199-207,213-224,229-235
+.gitignore
+  s_03476fa2d49caf::t_a35c247f4a4a0d 49-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "5265fcbb7980943c8ab9a453ef8daf6b16761d6c",
+  "prompts": {},
+  "sessions": {
+    "s_03476fa2d49caf": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f959f-b9af-7742-a180-0a5f335bc025",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_8627433061d959": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "41eb522e-6829-4c29-a68b-57506684e9d0",
+        "model": "claude-fable-5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    }
+  }
+}
