@@ -36,8 +36,13 @@ function identity(ex: Exchange): boolean {
   return ex.transformCount === 0 && ex.routeKey === null;
 }
 
+export interface VersionlessElysiaOptions {
+  /** Platform background-task handoff, such as `waitUntil` from `@vercel/functions`. */
+  waitUntil?: (pending: Promise<void>) => void;
+}
+
 /** Global versioning plugin: `app.use(versionless(v))` before defining routes. */
-export function versionless(v: Versionless) {
+export function versionless(v: Versionless, options: VersionlessElysiaOptions = {}) {
   return new Elysia({ name: "versionless" })
     .derive({ as: "global" }, async (ctx) => {
       const exchange = await open(v, ctx as ElysiaishCtx);
@@ -122,7 +127,10 @@ export function versionless(v: Versionless) {
     .onAfterResponse({ as: "global" }, (ctx) => {
       const st = (ctx as unknown as { versionless?: State }).versionless;
       if (!st) return;
-      st.exchange.finish({ status: statusOf(ctx.set) });
+      st.exchange.finish({
+        status: statusOf(ctx.set),
+        waitUntil: options.waitUntil,
+      });
     });
 }
 

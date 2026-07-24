@@ -82,6 +82,7 @@
         "@elysiajs/trpc": "^1.1.0",
         "@hexclave/js": "^1.0.52",
         "@trpc/server": "catalog:",
+        "@vercel/functions": "^2.2.13",
         "@versionless/adapter-elysia": "workspace:*",
         "@versionless/adapter-trpc": "workspace:*",
         "@versionless/api": "workspace:*",

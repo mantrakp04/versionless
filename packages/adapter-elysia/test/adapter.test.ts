@@ -1,8 +1,12 @@
-import { describe, expect, test } from "bun:test";
+import { afterEach, describe, expect, test } from "bun:test";
 import { createVersionless } from "@versionless/core";
 import type { TelemetryEvent, Versionless } from "@versionless/core";
 import { Elysia } from "elysia";
-import { versionless, versionlessRewrites } from "../src/index";
+import {
+  versionless,
+  versionlessRewrites,
+  type VersionlessElysiaOptions,
+} from "../src/index";
 
 const BEFORE_SUNSET = () => new Date("2026-01-01T00:00:00Z");
 const AFTER_SUNSET = () => new Date("2026-07-21T00:00:00Z");
@@ -43,9 +47,9 @@ function makeInstance(
   return v;
 }
 
-function makeApp(v: Versionless) {
+function makeApp(v: Versionless, options?: VersionlessElysiaOptions) {
   const app = new Elysia()
-    .use(versionless(v))
+    .use(versionless(v, options))
     .get("/users/:id", ({ params }) => ({ id: params.id, firstName: "Ada", lastName: "Lovelace" }))
     .post("/users", ({ body }) => body)
     .get("/teams/:id", ({ params }) => ({ team: params.id }))
@@ -77,6 +81,10 @@ const get = (path: string, headers: Record<string, string> = {}) =>
   new Request(`http://localhost${path}`, { headers });
 
 describe("@versionless/adapter-elysia", () => {
+  afterEach(() => {
+    delete process.env.VERCEL;
+  });
+
   test("no version header serves the current shape", async () => {
     const { app } = fixture();
     const res = await app.handle(get("/users/7"));
@@ -198,6 +206,37 @@ describe("@versionless/adapter-elysia", () => {
     expect(event.adapter).toBe("elysia");
     expect(event.transformCount).toBeGreaterThan(0);
     expect(event.latencyMs).toBeGreaterThanOrEqual(0);
+  });
+
+  test("hands the serverless telemetry flush to the platform lifecycle", async () => {
+    process.env.VERCEL = "1";
+    const v = makeInstance(BEFORE_SUNSET);
+    let releaseFlush: (() => void) | undefined;
+    const flushBlocked = new Promise<void>((resolve) => {
+      releaseFlush = resolve;
+    });
+    let flushStarted = false;
+    v.telemetry.use({
+      record: () => {},
+      flush: async () => {
+        flushStarted = true;
+        await flushBlocked;
+      },
+    });
+
+    let handedOff: Promise<void> | undefined;
+    const app = makeApp(v, {
+      waitUntil: (pending) => {
+        handedOff = pending;
+      },
+    });
+    expect((await app.handle(get("/users/7"))).status).toBe(200);
+    await Bun.sleep(1);
+    expect(flushStarted).toBe(true);
+    expect(handedOff).toBeDefined();
+
+    releaseFlush?.();
+    await handedOff;
   });
 
   test("streaming Response bodies pass through untouched for old clients", async () => {

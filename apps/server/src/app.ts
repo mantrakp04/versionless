@@ -6,6 +6,7 @@ import { getHexclaveServerApp } from "@versionless/api/lib/hexclave";
 import { appRouter } from "@versionless/api/routers/index";
 import { v } from "@versionless/api/versionless";
 import { env } from "@versionless/env/server";
+import { waitUntil } from "@vercel/functions";
 import { consoleSink } from "@versionless/core";
 import { versionless } from "@versionless/adapter-elysia";
 import { Elysia } from "elysia";
@@ -78,7 +79,7 @@ export const app = new Elysia()
   // HTTP or gRPC to the Collector. Mounted BEFORE the versionless plugin on
   // purpose: versioning the ingest path would loop telemetry into itself.
   .use(createOtlpAuthApp(otlpAuthorizer))
-  .use(versionless(v))
+  .use(versionless(v, { waitUntil }))
   // The query plane is a real client-facing API — mounted AFTER the plugin
   // (Elysia hooks only apply to routes registered after them) so it gets
   // version resolution and shows up in the server's own telemetry.
