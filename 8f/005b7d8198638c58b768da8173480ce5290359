@@ -1,0 +1,29 @@
+packages/env/src/server.ts
+  s_4a5680375148c3::t_7ba2d834cd4541 17-18,20
+packages/api/src/lib/clickhouse-query.test.ts
+  s_4a5680375148c3::t_7ba2d834cd4541 7,12-35
+apps/server/src/query.ts
+  s_4a5680375148c3::t_7ba2d834cd4541 38,49-54,90
+packages/api/src/lib/clickhouse-query.ts
+  s_4a5680375148c3::t_7ba2d834cd4541 73-83,93-95
+apps/server/test/query.test.ts
+  s_4a5680375148c3::t_7ba2d834cd4541 125,137-139,151-152
+apps/server/.env.example
+  s_4a5680375148c3::t_7ba2d834cd4541 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "8f005b7d8198638c58b768da8173480ce5290359",
+  "prompts": {},
+  "sessions": {
+    "s_4a5680375148c3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f95c0-ce17-7b83-b94a-4f8cc3f80a16",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    }
+  }
+}
