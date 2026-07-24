@@ -159,6 +159,14 @@ export function versionless(v: Versionless, options: VersionlessElysiaOptions = 
       } finally {
         if (st) await finish(st, errorStatus(ctx), options.waitUntil);
       }
+    })
+    .onAfterResponse({ as: "global" }, async (ctx) => {
+      const st = (ctx as unknown as { versionless?: State }).versionless;
+      if (!st || st.finished) return;
+      // Elysia carries global derive hooks into subsequently mounted child
+      // plugins, but not mapResponse hooks. Finish those exchanges here and
+      // hand the flush to the serverless platform before this task detaches.
+      await finish(st, statusOf(ctx.set), options.waitUntil);
     });
 }
 

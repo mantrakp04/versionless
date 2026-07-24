@@ -244,6 +244,31 @@ describe("@versionless/adapter-elysia", () => {
     expect((await response).status).toBe(200);
   });
 
+  test("flushes routes mounted from a later child plugin", async () => {
+    process.env.VERCEL = "1";
+    const v = makeInstance(BEFORE_SUNSET);
+    const events: TelemetryEvent[] = [];
+    let handedOff: Promise<void> | undefined;
+    v.telemetry.use({ record: (event) => events.push(event) });
+    const child = new Elysia().get("/child", () => "ok");
+    const app = new Elysia()
+      .use(
+        versionless(v, {
+          waitUntil: (pending) => {
+            handedOff = pending;
+          },
+        }),
+      )
+      .use(child);
+
+    expect((await app.handle(get("/child"))).status).toBe(200);
+    await Bun.sleep(1);
+    expect(handedOff).toBeDefined();
+    await handedOff;
+    expect(events).toHaveLength(1);
+    expect(events[0]!.route).toBe("GET /child");
+  });
+
   test("streaming Response bodies pass through untouched for old clients", async () => {
     const { app } = fixture();
     const res = await app.handle(get("/stream", { "x-api-version": "2025-01-01" }));
