@@ -1,0 +1,23 @@
+apps/server/src/query.ts
+  s_4a5680375148c3::t_8c9fcc379573c9 12,14,42,59-72,87-88,90-123
+  s_4a5680375148c3::t_f6063e7cf285c9 13,84,128
+  s_4a5680375148c3::t_1db68fab3f45a8 73
+apps/server/test/query.test.ts
+  s_4a5680375148c3::t_f6063e7cf285c9 31,45-47,71-73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "b6fa29edae4422dfbb45afe4dda4bc206cf1086a",
+  "prompts": {},
+  "sessions": {
+    "s_4a5680375148c3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f95c0-ce17-7b83-b94a-4f8cc3f80a16",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    }
+  }
+}
