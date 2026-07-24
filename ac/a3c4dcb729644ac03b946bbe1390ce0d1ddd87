@@ -1,0 +1,1525 @@
+packages/core/package.json
+  s_8627433061d959::t_30b56870b96fc9 1-23
+infra/otel/collector.Dockerfile
+  s_863a911f9cdee9::t_5f1c8cf383a0a5 1-6
+packages/api/src/context.ts
+  s_7c29c8fab20e56::t_7eda08f3d1c3ed 1-2,4-5,11-15,17-25
+packages/api/src/versionless.ts
+  s_ff4db4e2229bdb::t_f391b339670830 6-7
+  s_ff4db4e2229bdb::t_6110d2a6cbe45b 1
+  s_7c29c8fab20e56::t_7eda08f3d1c3ed 2-5,8-9,16-17,19-24,28-32,34-41
+  s_7c29c8fab20e56::t_ed008b0bec6bed 10-15,18,25-27
+  s_ff4db4e2229bdb::t_5d6df1c27eb0ee 33
+packages/cli/src/diff/surface-diff.ts
+  s_a0ea9aa55ed960::t_b7bc13f675293d 1-197
+packages/cli/src/surface/elysia.ts
+  s_ff4db4e2229bdb::t_d913c2aa0634e9 1-4
+  s_ff4db4e2229bdb::t_106bddc91f3fd6 65
+  s_8627433061d959::t_562456001ea42f 5-64,66-103
+apps/docs/content/docs/otel.mdx
+  s_1e27fdbdff0c10::t_92c0097a51e5ee 1-70,72,74-76,84,88-104
+  s_1e27fdbdff0c10::t_710cd15952d56e 71,73,77-83,85-87
+apps/web/src/routes/keys.tsx
+  s_099ba1ca90eb52::t_71db71bafa180c 261
+  s_213757e3d49072::t_e9e70fed7b207b 260
+  s_213757e3d49072::t_8955d488075c8d 73-75
+  s_213757e3d49072::t_901635cedcb5dd 28,135,188-189
+  s_5c9d936ad1b645::t_c46b1821879a03 29,136-149,151-184,186,200-205,210-238,240-241
+  s_5c9d936ad1b645::t_c965b04beeb9f5 34,194-199,206-209,242-244
+  s_8627433061d959::t_4f1d6365b745d5 1-27,31-33,37-56,58-66,68-69,71-72,76-79,82-105,112-123,130-134,185,187,190-193,239,245-253,255-257,267-268,272-284
+  s_a0ea9aa55ed960::t_7c7c2c7e098175 35,57,67,70,80-81
+  s_52af960aa3476a::t_a07908347885dd 36,106-111,124-129
+  s_213757e3d49072::t_45c50b49ecaf15 30,254,258-259,262-266,269-271
+  s_213757e3d49072::t_e8cba200ab3de3 150
+apps/server/.versionless/2026-07-24.json
+  s_7c29c8fab20e56::t_1ed2741d13a8a8 1-151,153,155-157
+  s_7c29c8fab20e56::t_04cc681ed4c1ba 152,154
+apps/docs/public/favicon.svg
+  s_abe1e94a57f6dd::t_0f80b1d8c91ca5 1-15
+packages/adapter-tanstack-start/src/index.ts
+  s_06f03f3c653d6d::t_d0ca75c311f260 1-20,24,27-72,82-105,107,128,131,134
+  s_ff4db4e2229bdb::t_c3b6abb542b751 21-23,25-26,73-81,122-127,129-130,132-133
+  s_7c29c8fab20e56::t_15a6bb8946e527 110-113,115-121
+  s_7c29c8fab20e56::t_6feb5512a4759f 106,108-109,114
+apps/web/src/queries/traces.ts
+  s_ff4db4e2229bdb::t_819c3ae92b6fcb 1-3
+  s_863a911f9cdee9::t_06770b44246a06 4-37,46,61-70,91-101,103,120-149,164-180
+  s_863a911f9cdee9::t_2cd1f643d0afe5 163
+  s_ff4db4e2229bdb::t_d980c080ed3ea8 71-90,102,104-119
+  s_ff4db4e2229bdb::t_dc4932f00b3686 38-45,47-60
+  s_863a911f9cdee9::t_b39e458981cb5a 150-162
+apps/demo/src/routes/rpc.$.ts
+  s_7c29c8fab20e56::t_6c4956e6abb2b3 1-13
+packages/cli/src/commands/generate.ts
+  s_7c29c8fab20e56::t_a33e204f8e179b 209-222
+  s_7c29c8fab20e56::t_f5e3f40081a04e 6,10
+  s_8627433061d959::t_a8dac089f057e2 1-5,7-9,11-208,223-253
+packages/core/test/client-types.test-d.ts
+  s_8627433061d959::t_dcb563eef6959d 87,124,140
+  s_8627433061d959::t_7c7467253d3536 1-86,88-123,125-139,141-151
+packages/db/package.json
+  s_68d592196ed2c7::t_d0b75f31e00196 17-19
+  s_8627433061d959::t_51c307a33a3168 25
+packages/cli/src/surface/typebox.ts
+  s_8627433061d959::t_30e6aa758c4357 1-34
+packages/db/test/baseline-migration.test.ts
+  s_b35ec40c5aa45e::t_da80ac2435241c 1-22
+apps/server/package.json
+  s_ff4db4e2229bdb::t_1f0907be22a29e 10-14,21-22,24,27-28,35
+packages/core/src/scheme.ts
+  s_8627433061d959::t_f0c029c2dc6126 1-51
+packages/core/test/matcher.test.ts
+  s_8627433061d959::t_064a5b054d8697 1-42
+turbo.json
+  s_68d592196ed2c7::t_f2ccf8df7bef50 34-35
+  s_779457a47402e1::t_f98f4233a7b996 24-27
+  s_8627433061d959::t_10cfa63f4d64ba 16-19
+  s_ff4db4e2229bdb::t_6c223231b3c523 37,40
+packages/client/test/client.test.ts
+  s_ff4db4e2229bdb::t_17b69878b27810 61-74
+  s_8627433061d959::t_8e4764b12d981e 1-50,52-60,75-96
+  s_8627433061d959::t_92efe6f351e58b 51
+packages/adapter-orpc/src/index.ts
+  s_06f03f3c653d6d::t_895733d6615ede 1-2,9-12,14,20-60,64-78,88-102,112-137,139-143,145-146,151,155-156,159-161,164-166,168-171,173-175,177,179,181-185,188-189,195,197-200
+  s_7c29c8fab20e56::t_e5dd3fb4e0aa06 103-104,107,111
+  s_ff4db4e2229bdb::t_fc3a2c1b2f0649 3-8,13,15-19,61-63,79-87,138,144,162-163,172,190-192,196
+  s_ff4db4e2229bdb::t_329312831a0f0b 193-194
+  s_06f03f3c653d6d::t_559146a09b8817 147-150,152-154,157-158,167,176,178,180,186-187
+  s_7c29c8fab20e56::t_5a89a2ac8fbfe9 105-106,108-110
+apps/demo/.versionless/2026-07-21.json
+  s_7c29c8fab20e56::t_195c551cf20329 1-226
+packages/core/src/trace-capture.ts
+  s_863a911f9cdee9::t_00ca9592fec359 2,50,70,132,220-221,243
+  s_863a911f9cdee9::t_722babf720e705 240
+  s_1e27fdbdff0c10::t_3336b4ad1cc6c0 1,3-49,51-69,71-112,115-119,121-125,129-131,133-219,222,224-234,238-239,241-242,244-250
+  s_863a911f9cdee9::t_f963f3554cd635 223,235-237
+  s_1e27fdbdff0c10::t_6a5b5a7c771d81 113-114,120,126-128
+packages/ui/src/hooks/use-mobile.ts
+  s_8627433061d959::t_3331c438fc1167 1-19
+apps/docs/content/docs/telemetry.mdx
+  s_863a911f9cdee9::t_6f8249d4da7fc5 29-30,63-65,90-92,124-125
+  s_863a911f9cdee9::t_0e7ecf87d72911 170-175
+  s_213757e3d49072::t_822920c9d414c7 208-210
+  s_1e27fdbdff0c10::t_71d192d6d34428 85-87,89,93-113,116-121
+  s_863a911f9cdee9::t_ce493541342d02 25
+  s_213757e3d49072::t_277dfb73979e79 20,56,58
+  s_863a911f9cdee9::t_853de72dd1f274 127,130-131,136,187,192
+  s_8627433061d959::t_0da771ccf1eb70 1-19,21-24,26-28,35,50-55,57,59-62,66-84,122-123,126,128-129,132-135,137-160,162,169,176-186,188-191,193-195
+  s_863a911f9cdee9::t_5537db1b32f5a5 36-49,197-203
+  s_863a911f9cdee9::t_024f732fcd6dd3 88
+  s_213757e3d49072::t_869f05bdba9cc2 223-224
+  s_863a911f9cdee9::t_b1dd5c0d60aa0b 114-115
+  s_8627433061d959::t_704f84f2b0e5d9 196,204-207,211,218-221
+  s_863a911f9cdee9::t_52d17d8c5a91af 31-34,161,163-168,212-217,222
+apps/docs/src/app/docs/[[...slug]]/page.tsx
+  s_abe1e94a57f6dd::t_65825e0f3c1fe8 55-58,61,70,77,83
+  s_abe1e94a57f6dd::t_0f80b1d8c91ca5 14,63-65,67-69,71-76,78-82,84-85
+apps/demo/test/versioning.test.ts
+  s_7c29c8fab20e56::t_dc7b7455f86f8a 1-113,119,121-123,125-181
+  s_7c29c8fab20e56::t_8124611fc9a31c 114
+  s_7c29c8fab20e56::t_32f6ade143b2de 115-118,120,124
+packages/api/src/lib/env-mode.ts
+  s_ff4db4e2229bdb::t_3d92e2005cf374 1-10
+apps/docs/content/docs/adapters/trpc.mdx
+  s_7c29c8fab20e56::t_0c8c0a413efee0 27
+  s_8627433061d959::t_1f7526423f613e 1-26,28-112
+apps/docs/public/SKILL.md
+  s_32a7c3f5866807::t_a77cf239f6e682 238-241
+  s_32a7c3f5866807::t_e7e6c91c5c6499 1-72,74-237,242-244,246-260
+  s_32a7c3f5866807::t_52ae7264d1d99d 73
+  s_32a7c3f5866807::t_d6d4dcd16126e8 245
+packages/cli/test/extract-refs.test.ts
+  s_7c29c8fab20e56::t_0f8fa860cdbb44 1-85
+packages/core/src/index.ts
+  s_863a911f9cdee9::t_6920da69b410b2 11,70,80,84,96-97,128,139,144
+  s_1e27fdbdff0c10::t_30dc5a0ff0885d 152
+  s_ff4db4e2229bdb::t_23729c0e40fdab 3
+  s_1e27fdbdff0c10::t_df7f91a4c64229 210
+  s_ff4db4e2229bdb::t_f018fd5d1b93c5 147
+  s_8627433061d959::t_486312fd5e4a71 88-90,92-94
+  s_ff4db4e2229bdb::t_0d65672a771cb5 68
+  s_1e27fdbdff0c10::t_2fa648563a299b 114,118,135,137-138,140-141,145-146,148-151,153-155,157-160
+  s_68d592196ed2c7::t_6af457376c0cc5 50-57
+  s_ff4db4e2229bdb::t_a30af8c57ab245 211,214-219
+  s_213757e3d49072::t_b930ac1569da7f 120-125,130
+  s_8627433061d959::t_a71201de09e966 91
+  s_ff4db4e2229bdb::t_3500817a23fb70 29-49
+  s_1e27fdbdff0c10::t_2649cee4a5beb6 8-10,12,20
+  s_ff4db4e2229bdb::t_8a4151675e9ee3 115-117
+  s_1e27fdbdff0c10::t_4ff564815f848d 65-66,69,71-72,78-79,81-83,85-86
+  s_863a911f9cdee9::t_ce493541342d02 142-143
+  s_68d592196ed2c7::t_6376f32b9c04b8 209
+  s_863a911f9cdee9::t_42f2937504797b 136,156
+  s_1e27fdbdff0c10::t_a30a26a1f18897 98
+  s_863a911f9cdee9::t_00ca9592fec359 7,67,73-77,127
+  s_8627433061d959::t_35e5168f5c6c93 1-2,4-6,13-19,21-28,58-64,87,95,99-113,119,126,129,132-134,161-208,212-213,220-233
+  s_ff4db4e2229bdb::t_f1290098d88fac 131
+apps/web/src/components/insights/no-project-card.tsx
+  s_213757e3d49072::t_c6022c25049ae1 10,20-22
+  s_8627433061d959::t_4ab53dfc1aaa1c 1-9,11-19,23-27
+apps/web/src/components/dashboard-table.test.tsx
+  s_5c9d936ad1b645::t_00bb9e82b67a1f 1-78,89-118
+  s_ff4db4e2229bdb::t_24727b287fd971 79-88
+  s_5c9d936ad1b645::t_77b9f7d51fd5cc 119-147
+packages/cli/src/commands/watch.ts
+  s_779457a47402e1::t_e931555f930427 1-167
+packages/env/src/demo.ts
+  s_7c29c8fab20e56::t_a9e9590bd42467 9-12
+  s_7c29c8fab20e56::t_3e31118487d7eb 1-8,13-21
+packages/env/src/server.ts
+  s_8627433061d959::t_fe6b05aa6c7153 17
+  s_ff4db4e2229bdb::t_db0a02957d3b32 5
+  s_04155f0558ce2c::t_84494a68a4a5fc 37
+  s_8627433061d959::t_c52b3f8816fded 18,25-26
+  s_863a911f9cdee9::t_6a653a4ae72291 21-24
+  s_863a911f9cdee9::t_a48e2b6038ebcc 30
+  s_863a911f9cdee9::t_602489d100e444 19-20
+  s_653aebccc09981::t_717d931e1d5e16 27,29,31-34
+  s_653aebccc09981::t_213d8af4eb4370 35-36,38
+  s_863a911f9cdee9::t_ce493541342d02 28
+apps/docs/content/docs/meta.json
+  s_1e27fdbdff0c10::t_e27121a37a8449 10
+  s_8627433061d959::t_bcca5178665968 1-9,11-13
+packages/adapter-hono/package.json
+  s_8627433061d959::t_3f42830276f283 1-25
+vercel.json
+  s_863a911f9cdee9::t_0ae2bba22a365e 9
+  s_7c29c8fab20e56::t_16ad52c95b28ee 40-44,72,90,120-131
+  s_abe1e94a57f6dd::t_0f80b1d8c91ca5 91-101
+  s_32a7c3f5866807::t_17c4593af44954 73-77
+packages/cli/bin/versionless.ts
+  s_8627433061d959::t_e1731d6b036ffa 1-4
+apps/web/src/components/header.tsx
+  s_099ba1ca90eb52::t_874780e0de3b39 58-77,83-85
+  s_5c9d936ad1b645::t_3cbf04f24085e5 48-51,238-244
+  s_8627433061d959::t_6ca91f6561200e 1,54,101,175
+  s_099ba1ca90eb52::t_080fcad41d8178 31,52,264-272
+  s_213757e3d49072::t_df3e1eca2e721b 120-121
+  s_099ba1ca90eb52::t_c7c40d3493b73a 30,32-34,185,227-237,245-257
+  s_8627433061d959::t_f03c608ccb3393 181,184
+  s_213757e3d49072::t_2bc63abd28381e 3-4,15-28,178-180,182-183,188,198-226,258-261,279-281
+  s_863a911f9cdee9::t_ea7c8d4c817fcd 41,78-82
+  s_213757e3d49072::t_2a15584109e816 2,5-14,29,35-40,42-46,53,55-57,86-100,102-110,112-119,122-173,190-195,262-263,273-278
+  s_213757e3d49072::t_45c50b49ecaf15 111,174
+  s_abe1e94a57f6dd::t_33efa476fa1a23 189,196
+apps/web/src/routes/insights/$projectId/route.tsx
+  s_5c9d936ad1b645::t_476aab5caba46e 4-7,14-20
+  s_a0ea9aa55ed960::t_7c7c2c7e098175 3,8-11,25-54
+  s_213757e3d49072::t_1d67507e043e0e 1-2,13,21-24,55
+  s_5c9d936ad1b645::t_3cbf04f24085e5 12
+apps/web/src/components/insights/format.ts
+  s_8627433061d959::t_a71d9bb247174b 1-17
+apps/demo/src/server/rpc.ts
+  s_7c29c8fab20e56::t_7fe7a4c4c16c01 16-17
+  s_7c29c8fab20e56::t_4186eac8711762 1-15,18-48
+apps/web/src/hooks/use-insights-time-range.ts
+  s_26b29cb45112b9::t_76f20218de7170 2,11-14,16-23,29,32
+  s_26b29cb45112b9::t_ee272006caddde 15
+  s_5c9d936ad1b645::t_476aab5caba46e 4-7,25,28
+  s_5c9d936ad1b645::t_3cbf04f24085e5 1,3,8-10,24,26-27,30-31,33-38
+packages/core/src/compiler.ts
+  s_8627433061d959::t_723ae3f68dc17e 1-2,11,18-22,26-46,51-109,113-116,118-124,130-140,142-167,169-171,174,201,204-205,209-213
+  s_8627433061d959::t_e8771e22d594c8 12-17,23-25,47-50,110-112,117,125-129,141,168,175,202
+  s_1e27fdbdff0c10::t_5b220cd3080956 172-173,176-200,203,206-208
+  s_1e27fdbdff0c10::t_878b9c744c20ca 3-10
+CLAUDE.md
+  s_68d592196ed2c7::t_d805c2e9f14f5f 51-76
+  s_52af960aa3476a::t_a07908347885dd 17-31,35
+  s_7c29c8fab20e56::t_977d7d09fdffd5 11,13
+  s_04155f0558ce2c::t_e80ea368789309 77-81
+  s_52af960aa3476a::t_117328362c2593 32-34
+  s_863a911f9cdee9::t_52d17d8c5a91af 42
+  s_7c29c8fab20e56::t_9bb2d561602043 46-48
+  s_b380cdb2a9af6e::t_01abbff6a8a0ce 1-10,14-16,36-41,43-45,49-50,82-85
+  s_ff4db4e2229bdb::t_5f8d6d493d7eaf 12
+packages/cli/src/surface/convert.ts
+  s_ff4db4e2229bdb::t_6df0982cf37eb3 1-20
+packages/cli/test/store.test.ts
+  s_68d592196ed2c7::t_70453c727810ea 1-157
+packages/cli/src/surface/jsonschema.ts
+  s_8627433061d959::t_529730c3c3f8b5 1-7,10-13,19,25-161,163-312
+  s_7c29c8fab20e56::t_01db4f86a28088 8-9,14-18,20-24
+  s_7c29c8fab20e56::t_fe7ba89da500ba 162
+packages/adapter-tanstack-start/package.json
+  s_06f03f3c653d6d::t_a1b684f858daf8 1-21
+apps/web/src/components/insights/insights-navigation.ts
+  s_099ba1ca90eb52::t_c7c40d3493b73a 1-4
+  s_5c9d936ad1b645::t_3cbf04f24085e5 5-8
+apps/web/src/components/insights/project-switcher.test.ts
+  s_863a911f9cdee9::t_ea7c8d4c817fcd 18-20
+  s_099ba1ca90eb52::t_aa12267f3b1989 1-17,21
+apps/demo/src/routes/orgs.$id.ts
+  s_7c29c8fab20e56::t_4ed27e8056ef2d 7
+  s_7c29c8fab20e56::t_74a504d0b79ecb 10-12
+  s_7c29c8fab20e56::t_6ff24ce763b220 1-6,8-9,13
+apps/docs/content/docs/adapters/tanstack-start.mdx
+  s_06f03f3c653d6d::t_986dbddc32e841 1-24,29-58,62-67,72-83
+  s_7c29c8fab20e56::t_2ad3c810eefe54 59-61,68-71
+  s_7c29c8fab20e56::t_f1b636d6d2fd0b 25-28
+packages/adapter-elysia/package.json
+  s_8627433061d959::t_3f42830276f283 1-25
+packages/db/src/migrations/0001_perfect_zarda.sql
+  s_b7e379d3cd6c37::t_353082aa7887b2 1,9-14
+  s_b7e379d3cd6c37::t_9cd4b4f10db638 2-8
+packages/db/src/schema/projects.ts
+  s_213757e3d49072::t_39da42e57971b8 1,3-27,29-35
+  s_863a911f9cdee9::t_722babf720e705 2,36-65
+  s_213757e3d49072::t_5ee6b0001b4034 28
+packages/adapter-express/README.md
+  s_8627433061d959::t_e06e874866d148 1-12
+apps/server/src/index.ts
+  s_653aebccc09981::t_e492a12e8badde 10,12,20
+  s_863a911f9cdee9::t_75c3c673ea3104 23
+  s_8627433061d959::t_c08b434adf6a3d 18-19
+  s_863a911f9cdee9::t_86a15135c9ee3e 2
+  s_863a911f9cdee9::t_a48e2b6038ebcc 21-22
+  s_863a911f9cdee9::t_78fa2a5d4d61e9 24-35
+  s_68d592196ed2c7::t_3e374d80280f75 6-9,11,13-15
+packages/adapter-express/tsconfig.json
+  s_8627433061d959::t_3f42830276f283 1-7
+apps/docs/content/docs/adapters/orpc.mdx
+  s_7c29c8fab20e56::t_04bb55ec7830cb 29
+  s_06f03f3c653d6d::t_ea117c3c5f16db 1-28,30-67
+apps/docs/content/docs/concepts/meta.json
+  s_8627433061d959::t_8d276471fab213 1-4
+apps/docs/content/docs/client/client-types.mdx
+  s_8627433061d959::t_821bd3e5438aa1 1-157
+docker-compose.yml
+  s_1e27fdbdff0c10::t_7b1b4f98d3d70c 30-32,34-35
+  s_863a911f9cdee9::t_26a1bc9d5bbfd6 23,50-60,64-69,75-84
+  s_9db1fc4190bda7::t_dadbaad621ecad 85-86
+  s_a0ea9aa55ed960::t_acf746896e8f53 70-74
+  s_1e27fdbdff0c10::t_f5923e7094260e 12
+  s_863a911f9cdee9::t_da1177d6669c44 61-63
+apps/web/src/routes/index.tsx
+  s_213757e3d49072::t_8c348cae8a3537 1,4-11,14,24,30-34,39-48,50-55,57-58,67-92,95-118,120
+  s_213757e3d49072::t_66f9a45b65a7bd 25
+  s_213757e3d49072::t_acd0e7b265d9da 93-94
+  s_213757e3d49072::t_5b91adfd3c50b0 49
+  s_213757e3d49072::t_adbd67c27b7926 27-29
+  s_213757e3d49072::t_8fd3140e035a26 2
+  s_213757e3d49072::t_fbf42d2f6bbd7a 56,59,61-66,119
+  s_a0ea9aa55ed960::t_7c7c2c7e098175 15,60
+  s_213757e3d49072::t_520c213a19f061 12,26
+apps/web/src/utils/client-error.test.ts
+  s_52af960aa3476a::t_a07908347885dd 1-25
+apps/web/src/utils/server-url.ts
+  s_ff4db4e2229bdb::t_1832e2648eaeba 1-2,14-15
+  s_863a911f9cdee9::t_7f0a15a62bf285 3-13,16
+apps/demo/src/routeTree.gen.ts
+  s_7c29c8fab20e56::t_cfe49eb1057d47 1-214
+packages/cli/src/surface/define.ts
+  s_8627433061d959::t_ec1c7d3cfca204 1-15,19-29
+  s_7c29c8fab20e56::t_f101b2c7a2a63c 16-17
+  s_8627433061d959::t_fd14e2a01690f4 18
+packages/cli/src/auth/hexclave.ts
+  s_1e6ab975ac1065::t_61d3f638a0fe7c 48-49,53
+  s_1e6ab975ac1065::t_7063c7bf1ae49b 1-47,50-52,54-223
+apps/web/src/hooks/use-selected-team.ts
+  s_a0ea9aa55ed960::t_7c7c2c7e098175 1-12
+packages/adapter-trpc/tsconfig.json
+  s_8627433061d959::t_3f42830276f283 1-7
+packages/core/src/sunset.ts
+  s_68d592196ed2c7::t_2633e72d1d1c22 63
+  s_8627433061d959::t_f5250ab2247112 1-62,64-77
+apps/server/scripts/seed-traffic.ts
+  s_8627433061d959::t_a52f2e141cfbb9 1,8,22,71,83-85,87-89,91-112,114-121,126-127,129-138,148
+  s_1e27fdbdff0c10::t_386c9dc8737365 139-141,144,146,149-150,158-159,162-173,177-185,187-190,194-203,205,314,316
+  s_863a911f9cdee9::t_1d4c07e32c1eb2 29,207
+  s_863a911f9cdee9::t_2510e6eee734b8 122-125
+  s_863a911f9cdee9::t_8ac008f8b5f429 142-143
+  s_863a911f9cdee9::t_191f22dd6e4699 24-28,30-31,113,145,157,160-161,174-176,191-193,204,206
+  s_a0ea9aa55ed960::t_f34b3e5c7bbb8f 36,86
+  s_653aebccc09981::t_8b53988a7174bd 34,41
+  s_04155f0558ce2c::t_dbf631a6c76f42 12-15,18-20,23,40,42,52,67-68,70
+  s_7c29c8fab20e56::t_24fd48b9818109 128
+  s_8627433061d959::t_b1ae8d82287ae5 4-5,9-10,90,306,313
+  s_213757e3d49072::t_0f0765de11e48d 21,32-33,72-80,82
+  s_7c29c8fab20e56::t_d8873df4f972f5 43-51
+  s_7c29c8fab20e56::t_f98728aa774f32 81
+  s_ff4db4e2229bdb::t_dca12b86f4050a 186
+  s_863a911f9cdee9::t_ed838418238ed7 2-3,39,208-215,217-244,247-252,254-269,272,275-292,294-295,297-304,307-312,315
+  s_8627433061d959::t_184f5b6be3eb56 11
+  s_7c29c8fab20e56::t_26f52f19402bda 216
+  s_863a911f9cdee9::t_b39e458981cb5a 37,147,154-156,245-246,270-271,293,296
+  s_1e27fdbdff0c10::t_99d2d4fbe28cda 151-153
+  s_a0ea9aa55ed960::t_f5d6c1c61ca83e 35
+  s_863a911f9cdee9::t_2a3d6db0eae050 16-17,38,57-66,69
+  s_863a911f9cdee9::t_505b851ce724e4 53-56
+  s_863a911f9cdee9::t_9097aecbfac0b4 253,273-274,305
+  s_099ba1ca90eb52::t_6bf4a5a2f7cb27 6-7
+apps/docs/content/docs/client/meta.json
+  s_8627433061d959::t_475ed0a32a3598 1-4
+apps/web/src/routes/insights/$projectId/index.tsx
+  s_a0ea9aa55ed960::t_1102e400bc90af 44
+  s_863a911f9cdee9::t_dd139650dd7056 24-27
+  s_213757e3d49072::t_1d67507e043e0e 1-10,22,28-31,33,43,45-46,53,93-94
+  s_099ba1ca90eb52::t_612d0b894eb2e3 41-42
+  s_26b29cb45112b9::t_2c46d98239f3f8 60-61,70
+  s_099ba1ca90eb52::t_2ac5f0be54eeb7 51-52
+  s_099ba1ca90eb52::t_2777298d4f086e 11-14
+  s_099ba1ca90eb52::t_78033406e22310 16-19
+  s_a0ea9aa55ed960::t_342e6554b75278 15,20,23,34,47-50,54-59,62-69,71-92
+  s_ff4db4e2229bdb::t_9edd6f3b86a20e 35-39
+  s_099ba1ca90eb52::t_6bf4a5a2f7cb27 32,40
+  s_ff4db4e2229bdb::t_8e2e4987e9acc3 21
+packages/adapter-trpc/package.json
+  s_8627433061d959::t_3f42830276f283 1-26
+apps/docs/content/docs/adapters/nextjs.mdx
+  s_06f03f3c653d6d::t_ba7ae1e2cb67f8 1-71
+apps/web/src/routes/insights/$projectId/-telemetry.test.ts
+  s_863a911f9cdee9::t_d5d7aeac6d0e2b 1-13
+apps/docs/public/site.webmanifest
+  s_abe1e94a57f6dd::t_0f80b1d8c91ca5 1-17
+packages/client/package.json
+  s_8627433061d959::t_9081214004886d 1-22
+apps/docs/content/docs/adapters/express.mdx
+  s_8627433061d959::t_7ba6d53500ac6a 1-61
+packages/core/test/telemetry.test.ts
+  s_213757e3d49072::t_07a85afd090561 40,44
+  s_863a911f9cdee9::t_af2db74eebe45e 75-76
+  s_213757e3d49072::t_e952375310aad5 1,7-33,37-39,41,43,45-49,77,96
+  s_863a911f9cdee9::t_8e63037cd5e6f8 2-6,78-95
+  s_863a911f9cdee9::t_f7a69a45b16c35 34,42,74
+  s_863a911f9cdee9::t_c31af71f9819a8 35-36,50-73
+apps/demo/src/data.ts
+  s_7c29c8fab20e56::t_2b366929726c0c 1-31
+apps/server/test/seed-team.test.ts
+  s_863a911f9cdee9::t_2a3d6db0eae050 1-59
+packages/core/src/context.ts
+  s_ff4db4e2229bdb::t_19e06114e8d807 1-66
+packages/db/src/migrate.ts
+  s_68d592196ed2c7::t_f8ffb08b6711f7 1-13,16,20-25
+  s_b35ec40c5aa45e::t_da80ac2435241c 14-15
+  s_653aebccc09981::t_f0cfd5fab5bf29 17-19
+packages/cli/src/errors.ts
+  s_863a911f9cdee9::t_7b6a38d67aae15 9,11
+  s_8627433061d959::t_8e1aa70721d8fa 1-7,10,12-21
+  s_1e6ab975ac1065::t_c7d4d6cdee9d18 8
+packages/adapter-orpc/README.md
+  s_06f03f3c653d6d::t_5352600159a908 1-6,8-10,12-23
+  s_06f03f3c653d6d::t_82b5a3a81f77d3 7,11
+apps/docs/content/docs/cli.mdx
+  s_68d592196ed2c7::t_b3632f541e9b33 72
+  s_7c29c8fab20e56::t_bda61a0250fd8f 208-210,216-220,232-236,242
+  s_779457a47402e1::t_0b4af2c8060d8a 92
+  s_7c29c8fab20e56::t_7a721d123e6eac 252,254-258,260-261,264,273-276,283,289,291,306-310
+  s_7c29c8fab20e56::t_68a8aefd473b5e 27,29-32,38-46,49-53
+  s_7c29c8fab20e56::t_59af2becdf55b3 323-324
+  s_779457a47402e1::t_6b1990c0137c30 73
+  s_863a911f9cdee9::t_0e7ecf87d72911 3,77-80,96-119
+  s_8627433061d959::t_a7f6698a6edd6a 1-2,4-26,28,33-37,47-48,54-71,74-76,81-88,90,93-95,120-153,196-207,211-215,221-231,237-241,243-251,253,259,262-263,265-272,277-282,284-288,290,292-305,311-322,325-368
+  s_68d592196ed2c7::t_3f835095cb52ea 89,91
+  s_68d592196ed2c7::t_944adb22e293c6 154-195
+packages/db/scripts/check-migrations.ts
+  s_68d592196ed2c7::t_fb3bbc409d9ae3 1-31
+packages/cli/test/diff.test.ts
+  s_8627433061d959::t_5b02cb46cfaa8d 1-410
+packages/adapter-orpc/test/adapter.test.ts
+  s_7c29c8fab20e56::t_b106d0f138d6b3 181-189
+  s_06f03f3c653d6d::t_51f01dcd891fe7 211,215
+  s_06f03f3c653d6d::t_3c669dd96f5f41 1-9,11-62,81-104,107-111,113-156,158-180,190-197,200-210,212-214,216-225,253-295
+  s_06f03f3c653d6d::t_3cc32860048c68 198-199
+  s_7c29c8fab20e56::t_b5f7f8cc495fef 105-106
+  s_ff4db4e2229bdb::t_1ed7e29c577232 226-252
+  s_7c29c8fab20e56::t_174d7a99ce52d7 63-80
+  s_06f03f3c653d6d::t_82b5a3a81f77d3 10,112,157
+packages/api/src/error-policy.test.ts
+  s_ff4db4e2229bdb::t_2be666474aeb7a 38-110
+  s_ff4db4e2229bdb::t_54b01888bebdc8 2,4-9
+  s_7c29c8fab20e56::t_7eda08f3d1c3ed 1,3,10-37
+packages/core/src/exchange.ts
+  s_8627433061d959::t_86931dde372c60 138
+  s_a6ae906c8d32fb::t_c400d2200c483b 216
+  s_ff4db4e2229bdb::t_cb76ed42209d17 3
+  s_1e27fdbdff0c10::t_5297694b4406ab 203,207,211,214-215
+  s_68d592196ed2c7::t_080b316095a2a7 24
+  s_ff4db4e2229bdb::t_dd1fc0ecf5a6aa 68,75
+  s_1e27fdbdff0c10::t_65266f2ee4da1a 13
+  s_68d592196ed2c7::t_4d9c4cbe7f19b7 2
+  s_7c29c8fab20e56::t_f10ada6f05e281 169
+  s_1e27fdbdff0c10::t_fc4a1f23c240ac 25
+  s_1e27fdbdff0c10::t_b05f9210e9f0c2 173-190
+  s_1e27fdbdff0c10::t_c23f2f5b149f98 98,100
+  s_ff4db4e2229bdb::t_4efa4d7eec3956 213,227,231-238
+  s_8627433061d959::t_1c21dee674bee4 1,4-12,15-23,28-33,35,37,80,91-96,99,126,128-137,139-156,167-168,170-172,191-198,200-202,204-206,208-210,212,217-226,228-230,239-244
+  s_ff4db4e2229bdb::t_fe7c89ccd8403f 199
+  s_1e27fdbdff0c10::t_5891161f5bd149 14,34,38-67,69-74,76-79,81-90
+  s_68d592196ed2c7::t_6ead7a8380d5a5 101-103,105-115,121,123,125
+  s_ff4db4e2229bdb::t_d89df63b7f1045 26-27,36
+  s_7c29c8fab20e56::t_e66348a3bec883 157-166
+  s_ff4db4e2229bdb::t_39bbd07cebf8ef 97,104,116-120,122,124,127
+apps/web/src/components/client-error-state.tsx
+  s_52af960aa3476a::t_a07908347885dd 1-37
+packages/env/src/vercel.ts
+  s_ff4db4e2229bdb::t_0493daf5dec756 1-17
+apps/docs/src/app/sitemap.ts
+  s_abe1e94a57f6dd::t_0f80b1d8c91ca5 1-18
+packages/adapter-orpc/tsconfig.json
+  s_06f03f3c653d6d::t_c3921337ff2431 1-7
+apps/docs/content/docs/adapters/index.mdx
+  s_8627433061d959::t_37719f6768b80f 1-2,4-49,52,54-58,64-69
+  s_06f03f3c653d6d::t_fd7abf77f48c12 3
+  s_06f03f3c653d6d::t_c797c1b5f69ad7 50-51,53
+  s_06f03f3c653d6d::t_79bd51d8c8a687 59-63
+packages/client/README.md
+  s_8627433061d959::t_2692551b0f5062 1-23
+apps/web/src/components/insights/blockers-table.tsx
+  s_099ba1ca90eb52::t_b2ded96dfff34f 6-9,11-21,30-65
+  s_8627433061d959::t_b72876e93b2f43 3,5,10,22,83-84
+  s_5c9d936ad1b645::t_1bc730a3c98633 2,4,23-29,66-69,79-82
+  s_5c9d936ad1b645::t_c46b1821879a03 1,70-78
+apps/demo/src/seed-fixtures.ts
+  s_a0ea9aa55ed960::t_f34b3e5c7bbb8f 1-3,5-40,42-50
+  s_a0ea9aa55ed960::t_2bfd2cd34b91c6 4,41
+apps/demo/src/seed-fixtures.test.ts
+  s_a0ea9aa55ed960::t_f34b3e5c7bbb8f 1-4,6-11,15-16,18-31
+  s_a0ea9aa55ed960::t_2bfd2cd34b91c6 5,12-14
+  s_a0ea9aa55ed960::t_15f325d8f7dcd1 17
+packages/adapter-express/package.json
+  s_8627433061d959::t_3f42830276f283 1-26
+packages/cli/src/commands/verify.ts
+  s_68d592196ed2c7::t_1a109dd4bad572 1-98
+packages/core/test/forward-compat.test.ts
+  s_68d592196ed2c7::t_13724668aab6f6 1-42,45-66,68-72,74-75
+  s_ff4db4e2229bdb::t_1df9fea283fa97 73
+  s_ff4db4e2229bdb::t_366f5dcfb3e715 67
+  s_ff4db4e2229bdb::t_636517a232fedd 43-44
+apps/demo/versionless.config.ts
+  s_7c29c8fab20e56::t_dc9157fa7b7b6a 1-5
+apps/docs/content/docs/for-agents.mdx
+  s_7c29c8fab20e56::t_23a9fc18c73135 51-56,64,69,71
+  s_7c29c8fab20e56::t_0216e41c15ba5e 95-96
+  s_7c29c8fab20e56::t_70e00ec25b1b9d 113,115
+  s_7c29c8fab20e56::t_0c16ee41a79653 129-131
+  s_8627433061d959::t_57a28ad23de8f3 1-31,33,35,38,40-42,46-50,57-63,65-68,70,72-94,97-112,114,116-128,132-171
+  s_7c29c8fab20e56::t_82986e11e9521f 32,34,36-37,39,43-45
+packages/cli/src/colors.ts
+  s_8627433061d959::t_5e5e5c48dde676 1-11
+apps/web/src/routes/insights/$projectId/sunset.tsx
+  s_ff4db4e2229bdb::t_77116d772fb3b9 61-65
+  s_213757e3d49072::t_1d67507e043e0e 1-27,29,31,38-43,45,47-48,50-60,66,76-78,82-83,91-137,144-147,149-150
+  s_ff4db4e2229bdb::t_7fecac0ffc90a5 30
+  s_a0ea9aa55ed960::t_2f3d6a96aa9eba 28,32,44,46,70,74,84-89,148
+  s_863a911f9cdee9::t_dd139650dd7056 33-37,49,67-69,71-73,75
+  s_52af960aa3476a::t_a07908347885dd 79-81,90
+  s_099ba1ca90eb52::t_b2ded96dfff34f 138-143
+packages/adapter-trpc/src/index.ts
+  s_ff4db4e2229bdb::t_89391b9ff16c72 7,10-19,54-56,72-75,78,103,155,168,178,193-194,200-201,221,226,230
+  s_8627433061d959::t_0fa4e23dd300f8 1-5,8-9,20-53,57-71,76-77,79-102,104-141,143,145-151,161-162,173-175,180-192,195-199,202-210,212,214-218,227-228,231-233
+  s_a6ae906c8d32fb::t_c400d2200c483b 6,142,144,152-154,156-160,163-167,169-172,176-177,179,211,213,219-220,222-225,229
+packages/adapter-hono/README.md
+  s_8627433061d959::t_e06e874866d148 1-12
+apps/web/src/routes/insights/$projectId/drift.tsx
+  s_099ba1ca90eb52::t_7461f7a99b4a46 27,51-53,82-83
+  s_213757e3d49072::t_1d67507e043e0e 1-17,19-20,32,38-48,54-55,62-67,74-81,84-135,201-204,206-207
+  s_ff4db4e2229bdb::t_7f776a8b1dc539 50
+  s_52af960aa3476a::t_a07908347885dd 73
+  s_5c9d936ad1b645::t_c46b1821879a03 18,23-26,184-196
+  s_ff4db4e2229bdb::t_af1876e0eea506 146,153,161,169,177
+  s_ff4db4e2229bdb::t_042d97afac77c2 29
+  s_7c29c8fab20e56::t_cffb2b188502d3 149,157,165
+  s_5c9d936ad1b645::t_1bc730a3c98633 21,136-140,180-183,197-200
+  s_099ba1ca90eb52::t_35951b63cb614f 28,30,141-145,147-148,150-152,154-156,158-160,162-164,166-168,170-176,178-179
+  s_863a911f9cdee9::t_dd139650dd7056 34-37
+  s_a0ea9aa55ed960::t_3ffd0532b872be 22,31,33,49,56-61,68-72,205
+apps/web/src/queries/telemetry.ts
+  s_863a911f9cdee9::t_06770b44246a06 1-94
+apps/demo/src/routes/__root.tsx
+  s_7c29c8fab20e56::t_f0a8a3d03918c0 1-82
+apps/docs/content/docs/index.mdx
+  s_8627433061d959::t_c27c95663b4b17 2-3,6,8-29,31-63,66-74,76-84
+  s_213757e3d49072::t_277dfb73979e79 30
+packages/otel/package.json
+  s_1e27fdbdff0c10::t_cf3a954389c173 1-27
+README.md
+  s_8ade226e46d3ed::t_ad1b2feaace697 72-74,77
+  s_8627433061d959::t_0fb131f661ac6d 3-5,8-11,14-21,24,26-28,33-34,36,39,41-42,45,47-51,54,56,58-60,63-69,78-79
+  s_68d592196ed2c7::t_fc68f371e4b98f 30
+  s_863a911f9cdee9::t_52d17d8c5a91af 31,40
+  s_06f03f3c653d6d::t_104ab414063adf 29
+  s_8ade226e46d3ed::t_b3df5965dc4bed 75-76
+  s_68d592196ed2c7::t_9d27e2908ce66e 70-71
+apps/server/versionless.config.ts
+  s_8627433061d959::t_6286eac1456d76 1-5
+apps/web/src/utils/client-error.ts
+  s_52af960aa3476a::t_a07908347885dd 1-27
+packages/cli/tsconfig.json
+  s_8627433061d959::t_e710e7e5fc6db2 1-7
+apps/docs/content/docs/concepts/version-resolution.mdx
+  s_68d592196ed2c7::t_e9ca93941620cf 61-90
+  s_8627433061d959::t_b12e0f1efdb46e 1-60,91-191
+packages/core/src/otlp.ts
+  s_863a911f9cdee9::t_f963f3554cd635 107,115,123
+  s_863a911f9cdee9::t_00ca9592fec359 1-106,108-114,116-122,124-222
+infra/otel/render-envoy-config.test.ts
+  s_a0ea9aa55ed960::t_acf746896e8f53 1-37
+apps/docs/src/lib/layout.shared.tsx
+  s_abe1e94a57f6dd::t_0f80b1d8c91ca5 7-17
+packages/otel/tsconfig.json
+  s_1e27fdbdff0c10::t_b3b95af7011f29 1-7
+packages/core/src/registry.ts
+  s_ff4db4e2229bdb::t_76360bca58e754 271-278,284
+  s_8627433061d959::t_6e321256fec78d 1-48,51-70,73-153,155-208,212-245,253-270,279-283,285-294
+  s_ff4db4e2229bdb::t_96fa48f82a23b8 209-211
+  s_ff4db4e2229bdb::t_b797357bb71a07 71-72
+  s_ff4db4e2229bdb::t_9c8af92f700f4c 246-252
+  s_8627433061d959::t_a68b8ccf783f21 49-50
+  s_8627433061d959::t_b3a23dfd6b4a81 154
+packages/core/test/exchange.test.ts
+  s_68d592196ed2c7::t_3e0ee3ef59daad 247
+  s_8627433061d959::t_8de8e6718b54d3 12-14
+  s_ff4db4e2229bdb::t_ce100449dcaace 256-257
+  s_ff4db4e2229bdb::t_f4ed76d4073ba9 232-234
+  s_8627433061d959::t_2bbc61c219e27e 1-11,15-93,95,98-103,105-231,235-246,248-255,258-315
+  s_8627433061d959::t_d723841704aaa5 94,96-97,104
+apps/web/src/components/insights/sortable-table-head.tsx
+  s_ff4db4e2229bdb::t_add8c0f15c6947 1,9-32
+  s_099ba1ca90eb52::t_32181a61a81726 2-8,33-75
+apps/demo/src/changes/2026-05-14-split-user-name.ts
+  s_7c29c8fab20e56::t_c917bc6a14564e 1,3-25,32-68
+  s_a0ea9aa55ed960::t_f34b3e5c7bbb8f 2,26-31
+packages/adapter-hono/src/index.ts
+  s_ff4db4e2229bdb::t_10589963becad4 1-8,39-40,42-44,70-72,82,84,94-95,98-110,131,134-135
+  s_8627433061d959::t_6c2d971acf9a95 9-38,41,45-69,73-81,83,85-93,96-97,111-130,132-133,136-139
+packages/api/src/routers/projects.ts
+  s_ff4db4e2229bdb::t_4d92204a58b970 9-13,26,32,40-48
+  s_7c29c8fab20e56::t_7eda08f3d1c3ed 1-8,14-25,27-31,33-39,49
+package.json
+  s_9db1fc4190bda7::t_17255aacfaf85b 52-55
+  s_a0ea9aa55ed960::t_acf746896e8f53 56
+  s_8627433061d959::t_8a0f671659e196 40
+  s_779457a47402e1::t_ee5840d1ce2879 44
+  s_b7e379d3cd6c37::t_474ee7995bd6d6 41
+  s_7c29c8fab20e56::t_16ad52c95b28ee 45-46
+  s_779457a47402e1::t_04b8f094e81bdd 37
+  s_8627433061d959::t_442699cd9c88f4 27-32
+  s_68d592196ed2c7::t_99e01737925e28 50
+  s_06f03f3c653d6d::t_561c134ee5e4db 17-18
+  s_ff4db4e2229bdb::t_7193c917874d97 42
+packages/cli/src/commands/logout.ts
+  s_1e6ab975ac1065::t_a1d2d3ee6095b3 1-54
+apps/web/public/site.webmanifest
+  s_abe1e94a57f6dd::t_0f80b1d8c91ca5 1-17
+apps/demo/src/surface.ts
+  s_7c29c8fab20e56::t_467d9e6be2bc2b 1-17,19-31,60-61
+  s_a0ea9aa55ed960::t_f34b3e5c7bbb8f 18,32-59
+apps/web/src/hooks/use-telemetry-project.ts
+  s_ff4db4e2229bdb::t_1fd20d6e4429b8 2,13-17,19,33
+  s_213757e3d49072::t_b2281496bcc767 1,3-4,6-7,9-10,20-32,34-36
+  s_213757e3d49072::t_acd0e7b265d9da 8,12
+  s_a0ea9aa55ed960::t_fdc7c3aedbfd86 11
+  s_a0ea9aa55ed960::t_836cfec8e9d82f 18
+  s_a0ea9aa55ed960::t_7c7c2c7e098175 5
+apps/demo/src/routes/teams.$id.ts
+  s_7c29c8fab20e56::t_233dedb5263644 1-6
+packages/cli/test/canonical.test.ts
+  s_8627433061d959::t_efd1f454cc5f93 1-219
+packages/cli/package.json
+  s_8627433061d959::t_1a0b1744ecad26 16-21,28
+  s_8627433061d959::t_742708cb6ee9cf 1-15,22-27,29-32
+packages/otel/README.md
+  s_1e27fdbdff0c10::t_0e97deb0801d25 1-26
+packages/adapter-nextjs/README.md
+  s_06f03f3c653d6d::t_13dc3a31c475be 1-16
+infra/otel/render-envoy-config.ts
+  s_a0ea9aa55ed960::t_0bb20507e028f5 40-41
+  s_a0ea9aa55ed960::t_dcdb53aa56ac13 79-82,90
+  s_a0ea9aa55ed960::t_acf746896e8f53 1-39,42-78,83-89,91-114
+packages/cli/src/cli.ts
+  s_779457a47402e1::t_0a5ef7fa31c524 13
+  s_68d592196ed2c7::t_c1ec6c2706b95a 24
+  s_863a911f9cdee9::t_1b54eb29a3cb7a 10,32,40-41,79-80
+  s_779457a47402e1::t_50ba74c6c129f4 65-66
+  s_779457a47402e1::t_c1dc044422be5c 25
+  s_1e6ab975ac1065::t_5a4b612375a9c3 73-78
+  s_68d592196ed2c7::t_08c3349ec1408b 63-64
+  s_68d592196ed2c7::t_254f0ec910c483 12
+  s_1e6ab975ac1065::t_a8ae9945365c17 8-9,14
+  s_1e6ab975ac1065::t_5a4fb4bfa97ff0 29-31
+  s_8627433061d959::t_563827b404773c 1-7,11,15-23,26-28,33-39,42-62,67-72,81-95
+packages/api/src/error-policy.ts
+  s_ff4db4e2229bdb::t_aaf2c862cbd31f 50-94
+  s_7c29c8fab20e56::t_7eda08f3d1c3ed 8-49
+  s_ff4db4e2229bdb::t_c7d9a341a39d06 1-7
+packages/adapter-express/test/adapter.test.ts
+  s_ff4db4e2229bdb::t_5728f52166949c 99,101-122
+  s_ff4db4e2229bdb::t_a67520c9829640 184,187
+  s_8627433061d959::t_9316333618a916 201
+  s_ff4db4e2229bdb::t_9ffcb9e5e6d4f6 85-88,92
+  s_8627433061d959::t_681faec7ebaff7 1-11,16-20,22-84,89-91,93-98,100,123-183,185-186,188-200,202-216
+  s_ff4db4e2229bdb::t_a941d575b48ec7 12-15,21
+packages/adapter-hono/tsconfig.json
+  s_8627433061d959::t_3f42830276f283 1-7
+packages/db/src/migrations/meta/_journal.json
+  s_68d592196ed2c7::t_0e5abc08cf886b 1-10,18-20
+  s_b7e379d3cd6c37::t_9cd4b4f10db638 11-17
+packages/cli/src/commands/changelog.ts
+  s_8627433061d959::t_d0541213abeb35 1-184
+apps/demo/src/routes/index.tsx
+  s_7c29c8fab20e56::t_82fcc24ad0b54c 1-40,42-49,51-235
+  s_7c29c8fab20e56::t_2ae79c48492655 41,50
+apps/web/src/components/insights/insights-page.tsx
+  s_a0ea9aa55ed960::t_fdc7c3aedbfd86 25,29
+  s_a0ea9aa55ed960::t_7c7c2c7e098175 1-12,14-21,23-24,26-28,30-34,38-47
+  s_a0ea9aa55ed960::t_2f3d6a96aa9eba 13,22,35-37
+apps/web/src/hooks/use-insights-time-range.test.ts
+  s_26b29cb45112b9::t_76f20218de7170 1-36
+apps/demo/test/client.test.ts
+  s_7c29c8fab20e56::t_64da8823b92fb5 69
+  s_7c29c8fab20e56::t_e321e6aed622af 1-68,70-105
+apps/docs/src/app/robots.ts
+  s_abe1e94a57f6dd::t_0f80b1d8c91ca5 1-13
+packages/cli/src/commands/shared.ts
+  s_8627433061d959::t_083153f77cd855 1-12,19,23,25-26,28,33-40,45,50-95
+  s_8627433061d959::t_c323df38e147c6 13-18,20-22,24,27,29-32,41-44,46-49
+packages/db/src/migration-lint.ts
+  s_68d592196ed2c7::t_88f854d29f744c 1-67,69-96
+  s_68d592196ed2c7::t_b7e24239af3b13 68
+apps/demo/src/routes/users.ts
+  s_7c29c8fab20e56::t_4a97ed5eb212c9 1-6
+packages/adapter-nextjs/test/adapter.test.ts
+  s_06f03f3c653d6d::t_18c21b8faba7b4 136-137
+  s_ff4db4e2229bdb::t_b258d37f8c8b71 10,17
+  s_ff4db4e2229bdb::t_919d1281fd2302 205-206,208
+  s_06f03f3c653d6d::t_bfd9ff2c577488 1-9,11-16,18-50,53-59,66-71,73-84,86-94,96,123-135,138-204,207,209-242
+  s_06f03f3c653d6d::t_2f015a98b58f3e 85
+  s_06f03f3c653d6d::t_a86c4eec48921e 51-52,60-65,72
+  s_ff4db4e2229bdb::t_74479c3151d9c7 95,97-122
+apps/web/src/components/insights/time-range-control.test.tsx
+  s_099ba1ca90eb52::t_612d0b894eb2e3 1-22
+apps/server/.env.example
+  s_863a911f9cdee9::t_da1177d6669c44 5
+  s_04155f0558ce2c::t_0f003add65a601 8
+  s_863a911f9cdee9::t_602489d100e444 4
+apps/docs/content/docs/adapters/elysia.mdx
+  s_7c29c8fab20e56::t_246a3cf1a6ff9c 26-28
+  s_8627433061d959::t_824bb463ad6b8d 1-25,29-68,70-84
+  s_8627433061d959::t_56fa8e4750c2a8 69
+apps/server/src/ingest.ts
+  s_8627433061d959::t_ce99b26ff4f58b 4,10-21,31-36,52,208,212
+  s_ff4db4e2229bdb::t_d6a1655da3a409 62-64,66-71,73,77,80,87-89,91-114
+  s_ff4db4e2229bdb::t_544249db4024a2 2
+  s_863a911f9cdee9::t_722babf720e705 1,3,5-8,37-39,42-43,46-48,51,55-61,65,72,76,83-86,90,116,129-133,138-139,145-146,149-151,166-178,180-196,198-207,209
+  s_863a911f9cdee9::t_06d3e11e10a260 40-41,44-45
+  s_863a911f9cdee9::t_a48e2b6038ebcc 22-30
+  s_213757e3d49072::t_5ee6b0001b4034 54
+  s_1e27fdbdff0c10::t_6a87b6dbeeb143 49-50
+  s_8627433061d959::t_94fd576f9242ac 53
+  s_863a911f9cdee9::t_0744f91f7863de 9,78-79,81-82,115,117,152-153,179
+  s_1e27fdbdff0c10::t_ec1bc07aef58a8 74-75,197
+  s_ff4db4e2229bdb::t_dabb77df736c19 118-128,134-137,140-144,147-148,154-165
+  s_863a911f9cdee9::t_b839fe321fff76 210-211
+packages/db/src/migrations/meta/0000_snapshot.json
+  s_68d592196ed2c7::t_0e5abc08cf886b 1-179
+apps/web/src/queries/project-queries.test.ts
+  s_863a911f9cdee9::t_87bc50cd143107 12,14-15,17,23-50,164,166-176,222-223
+  s_863a911f9cdee9::t_d74ec99a43d195 1-7,10-11,16,18-22,165,177-200,202-221
+  s_ff4db4e2229bdb::t_b2b1aeccae288b 51-149,151-155
+  s_26b29cb45112b9::t_2c46d98239f3f8 156-163
+  s_ff4db4e2229bdb::t_5746e7153027e1 150
+  s_ff4db4e2229bdb::t_f1722db083327e 8-9,13
+  s_863a911f9cdee9::t_68b35014984253 201
+.railway/railway.ts
+  s_863a911f9cdee9::t_d9381fc1eb18cf 3,44,65
+  s_863a911f9cdee9::t_8989fe85b6147a 37-43,45-64,66-70,73-80,85-92
+  s_a0ea9aa55ed960::t_acf746896e8f53 71-72
+apps/demo/src/routes/teams.ts
+  s_7c29c8fab20e56::t_d6804f055a1d4c 1-6
+packages/api/src/lib/hexclave.ts
+  s_7c29c8fab20e56::t_7eda08f3d1c3ed 1-28
+apps/docs/content/docs/adapters/meta.json
+  s_8627433061d959::t_49e3359c7790b3 1-2,4
+  s_06f03f3c653d6d::t_fff7bf3de418ac 3
+apps/web/src/components/insights/project-switcher.tsx
+  s_099ba1ca90eb52::t_aa12267f3b1989 17-20,23-25,47
+  s_ff4db4e2229bdb::t_04c71f5b28ca67 56-57
+  s_ff4db4e2229bdb::t_655fadde4a71da 1,15
+  s_5c9d936ad1b645::t_3cbf04f24085e5 13,49
+  s_a0ea9aa55ed960::t_7c7c2c7e098175 14,43
+  s_213757e3d49072::t_acd0e7b265d9da 2,27-30,48
+  s_863a911f9cdee9::t_ea7c8d4c817fcd 21-22
+  s_213757e3d49072::t_b2281496bcc767 3-12,16,26,40-42,44-46,50-53,59-80
+  s_213757e3d49072::t_5821293254eac1 54-55,58
+  s_ff4db4e2229bdb::t_ddada67f9ad3b7 31-39
+.railway/README.md
+  s_863a911f9cdee9::t_16f8cd90ec78f6 52-53,58-60
+  s_863a911f9cdee9::t_b01afca40c1ab2 46-51,57
+  s_a0ea9aa55ed960::t_acf746896e8f53 54-56
+packages/api/src/lib/clickhouse-errors.ts
+  s_7c29c8fab20e56::t_7eda08f3d1c3ed 3-37,39-47
+  s_ff4db4e2229bdb::t_3abb7f11a6fdc3 38
+  s_ff4db4e2229bdb::t_f9485288e80c92 1-2
+apps/server/test/auth.test.ts
+  s_863a911f9cdee9::t_437a8153cc6127 4
+  s_7c29c8fab20e56::t_284fcf9b0fb7ae 39-46
+  s_863a911f9cdee9::t_1d4c07e32c1eb2 27,29,32
+  s_7c29c8fab20e56::t_0ee9875817819c 16-17,19
+  s_8627433061d959::t_5253a49706bab5 1-3,5-15,18,20-26,28,30-31,33-38,47-48
+packages/cli/src/surface/extract.ts
+  s_7c29c8fab20e56::t_69ee790c81c0fb 30,34,37-39,47-48,63-73,75-81,85-88,90-91
+  s_7c29c8fab20e56::t_69e846807e774b 49-62
+  s_8627433061d959::t_67fc2631df862d 89,92
+  s_7c29c8fab20e56::t_1f9ed9d117c2d1 4
+  s_8627433061d959::t_ff7bf895ee77be 1,5,7-29,31-33,35-36,40-46,74,82-84,93-105
+  s_8627433061d959::t_429ba8c2bb1729 3
+  s_ff4db4e2229bdb::t_e52f1d098458d8 2,6
+apps/web/tsconfig.json
+  s_8627433061d959::t_14bba408aeadc5 14-15
+  s_8627433061d959::t_3d9b46c4b8026e 16-18
+packages/adapter-tanstack-start/README.md
+  s_06f03f3c653d6d::t_0913d408391b0f 1-19
+packages/otel/test/otel.test.ts
+  s_1e27fdbdff0c10::t_d744262793160a 1-132,134,136-187
+  s_1e27fdbdff0c10::t_b7341b8fb997c6 133,135
+apps/web/public/versionless-logo.svg
+  s_abe1e94a57f6dd::t_a42b58ab35da6d 3,15
+  s_abe1e94a57f6dd::t_7733241a2a1149 1-2,4-6,8,10-13,16,18-19
+  s_abe1e94a57f6dd::t_b77808ef12baf4 7,9
+  s_abe1e94a57f6dd::t_79bbf2aa2cdd37 14,17
+apps/server/src/query.ts
+  s_ff4db4e2229bdb::t_eff406d258e6f0 83-86
+  s_863a911f9cdee9::t_a87aac2c3152a1 2-10,12-82,87-93
+  s_ff4db4e2229bdb::t_e958ba96552b62 1
+  s_863a911f9cdee9::t_766c4e0ee290ed 11
+packages/adapter-elysia/test/adapter.test.ts
+  s_ff4db4e2229bdb::t_df32a742792050 84,88-115
+  s_ff4db4e2229bdb::t_6f9a90411dc20e 68-72
+  s_ff4db4e2229bdb::t_e7ee10550dee69 10-13,19
+  s_8627433061d959::t_3415a4344e6049 1-9,14-18,20-67,73-83,86-87,116-121,123-143,145-168,170-178,181,183-212
+  s_ff4db4e2229bdb::t_c0bbf6cd5a2904 179,182
+  s_8627433061d959::t_6720f9e62211eb 122
+  s_8627433061d959::t_0e6733d13437ea 144
+  s_8627433061d959::t_7f7b471f2d10f6 169
+  s_4e8028b3ea2b99::t_e6c4888cc9a5d0 85,180
+packages/db/src/schema/index.ts
+  s_8627433061d959::t_16a39b21f51dd4 1
+  s_213757e3d49072::t_39da42e57971b8 2
+apps/web/src/utils/trpc.ts
+  s_52af960aa3476a::t_a07908347885dd 9,27-32,40
+  s_863a911f9cdee9::t_7f0a15a62bf285 10-11,19-22
+  s_8627433061d959::t_1acbd000ab47e7 8
+  s_8627433061d959::t_2c8def6eef381b 18,24-26
+  s_52af960aa3476a::t_390dd8f2eb57c8 33-37
+  s_52af960aa3476a::t_12c1979567354b 23
+  s_52af960aa3476a::t_6745174bdfc0e0 15-17
+  s_8627433061d959::t_b3062ebef9c750 49-54
+  s_8627433061d959::t_f88df99efae13d 2
+apps/docs/content/docs/concepts/defining-changes.mdx
+  s_68d592196ed2c7::t_5b325e38dde878 78
+  s_8627433061d959::t_052a4536264113 1-77,79-196
+packages/cli/src/commands/login.ts
+  s_1e6ab975ac1065::t_dd1ab35cf5a7ee 1-162
+apps/server/src/versionless.ts
+  s_7c29c8fab20e56::t_e5371f2f1cb73e 4-6,10,14
+  s_8627433061d959::t_9e522725fd2af8 1-3,7-9,11-13,15-19
+apps/server/src/app.ts
+  s_8627433061d959::t_0e5c3a1fee2851 9,25-26,61-62,64-65
+  s_863a911f9cdee9::t_a87aac2c3152a1 20
+  s_7c29c8fab20e56::t_21e9c4c3f999c0 86-93,95-102
+  s_8627433061d959::t_cab6a19cd25f1d 5
+  s_7c29c8fab20e56::t_5ae37b688bf2f7 81
+  s_863a911f9cdee9::t_722babf720e705 13,15-17,54,57-58,77,80
+  s_8627433061d959::t_75fb3b9597cf0a 1-2,4,6,8,11,19,21,66-76,103
+  s_7c29c8fab20e56::t_5431506af25640 78-79,82-85
+  s_863a911f9cdee9::t_a48e2b6038ebcc 14,22-24
+  s_8627433061d959::t_276a5aec00e63b 3
+  s_213757e3d49072::t_0f0765de11e48d 29-32
+  s_7c29c8fab20e56::t_ca0f0658a28edf 94
+  s_8627433061d959::t_918e8d950954d5 27-28,33-53
+  s_863a911f9cdee9::t_b86cd5cbf2e73a 12,18,55-56,59-60
+  s_7c29c8fab20e56::t_47415ca32035b7 7,10
+  s_7c29c8fab20e56::t_ea901e4859ca7d 63
+packages/cli/test/orpc.test.ts
+  s_7c29c8fab20e56::t_a8754bdf34fd3b 1-55
+apps/web/src/hooks/use-insights-context.ts
+  s_a0ea9aa55ed960::t_7c7c2c7e098175 1-26
+packages/cli/src/diff/render.ts
+  s_8627433061d959::t_7ecfbd6eb0b982 1-47
+packages/cli/test/zod.test.ts
+  s_8627433061d959::t_ab011df3448758 1-145
+packages/cli/src/commands/init.ts
+  s_8627433061d959::t_e28ab748e961a4 1-37,39-62,66,68-69,72-145
+  s_7c29c8fab20e56::t_1c91cc63592d73 63-65,67,70-71
+  s_213757e3d49072::t_277dfb73979e79 38
+apps/web/src/routes/insights/$projectId/telemetry.tsx
+  s_863a911f9cdee9::t_ea7c8d4c817fcd 2-16,18-20,23-27,34-60,75-102,104-105,107-108,115-118,139-158,175-181,219-222,224-225
+  s_863a911f9cdee9::t_dd139650dd7056 29-33
+  s_a0ea9aa55ed960::t_1da34bc7ba56c9 22,28,103,109-114,119-138,223
+  s_ff4db4e2229bdb::t_252c4b1513454c 106
+  s_5c9d936ad1b645::t_121976aaf75332 1,21,159-160,162,165-168,171-174,182-185,211-218
+  s_5c9d936ad1b645::t_69397075d9292f 66-71,73-74,161
+  s_5c9d936ad1b645::t_77b9f7d51fd5cc 61-65,72,163-164,169-170
+  s_5c9d936ad1b645::t_c46b1821879a03 17,186-210
+packages/core/test/registry.test.ts
+  s_8627433061d959::t_11be580c09980c 1-110
+packages/cli/src/snapshot/store.ts
+  s_68d592196ed2c7::t_75b7fe211a207b 56-63
+  s_68d592196ed2c7::t_52b4e061b4128b 5,7,13-50,53-55,64-79,104-119,121
+  s_8627433061d959::t_63232a221767d0 1-4,6,8-12,51-52,80-103,120,122-146
+packages/api/src/lib/clickhouse-errors.test.ts
+  s_ff4db4e2229bdb::t_8435545f23f1c9 23-33
+  s_7c29c8fab20e56::t_7eda08f3d1c3ed 1-22,34-35
+apps/web/public/favicon.svg
+  s_abe1e94a57f6dd::t_0f80b1d8c91ca5 1-15
+apps/web/src/components/insights/versions-table.tsx
+  s_099ba1ca90eb52::t_1ccc03413520bb 2,8,14-19,22-23,28-29,31,45-47,53-54,92-95,113-116
+  s_863a911f9cdee9::t_d74ec99a43d195 6,34-35,38-44
+  s_099ba1ca90eb52::t_170cbbc7dd0d33 13,96-112
+  s_8627433061d959::t_6c37e4f35fc193 7,9,12,20,36,117-118
+  s_099ba1ca90eb52::t_b9d19747b36b6c 48-52
+  s_863a911f9cdee9::t_dd139650dd7056 5,11
+  s_099ba1ca90eb52::t_dbfaab6731d0ff 1,3-4,21,24-27,30,32-33,55-91
+  s_5c9d936ad1b645::t_00bb9e82b67a1f 10,37
+packages/cli/src/index.ts
+  s_8627433061d959::t_e86fef870953a1 17-18,26-51,69
+  s_8627433061d959::t_7cadbe20f0ee53 1-16,19-25
+  s_1e6ab975ac1065::t_2115c4f1885f74 52-68
+apps/docs/content/docs/adapters/hono.mdx
+  s_8627433061d959::t_1d5c40ce2de3bf 1-61
+apps/server/test/ingest.test.ts
+  s_ff4db4e2229bdb::t_3cb86718527e20 172-190
+  s_213757e3d49072::t_288b2275c4cfc9 48
+  s_863a911f9cdee9::t_f9b91fef06f05f 15,21,38
+  s_1e27fdbdff0c10::t_d8490e3ca27b17 52,56-58,60-61,69-71,73-74,77,170-171
+  s_863a911f9cdee9::t_a48e2b6038ebcc 5,22-37
+  s_863a911f9cdee9::t_3ef6de227bb980 13,16-17,19
+  s_863a911f9cdee9::t_1d4c07e32c1eb2 4,6-7,10-12,14,18,20,39-47,49-50,53-55,59,62-68,72,75-76,78-87,153-164,167-169
+  s_ff4db4e2229bdb::t_4a06cfab24edcb 1,8-9
+  s_863a911f9cdee9::t_9c51e7209f5385 88-89,166
+  s_ff4db4e2229bdb::t_18f0504a24ac67 90-152
+  s_213757e3d49072::t_972e44212613ee 2-3
+  s_213757e3d49072::t_fc250512939e7f 51
+  s_863a911f9cdee9::t_a4c67fd1d80756 165
+apps/web/src/components/docs-link.test.ts
+  s_099ba1ca90eb52::t_080fcad41d8178 1-8
+packages/cli/src/surface/orpc.ts
+  s_7c29c8fab20e56::t_08586cc1fbf641 2-79
+  s_ff4db4e2229bdb::t_1285fb39c6e7ec 1
+packages/adapter-orpc/package.json
+  s_06f03f3c653d6d::t_ecf4b0b4b53740 1-27
+apps/docs/src/lib/shared.ts
+  s_abe1e94a57f6dd::t_0f80b1d8c91ca5 1-4,10-11
+apps/demo/tsconfig.json
+  s_7c29c8fab20e56::t_07b940a11ea14f 3-4,6-11
+  s_7c29c8fab20e56::t_8948c94fa8dc70 1-2,5,12-20
+packages/core/src/integrity.ts
+  s_68d592196ed2c7::t_647fc81f182540 1-262
+apps/web/src/queries/insights.ts
+  s_863a911f9cdee9::t_acf3baf8c6e623 1-2,4,6,193-196
+  s_ff4db4e2229bdb::t_e89bb29ced0f4a 71
+  s_ff4db4e2229bdb::t_90b63e9252dad7 227-228,232-233,235,237-239,241,243-245,247-268
+  s_26b29cb45112b9::t_2c46d98239f3f8 32,139-141,143,149,156-157,162
+  s_ff4db4e2229bdb::t_68af70ce2373f9 327-343,352-365
+  s_863a911f9cdee9::t_d74ec99a43d195 3,5,106-135,176-180,183-192,201-213
+  s_ff4db4e2229bdb::t_222bc95c8f9fa3 277-293,303,305-318
+  s_7c29c8fab20e56::t_911ebe5cb946b8 7
+  s_863a911f9cdee9::t_06770b44246a06 8-31,33-70,72-105,136-138,142,144-148,150-155,158-161,163-175,181-182,197-200,214-226,229-231,234,236,240,242,246,269-276,294-302,304,319-326,344-351,366
+apps/demo/src/server/handlers.ts
+  s_7c29c8fab20e56::t_623e6f78cd3775 1-12,14,19-31,33-45,47-53,55-71,73
+  s_7c29c8fab20e56::t_310c1fc4d8b03d 15-18
+  s_a0ea9aa55ed960::t_f34b3e5c7bbb8f 13
+  s_a0ea9aa55ed960::t_2bfd2cd34b91c6 32,46,54,72
+apps/docs/content/docs/client/typed-sdk.mdx
+  s_8627433061d959::t_7792d9a734e922 1-138
+packages/cli/test/trpc.test.ts
+  s_8627433061d959::t_43d71f70d2c1c0 1-83
+apps/web/src/routes/insights/$projectId/traces.tsx
+  s_52af960aa3476a::t_c8f20cfeabea3c 35,289,332,348,365,368,374-378
+  s_099ba1ca90eb52::t_612d0b894eb2e3 24
+  s_863a911f9cdee9::t_dd139650dd7056 30-34,102,105
+  s_ff4db4e2229bdb::t_06f842cf6cd336 84,86-89
+  s_099ba1ca90eb52::t_22d62b385ea03a 4,113-115,117,142,186-191,193-198,200-205,207-213,215-221,223-229
+  s_099ba1ca90eb52::t_0a17819439e25c 13
+  s_1e27fdbdff0c10::t_25c1b0d2a366fb 2-3,5-12,16-17,28,36-56,60-82,85,90-92,100-101,106-109,118-119,133,138-141,143-154,167-170,230,274-277,279-288,290-319,324-331,333-347,349-364,366-367,369-373,379-385
+  s_a0ea9aa55ed960::t_6f97d3996e485a 19,29,83,93-99,103-104,120-132,134-136,278
+  s_5c9d936ad1b645::t_c46b1821879a03 14,20-23,57-59,235-263,320-323
+  s_ff4db4e2229bdb::t_1783c4b341d57e 26
+  s_099ba1ca90eb52::t_32181a61a81726 15,25,27,185,192,199,206,214,222
+  s_52af960aa3476a::t_a07908347885dd 110-112,137,155-166
+  s_ff4db4e2229bdb::t_5d07784c289a95 116
+  s_5c9d936ad1b645::t_05463525906882 1,18,171-184,231-234,264-273
+packages/api/src/routers/index.ts
+  s_7c29c8fab20e56::t_7eda08f3d1c3ed 2,8
+apps/web/src/components/insights/sortable-table-head.test.tsx
+  s_099ba1ca90eb52::t_f1d70c10845ebe 1-27
+apps/demo/src/routes/users.$id.ts
+  s_7c29c8fab20e56::t_83cc4e8417efcb 1-6
+packages/core/README.md
+  s_8627433061d959::t_681d8d0edf97ad 1-4,6-10
+  s_863a911f9cdee9::t_6f8249d4da7fc5 5
+packages/api/src/lib/clickhouse-query.test.ts
+  s_7c29c8fab20e56::t_7eda08f3d1c3ed 1-65
+packages/api/src/lib/project-access.ts
+  s_ff4db4e2229bdb::t_9c972e71325ffb 23-40,54
+  s_7c29c8fab20e56::t_7eda08f3d1c3ed 1-22,41-53,55-56
+packages/adapter-tanstack-start/tsconfig.json
+  s_06f03f3c653d6d::t_a181b984dbdfbb 1-7
+apps/web/src/main.tsx
+  s_52af960aa3476a::t_a07908347885dd 7,17
+packages/cli/src/diff/node-diff.ts
+  s_a0ea9aa55ed960::t_b7bc13f675293d 1-310
+packages/api/src/routers/projects.test.ts
+  s_ff4db4e2229bdb::t_8e6b72c5971078 69-129
+  s_ff4db4e2229bdb::t_8b726e5cb70d35 4-7
+  s_7c29c8fab20e56::t_7eda08f3d1c3ed 1-3,8-68,130
+infra/otel/collector.yaml
+  s_863a911f9cdee9::t_26a1bc9d5bbfd6 1-67
+packages/adapter-nextjs/package.json
+  s_06f03f3c653d6d::t_3415f765dda23b 1-21
+packages/cli/src/diff/diff.ts
+  s_a0ea9aa55ed960::t_b7bc13f675293d 1-5
+apps/demo/src/versions.ts
+  s_7c29c8fab20e56::t_ed5a19d0e9d965 1,3-18,20-40
+  s_a0ea9aa55ed960::t_f34b3e5c7bbb8f 2,19
+packages/core/src/matcher.ts
+  s_8627433061d959::t_150ec463ee96bc 1-104
+packages/cli/src/surface/trpc.ts
+  s_ff4db4e2229bdb::t_913fa01ee31023 1-2,5
+  s_ff4db4e2229bdb::t_5f9a9c18f18b61 19
+  s_8627433061d959::t_1c7afaf40a5e51 3-4,6-18,20-83
+apps/web/src/routes/__root.tsx
+  s_099ba1ca90eb52::t_4c17d1d6399c8e 12,50,52
+  s_213757e3d49072::t_6eb1b3e5897ab7 4-8,37,39-41,49,51,53-54
+  s_abe1e94a57f6dd::t_0f80b1d8c91ca5 42-48
+  s_213757e3d49072::t_45c50b49ecaf15 57-60
+  s_abe1e94a57f6dd::t_65825e0f3c1fe8 3
+  s_213757e3d49072::t_0922b975f2e1ac 61-63
+apps/demo/src/versionless.ts
+  s_7c29c8fab20e56::t_a42e9d46ede463 2-17,19,22-32
+  s_ff4db4e2229bdb::t_230fd1148141c4 1
+  s_7c29c8fab20e56::t_41cb237c78aae3 18
+  s_ff4db4e2229bdb::t_3fe68327fac832 20-21
+packages/cli/src/surface/types.ts
+  s_68d592196ed2c7::t_095a5cc2b0c643 57-74,81-83
+  s_8627433061d959::t_c7bef0aa95be09 1-56,75-80,84
+packages/ui/src/components/sidebar.tsx
+  s_213757e3d49072::t_fc308a6636f2bd 363-366
+packages/core/src/resolver.ts
+  s_8627433061d959::t_77bc76fecd124d 1-89
+packages/db/src/migrations/0000_late_supreme_intelligence.sql
+  s_68d592196ed2c7::t_0e5abc08cf886b 2-6,8-14,16-22
+  s_b35ec40c5aa45e::t_da80ac2435241c 1,7,15,23-24
+packages/adapter-elysia/src/index.ts
+  s_8627433061d959::t_5480790a0efde6 154
+  s_ff4db4e2229bdb::t_948c2b1fb110f7 2
+  s_8627433061d959::t_cf2a2e99229385 1,3-45,48-50,52-53,55-61,70-71,77-80,83,85,87,89,91-98,104-105,112-124,126-138,140-145,148-153,155-158
+  s_ff4db4e2229bdb::t_72d86544bfcb99 46-47,51,54,62-69,75,86,88,90,106-110,125,139,146-147
+  s_8627433061d959::t_537c7161477ece 72-74,76,81-82,84,99-103
+  s_68d592196ed2c7::t_9889b14310d034 111
+packages/cli/src/commands/query.ts
+  s_863a911f9cdee9::t_1b54eb29a3cb7a 1-42,44-230
+  s_863a911f9cdee9::t_7b6a38d67aae15 43
+packages/adapter-express/src/index.ts
+  s_ff4db4e2229bdb::t_275804925fd9ee 46-48,58-60,62-63,65,69
+  s_ff4db4e2229bdb::t_bf2acde6a7139e 21
+  s_8627433061d959::t_a651fa512a9868 1-20,22-45,49-57,61,64,66-68,70-138
+packages/core/src/types.ts
+  s_1e27fdbdff0c10::t_76dba397057201 263-269,274
+  s_1e27fdbdff0c10::t_925ec8ce153f58 270-273,275-279
+  s_68d592196ed2c7::t_62f72cad91bd53 76-81
+  s_ff4db4e2229bdb::t_5880c26e7631af 349-353,355
+  s_68d592196ed2c7::t_b51604f77a1f6c 40-49
+  s_1e27fdbdff0c10::t_931dfe05f7e2c3 165-205
+  s_68d592196ed2c7::t_fbb7c0304ee04b 348,354
+  s_ff4db4e2229bdb::t_d4fec8158087f1 398-403
+  s_68d592196ed2c7::t_95a2de6f597c24 282-290
+  s_863a911f9cdee9::t_00ca9592fec359 246-247,250
+  s_68d592196ed2c7::t_b7ae53e92e479e 310-311
+  s_ff4db4e2229bdb::t_42237827e5c316 363-364,367-369,373,375
+  s_68d592196ed2c7::t_c0ced69f38baa6 118-119
+  s_863a911f9cdee9::t_ce493541342d02 251
+  s_ff4db4e2229bdb::t_9d64c55f8e26b3 377-380
+  s_a6ae906c8d32fb::t_c400d2200c483b 361-362,365-366,370-372,374,376
+  s_8627433061d959::t_2bdeedb379e903 1-39,50-75,82-117,120-164,206-239,245,248-249,252-255,280-281,291-309,312-347,356-360,381-397,404-419
+  s_1e27fdbdff0c10::t_3b0c453d428791 256-262
+  s_213757e3d49072::t_b930ac1569da7f 240-244
+packages/adapter-trpc/test/adapter.test.ts
+  s_a6ae906c8d32fb::t_c400d2200c483b 4-9,164,167-176,260-323
+  s_ff4db4e2229bdb::t_d201cb8b58fdac 177-193
+  s_8627433061d959::t_ca31c60285bf22 1-3,10-163,165-166,194-259,324-367
+infra/otel/envoy.template.yaml
+  s_a0ea9aa55ed960::t_acf746896e8f53 1-154
+packages/cli/test/coverage.test.ts
+  s_8627433061d959::t_dbee6e4b456739 1-232
+packages/otel/src/index.ts
+  s_1e27fdbdff0c10::t_5b9d74de27d752 1-117
+apps/web/src/components/app-scroll-container.test.tsx
+  s_099ba1ca90eb52::t_adad336aa35ed6 17
+  s_099ba1ca90eb52::t_4c17d1d6399c8e 1-16,18
+apps/web/index.html
+  s_abe1e94a57f6dd::t_646f0f3edfe34e 21,42-53
+  s_abe1e94a57f6dd::t_0f80b1d8c91ca5 6-20,22-41
+apps/demo/src/router.tsx
+  s_7c29c8fab20e56::t_a185f347c578f9 1-15
+packages/cli/test/auth.test.ts
+  s_1e6ab975ac1065::t_0013a99ac163e4 2,13-18,22-38,85,87,131-142,144-179
+  s_1e6ab975ac1065::t_022b2a3936982a 101-111
+  s_1e6ab975ac1065::t_7a071c74de925a 1,3-12,19-21,39-84,86,88-96,98-100,112-130,180
+  s_1e6ab975ac1065::t_55e792d012e176 97
+  s_1e6ab975ac1065::t_b14dd1bce078e6 143
+apps/demo/package.json
+  s_a0ea9aa55ed960::t_f34b3e5c7bbb8f 6-7
+  s_7c29c8fab20e56::t_d54cb38c43a7d3 1-5,8-19,22-26,28-44
+  s_7c29c8fab20e56::t_0284e7a22ff888 27
+  s_ff4db4e2229bdb::t_3461d71b7205de 20-21
+apps/web/src/components/insights/time-range-control.tsx
+  s_099ba1ca90eb52::t_612d0b894eb2e3 1-3,7-11,23-42,44-45,47-55
+  s_5c9d936ad1b645::t_3cbf04f24085e5 12-22
+  s_ff4db4e2229bdb::t_ed819d79c954ff 4-6
+  s_099ba1ca90eb52::t_aca4faf43ee277 46
+  s_099ba1ca90eb52::t_2008d5411e990f 43
+packages/core/src/client-types.ts
+  s_8627433061d959::t_4795a561dc4e5b 1-30,37-38,41-45,58-65,78,80-204,207-230
+  s_8627433061d959::t_3a6c1d5a78d5d1 205-206
+  s_8627433061d959::t_4e845d54f78b1b 66-77,79
+  s_8627433061d959::t_fd335b63394006 31-36,39-40,46-57
+packages/cli/test/gate-b.test.ts
+  s_8627433061d959::t_a4c4be98eb6894 1-90
+apps/docs/src/app/(home)/page.tsx
+  s_abe1e94a57f6dd::t_0f80b1d8c91ca5 1,4
+packages/cli/src/commands/explain.ts
+  s_8627433061d959::t_0d79f1059f76b5 1-176
+apps/web/src/components/insights/insights-navigation.test.ts
+  s_099ba1ca90eb52::t_c7c40d3493b73a 1-2,8-18,27
+  s_5c9d936ad1b645::t_3cbf04f24085e5 3-7,19-26
+apps/web/src/components/app-scroll-container.tsx
+  s_099ba1ca90eb52::t_4c17d1d6399c8e 1-11,16-19
+  s_099ba1ca90eb52::t_adad336aa35ed6 12-15
+apps/web/public/og-image.svg
+  s_abe1e94a57f6dd::t_9604769c3a8cff 1-30
+packages/api/src/index.ts
+  s_ff4db4e2229bdb::t_1f0907be22a29e 1-5,8-10,12-18,22-36
+packages/client/src/index.ts
+  s_ff4db4e2229bdb::t_b89f1285147087 117,119
+  s_ff4db4e2229bdb::t_8fd86d637fbe00 35,37-41
+  s_8627433061d959::t_b9667f6af36325 1-5,7-13,15-34,36,42-116,118,120-127,129-140
+  s_8627433061d959::t_e6f5128b5973d1 128
+  s_ff4db4e2229bdb::t_c083b7bba6dc23 14
+  s_7c29c8fab20e56::t_ee650f9618580e 6
+apps/docs/content/docs/quickstart.mdx
+  s_8627433061d959::t_54892403d710ec 2-3,6-9,11,14,17,19-20,22-26,28-34,37-38,40,42-43,46-60,63,65-67,70-90,94-95,97,99-100,103-108,110-113,116,118,120-122,125-126,128-130,133-134,136-139,142-143,145,147-149,152,154-156,158-162,165,167-172
+  s_213757e3d49072::t_277dfb73979e79 27
+packages/db/src/schema/demo.ts
+  s_8627433061d959::t_ea27a7e4b56afc 1-28,30-40
+  s_7c29c8fab20e56::t_d23d47ed7b768a 29
+packages/env/package.json
+  s_ff4db4e2229bdb::t_60ebedbb297ecc 9-10
+  s_863a911f9cdee9::t_190082dcebb340 8
+packages/cli/src/chain.ts
+  s_7c29c8fab20e56::t_6149340445c44b 42-48,54,61-67,70-83,86,88-89,94
+  s_8627433061d959::t_b0f3e048b30edc 1-3,5-41,49-53,55-59,68-69,84-85,87,90-93,95
+  s_8627433061d959::t_b6d14653673b52 4,60
+packages/cli/src/surface/canonical.ts
+  s_8627433061d959::t_8cc474db9f751e 1-45,47-175,180-186
+  s_8627433061d959::t_c51feae5c3661f 176-179
+  s_68d592196ed2c7::t_07477a9d91f881 46
+packages/core/tsconfig.json
+  s_8627433061d959::t_6bd94d6ba7e80b 1-7
+packages/cli/src/commands/snapshot.ts
+  s_68d592196ed2c7::t_7be8a5f2731e94 62-64
+  s_8627433061d959::t_8bd93dd2da81e9 1-22,25-27,31-40,42-61,65-76
+  s_68d592196ed2c7::t_987e0da3dcae97 41
+  s_68d592196ed2c7::t_af71f9c8626052 23-24,28-30
+.github/workflows/ci.yml
+  s_7c29c8fab20e56::t_0fa0eabb13d59b 36,80
+  s_5c9d936ad1b645::t_167d542edf3c10 8-10,38,40-44,61-62,77-79,81
+  s_68d592196ed2c7::t_b5806068a135bd 34-35
+  s_68d592196ed2c7::t_423d9d53af60c4 37,39,45-60,63-76,82
+  s_a0ea9aa55ed960::t_acf746896e8f53 31-33
+  s_8ade226e46d3ed::t_b3df5965dc4bed 85-88,93
+  s_8ade226e46d3ed::t_ad1b2feaace697 83-84,89-92,94-107
+  s_8627433061d959::t_b23b1dd3657a03 1-7,20-30
+  s_68d592196ed2c7::t_2001b03877b4bd 11-19
+packages/cli/src/commands/check.ts
+  s_7c29c8fab20e56::t_36063ec5981392 175-181
+  s_8627433061d959::t_a0a2b96b2ec3e7 1-174,182-253
+packages/adapter-tanstack-start/test/adapter.test.ts
+  s_ff4db4e2229bdb::t_b2038f6304fe5e 10,17
+  s_06f03f3c653d6d::t_8e4946e8fe7aad 1-9,11-16,18-94,96,121-198,201,203-234
+  s_ff4db4e2229bdb::t_3f5025d44a8a5a 95,97-120
+  s_ff4db4e2229bdb::t_8cf15f054e1445 199-200,202
+apps/web/src/components/docs-link.ts
+  s_099ba1ca90eb52::t_080fcad41d8178 1-3
+packages/adapter-elysia/README.md
+  s_8627433061d959::t_e06e874866d148 1-13
+packages/cli/src/diff/classify.ts
+  s_8627433061d959::t_388e9c29aa2d73 1-121
+packages/core/src/telemetry.ts
+  s_863a911f9cdee9::t_722babf720e705 102-103,150,234
+  s_863a911f9cdee9::t_f963f3554cd635 216,229-231
+  s_863a911f9cdee9::t_42f2937504797b 6,18-21,46-49,53-56,95
+  s_863a911f9cdee9::t_00ca9592fec359 2,212-214,235
+  s_ff4db4e2229bdb::t_e3b6bf32d4f497 60-72
+  s_1e27fdbdff0c10::t_e2f097176b7584 96-97,99,104-105,113-118,125,129,138,144,152,166,188,190,206,208-211,215,217-228,232-233,236-240
+  s_8627433061d959::t_eb4b269d6a5cd5 1,3-5,7-17,22-45,50-52,57-59,73-94,98,100-101,106-112,119-124,126-128,130-137,139-143,145-149,151,153-165,167-187,189,191-205,207,241-242
+packages/core/test/http.test.ts
+  s_ff4db4e2229bdb::t_38dbb97a21098c 1-219,222-340
+  s_ff4db4e2229bdb::t_01943d93aea783 220-221
+packages/cli/test/elysia.test.ts
+  s_8627433061d959::t_bcec392483a1d6 49
+  s_8627433061d959::t_bb2abef0c7dbd6 1-32,34-48,50-75,77-87,89-93,95-121
+  s_8627433061d959::t_820d8d69609905 76
+  s_8627433061d959::t_5494260f1772e6 88
+  s_8627433061d959::t_2144802882269b 94
+  s_8627433061d959::t_5de1bd7c391530 33
+packages/cli/src/diff/reference-usages.ts
+  s_a0ea9aa55ed960::t_b7bc13f675293d 1-6,8-90
+  s_a0ea9aa55ed960::t_f5b056904905ae 7
+apps/server/src/seed-team.ts
+  s_863a911f9cdee9::t_2a3d6db0eae050 1-76
+packages/adapter-hono/test/adapter.test.ts
+  s_ff4db4e2229bdb::t_96141f6d49f9f7 73,75-98
+  s_ff4db4e2229bdb::t_531de687b16be8 107
+  s_8627433061d959::t_571cc7005c1116 209-212
+  s_ff4db4e2229bdb::t_5838dd6dfdcd43 174-175,177
+  s_ff4db4e2229bdb::t_60a3dea470c530 11,18
+  s_8627433061d959::t_c2eec54d788102 1-10,12-17,19-72,74,99-106,108-173,176,178-193,196-208,213-215
+  s_8627433061d959::t_76c2f89704ae5d 194-195
+apps/demo/src/changes/2025-06-01-orgs-to-teams.ts
+  s_a0ea9aa55ed960::t_f34b3e5c7bbb8f 2,6-11
+  s_7c29c8fab20e56::t_456c941affce9b 1,3-5,12
+packages/cli/test/cli.test.ts
+  s_779457a47402e1::t_a6559fd0ea54a4 303-309,330,338,341,359-360
+  s_7c29c8fab20e56::t_7ba89b56298084 129-145
+  s_7c29c8fab20e56::t_6fcbd274fbe5a9 191-192,195-212
+  s_8627433061d959::t_ebb11cf0ac7672 1-128,146-190,193-194,213-302,361-408
+  s_a6ae906c8d32fb::t_c400d2200c483b 310-329,331-337,339-340,342-358
+apps/demo/src/api-routes.ts
+  s_a0ea9aa55ed960::t_2bfd2cd34b91c6 6,12-14,20,27,33-35,40-42
+  s_a0ea9aa55ed960::t_f34b3e5c7bbb8f 1-5,7-11,15-19,21-26,28-32,36-39,43-62
+apps/server/test/query.test.ts
+  s_ff4db4e2229bdb::t_a91c6155dae4e5 92-99,101-121,124,132-134,142-146
+  s_863a911f9cdee9::t_b18905573af0d0 1-2,7-9,11-91,100,147-148
+  s_863a911f9cdee9::t_0b755462901273 122-123,125-131,135-141
+  s_ff4db4e2229bdb::t_1dee29bf8b0eb8 3-6
+  s_863a911f9cdee9::t_10b7c5e40fb11a 10
+packages/core/src/http.ts
+  s_ff4db4e2229bdb::t_04343d41a29fab 1-316
+packages/db/src/migrations/meta/0001_snapshot.json
+  s_b7e379d3cd6c37::t_9cd4b4f10db638 1-254
+packages/core/test/tracing.test.ts
+  s_1e27fdbdff0c10::t_6ce41c6c1d8ca6 209-210
+  s_1e27fdbdff0c10::t_28a2d80529c5df 146
+  s_1e27fdbdff0c10::t_489b9ce3b202fd 1-145,147-208,211-248
+packages/cli/test/query.test.ts
+  s_863a911f9cdee9::t_1b54eb29a3cb7a 1-5,7-20,22-71
+  s_863a911f9cdee9::t_7b6a38d67aae15 6,21
+apps/demo/vite.config.ts
+  s_7c29c8fab20e56::t_0cb8588819de88 1-2,4-6,9-16,18
+  s_7c29c8fab20e56::t_e0f8dcd89441d5 3,7-8,17
+apps/web/src/components/insights/adoption-chart.tsx
+  s_8627433061d959::t_8b889105490a80 3-9,11-20,23,25,27,29-31,33-35,38-39,101-102,117-127,140-153,155-158,160-166,168-174,184-185,227-228
+  s_099ba1ca90eb52::t_0e1ece2b5b830d 59,90-93,95
+  s_099ba1ca90eb52::t_2777298d4f086e 10,40-41,46-58,61-88,94,96,98-100
+  s_099ba1ca90eb52::t_b430cc3c121fdc 1,114-116,128-139,167,175-183,186-226
+  s_863a911f9cdee9::t_4d6484471e740f 2
+  s_26b29cb45112b9::t_2c46d98239f3f8 21-22,24,26,28,32,36-37,42-45,103-113,154,159
+  s_099ba1ca90eb52::t_e6d3394e8ed166 60,89,97
+packages/cli/src/surface/zod.ts
+  s_8627433061d959::t_10f6e6c593b816 1-29,35-40,68
+  s_7c29c8fab20e56::t_35041a7adedb02 30-34,41-67
+apps/web/src/components/insights/offline-card.tsx
+  s_52af960aa3476a::t_a07908347885dd 12,14,29,33,39,46-51
+  s_099ba1ca90eb52::t_78033406e22310 36-38,40-45,52-54
+  s_8627433061d959::t_eedf8502145a8c 1-11,15-21,26-28,30-32,34-35,55-56
+  s_863a911f9cdee9::t_7f0a15a62bf285 13,22-25
+packages/adapter-elysia/tsconfig.json
+  s_8627433061d959::t_3f42830276f283 1-7
+packages/core/test/integrity.test.ts
+  s_68d592196ed2c7::t_6154c847a0e06b 1-203
+packages/db/test/migration-lint.test.ts
+  s_68d592196ed2c7::t_704ddf7dfd1cbc 1-78
+packages/adapter-nextjs/src/index.ts
+  s_06f03f3c653d6d::t_efd960da5c6e10 65,79
+  s_ff4db4e2229bdb::t_75f7cde150160c 19-21,23-24,70-77,102-106
+  s_06f03f3c653d6d::t_c0278f88ce3393 1-18,22,25-64,66-69,78,80-101,107
+packages/core/test/trace-capture.test.ts
+  s_863a911f9cdee9::t_6920da69b410b2 6,199,212
+  s_1e27fdbdff0c10::t_b50a8fa890f384 1-5,7-108,132-198,201,207-211,213-234,244-253,256-262
+  s_863a911f9cdee9::t_af2db74eebe45e 200,202-206,235
+  s_863a911f9cdee9::t_c31af71f9819a8 121,236-243
+  s_1e27fdbdff0c10::t_65f6213af1bde8 254-255
+  s_1e27fdbdff0c10::t_bc7d0da28fe76b 109-120,122-131
+apps/docs/src/app/layout.tsx
+  s_abe1e94a57f6dd::t_0f80b1d8c91ca5 4-5,11-41,43-52,54-71,73-83
+  s_abe1e94a57f6dd::t_a400e82cfcf52c 42,53
+  s_abe1e94a57f6dd::t_646f0f3edfe34e 72
+  s_ff4db4e2229bdb::t_1245e2e2d1500d 84
+apps/server/tsdown.config.ts
+  s_863a911f9cdee9::t_024f732fcd6dd3 10
+  s_863a911f9cdee9::t_272ba7b4ae36af 8-9,11
+  s_863a911f9cdee9::t_da1177d6669c44 4
+apps/web/src/components/insights/adoption-chart.test.tsx
+  s_26b29cb45112b9::t_2c46d98239f3f8 4-5,38-61
+  s_099ba1ca90eb52::t_5dd13ecf386e11 1-2,20-37,62
+  s_099ba1ca90eb52::t_2777298d4f086e 3,6-19
+packages/cli/src/auth/credentials.ts
+  s_1e6ab975ac1065::t_cc54f4771dd517 1-91
+apps/web/src/utils/project-query.ts
+  s_863a911f9cdee9::t_7f0a15a62bf285 1-85
+packages/core/test/scheme.test.ts
+  s_8627433061d959::t_6236e029c26e2c 1-38
+infra/otel/envoy.Dockerfile
+  s_863a911f9cdee9::t_5f1c8cf383a0a5 9,12,14-15
+  s_a0ea9aa55ed960::t_acf746896e8f53 1-8,10-11,13
+apps/docs/public/versionless-logo.svg
+  s_abe1e94a57f6dd::t_0f80b1d8c91ca5 1-18
+packages/cli/src/commands/whoami.ts
+  s_1e6ab975ac1065::t_b532ff680fe8ec 1-64
+apps/demo/src/releases.ts
+  s_7c29c8fab20e56::t_c1d9559114aeab 1-6,8-11
+  s_a0ea9aa55ed960::t_f34b3e5c7bbb8f 7
+apps/web/package.json
+  s_099ba1ca90eb52::t_d4c9a2e6bda710 19
+  s_7c29c8fab20e56::t_911ebe5cb946b8 25
+  s_a6ae906c8d32fb::t_c400d2200c483b 11
+  s_ff4db4e2229bdb::t_0c6f324d6eb1a7 30
+apps/docs/content/docs/concepts/rewrites-and-sunsets.mdx
+  s_8627433061d959::t_51e0e6ad0d1af6 1-124
+apps/web/src/components/dashboard-table.tsx
+  s_ff4db4e2229bdb::t_cac314b096ed27 628
+  s_5c9d936ad1b645::t_c46b1821879a03 54,96,141,310-311,314,530
+  s_ff4db4e2229bdb::t_3c7fce6fc6db0a 318,326-330
+  s_5c9d936ad1b645::t_77b9f7d51fd5cc 56,61-63,236,305-306,313,341
+  s_ff4db4e2229bdb::t_0b996d7b2034a6 227-229,235,249-253,256-257
+  s_5c9d936ad1b645::t_121976aaf75332 65,221,337-340
+  s_ff4db4e2229bdb::t_3cecc9c388631c 503-505,507,512-518
+  s_ff4db4e2229bdb::t_2efcdaaf492f10 157,164,172-173,175-180,185,189,192-196
+  s_5c9d936ad1b645::t_00bb9e82b67a1f 1-53,55,57-60,64,66-95,97-140,142-156,158-163,165-171,174,181-184,186-188,190-191,197-220,222-226,230-234,237-248,254-255,258-304,307-309,312,315-317,319-325,331-336,342-502,506,508-511,519-529,531-627,629-649
+packages/adapter-trpc/README.md
+  s_8627433061d959::t_e06e874866d148 1-20
+packages/api/package.json
+  s_ff4db4e2229bdb::t_1f0907be22a29e 12-14,16-17,19-20,23
+packages/api/src/lib/clickhouse-query.ts
+  s_7c29c8fab20e56::t_7eda08f3d1c3ed 1-217
+packages/adapter-nextjs/tsconfig.json
+  s_06f03f3c653d6d::t_d8612c9dd632f9 1-7
+packages/client/tsconfig.json
+  s_8627433061d959::t_9081214004886d 1-7
+packages/cli/src/config.ts
+  s_8627433061d959::t_b6d14653673b52 75,141,169
+  s_8627433061d959::t_c33ee28e54115e 1-46,55-74,76-140,142-168
+  s_8627433061d959::t_85f4c6d48738bd 47-54
+packages/core/src/errors.ts
+  s_68d592196ed2c7::t_d64148a9b46921 1-13,15,24,32-51,57-59,63
+  s_8627433061d959::t_3fab8a1718ac23 14,16-23,25-31,52-56,60-62,64-76
+bun.lock
+  s_ff4db4e2229bdb::t_c0519841893337 24-53,85-86,88,91-92,99,113,119,140-240,244-245,247-248,251,260-290,295-303,310,335-351,389-391,395,401-403,522-523,546,548,762-769,772-783,786-807,818,976,978,980,982,984,986,988,990,992,994,996,998,1000,1002,1004,1108-1115,1120-1122,1126,1128,1132-1141,1146-1147,1180-1181,1184-1185,1212-1215,1218-1219,1232-1235,1240-1243,1324-1337,1340-1343,1346-1347,1352-1353,1616-1617,1650-1651,1654,1676-1677,1702-1703,1740-1741,1810-1811,1818-1819,1838-1839,1912-1915,1954-1955,2226,2228,2270-2273,2296-2301,2434-2435,2524,2528-2529,2644-2645,2710-2711,2722-2723,2748-2749,2780-2781,2810-2811,2882-2883,2888-2889,2908,2910,2912,2914,2916,2918-2924,2954-2955,2984-2985,3044,3066-3067,3090,3092,3118,3200-3208,3264-3265,3382-3383,3482,3484,3486,3488,3490,3492,3494,3496,3498,3500,3502,3504,3506,3508,3510-3522,3526-3548,3550,3552,3554,3556,3698-3701,3706,3708
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "aca3c4dcb729644ac03b946bbe1390ce0d1ddd87",
+  "prompts": {},
+  "sessions": {
+    "s_04155f0558ce2c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "02657952-9d35-41a5-82ee-6c76f1d5bb04",
+        "model": "claude-fable-5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_06f03f3c653d6d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23e3c165-bbe1-4948-9570-6a0e0ba256e3",
+        "model": "claude-fable-5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_099ba1ca90eb52": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f91c4-fd01-7c03-bb72-59650fcb8def",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_1e27fdbdff0c10": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8f49d278-7443-4d20-b2a6-3e6c9fcafad2",
+        "model": "claude-fable-5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_1e6ab975ac1065": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "49803373-fc90-47bf-879a-42a254260809",
+        "model": "claude-fable-5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_213757e3d49072": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f8d97-64e8-76f2-b5f8-a528568d4b3e",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_26b29cb45112b9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f94aa-f397-79a1-b000-d6df89cdb92e",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_32a7c3f5866807": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "acd7ad7c-cb50-4048-869a-01a9439a58ea",
+        "model": "claude-fable-5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_4e8028b3ea2b99": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-af2308ec6f862cccc",
+        "model": "unknown"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_52af960aa3476a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f920e-e7f6-74c2-8958-92e4b6b41cc6",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_5c9d936ad1b645": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f9296-3d5b-7ac0-8007-9f78bbc0aee2",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_653aebccc09981": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "73170abe-eaed-4bbd-aa98-9f9935af10ad",
+        "model": "claude-fable-5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_68d592196ed2c7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3158ceb5-339c-40ff-9462-4400c8f7e28e",
+        "model": "claude-fable-5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_779457a47402e1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ec270557-8add-42e1-8132-9e80a9762eab",
+        "model": "claude-fable-5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_7c29c8fab20e56": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f624c21c-e0d1-4588-8120-7f9624a2a428",
+        "model": "claude-fable-5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_8627433061d959": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "41eb522e-6829-4c29-a68b-57506684e9d0",
+        "model": "claude-fable-5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_863a911f9cdee9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f9205-9a88-71e1-8196-62ebdeb26506",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_8ade226e46d3ed": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f949b-9892-7912-b5bc-3b691132954a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_9db1fc4190bda7": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "23804ac0-294c-4394-9af4-c172dd941856",
+        "model": "claude-fable-5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_a0ea9aa55ed960": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f92cf-69e2-7821-a0d1-4837240cd7a1",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_a6ae906c8d32fb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f92d4-b0e1-7060-a05f-a8b4b8cd83ff",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_abe1e94a57f6dd": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f9210-a475-7590-921d-55d28a92e37e",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_b35ec40c5aa45e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f91c0-cb45-7e51-b42b-3ace26df0122",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_b380cdb2a9af6e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "df6699d5-6c0b-4f5e-b26b-dd3013448702",
+        "model": "claude-fable-5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_b7e379d3cd6c37": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "bbcc1084-21ed-4bfb-9f4b-8597cca5f5a3",
+        "model": "claude-fable-5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_ff4db4e2229bdb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f459dcac-42a7-4d08-8134-3945388abcba",
+        "model": "claude-fable-5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    }
+  }
+}
