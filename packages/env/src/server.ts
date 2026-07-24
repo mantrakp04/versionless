@@ -14,8 +14,10 @@ const runtimeEnv = {
 export const env = createEnv({
   server: {
     DATABASE_URL: z.string().min(1),
-    // Credentials + database ride in the URL: http://user:pass@host:8123/db
+    // Credentials may ride in the URL. Railway also exposes the Collector's
+    // database separately, which must win when the public URL has no path.
     CLICKHOUSE_URL: z.url().optional(),
+    CLICKHOUSE_DATABASE: z.string().min(1).optional(),
     // Separate credential used by the read-only, row-policy-constrained raw
     // query plane. Required in production; development has a local default.
     CLICKHOUSE_QUERY_PASSWORD: z

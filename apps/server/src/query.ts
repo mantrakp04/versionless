@@ -35,6 +35,7 @@ type QueryRouteDependencies = {
   getUser(request: Request): Promise<ProjectAccessUser | null>;
   authorizeProject: typeof requireProjectAccess;
   executeQuery(input: ProjectQueryInput): ReturnType<typeof executeProjectQuery>;
+  reportError?(error: unknown, projectId: string): void;
 };
 
 const defaultDependencies: QueryRouteDependencies = {
@@ -45,6 +46,12 @@ const defaultDependencies: QueryRouteDependencies = {
   },
   authorizeProject: requireProjectAccess,
   executeQuery: executeProjectQuery,
+  reportError(error, projectId) {
+    console.error("[project-query] ClickHouse query failed", {
+      projectId,
+      error,
+    });
+  },
 };
 
 /**
@@ -80,6 +87,7 @@ export function createProjectQueryApp(
           query_id: result.queryId,
         };
       } catch (error) {
+        dependencies.reportError?.(error, body.projectId);
         // Same policy table as the tRPC error formatter: production gets
         // public copy, development keeps the diagnostic (server logs own it).
         const publicError = publicQueryHttpError(error);

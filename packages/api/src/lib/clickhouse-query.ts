@@ -70,6 +70,17 @@ interface ClickHouseConnection {
   password: string;
 }
 
+export function resolveClickHouseDatabase(
+  clickHouseUrl: string,
+  configuredDatabase?: string,
+): string {
+  if (configuredDatabase) return configuredDatabase;
+  const parsed = new URL(clickHouseUrl);
+  return decodeURIComponent(
+    parsed.pathname.replace(/^\/+|\/+$/g, "") || "default",
+  );
+}
+
 function connection(): ClickHouseConnection {
   if (!env.CLICKHOUSE_URL) {
     throw new ProjectQueryUnavailableError(
@@ -79,8 +90,9 @@ function connection(): ClickHouseConnection {
   const parsed = new URL(env.CLICKHOUSE_URL);
   return {
     url: `${parsed.protocol}//${parsed.host}`,
-    database: decodeURIComponent(
-      parsed.pathname.replace(/^\//, "") || "default",
+    database: resolveClickHouseDatabase(
+      env.CLICKHOUSE_URL,
+      env.CLICKHOUSE_DATABASE,
     ),
     username: decodeURIComponent(parsed.username || "default"),
     password: decodeURIComponent(parsed.password || ""),

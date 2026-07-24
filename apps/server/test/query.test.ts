@@ -122,6 +122,7 @@ describe("POST /v1/query", () => {
   });
 
   test("reports query infrastructure failures as unavailable without diagnostics", async () => {
+    const diagnostics: unknown[] = [];
     const app = createProjectQueryApp({
       getUser: async () => ({ getTeam: async () => ({ id: "team_1" }) }),
       authorizeProject: async () => ({
@@ -132,6 +133,9 @@ describe("POST /v1/query", () => {
         throw new ProjectQueryUnavailableError(
           "ClickHouse unavailable — set CLICKHOUSE_URL and run `bun db:start`",
         );
+      },
+      reportError: (error, projectId) => {
+        diagnostics.push({ error, projectId });
       },
     });
 
@@ -144,5 +148,7 @@ describe("POST /v1/query", () => {
     expect(await response.json()).toEqual({
       error: "This service is temporarily unavailable. Please try again shortly.",
     });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0]).toMatchObject({ projectId: project.id });
   });
 });

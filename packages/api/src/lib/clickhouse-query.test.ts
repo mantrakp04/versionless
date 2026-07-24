@@ -4,10 +4,35 @@ import {
   MAX_RESULT_BYTES,
   MAX_RESULT_ROWS,
   queryAccessStatements,
+  resolveClickHouseDatabase,
   type RestrictedQueryClient,
 } from "./clickhouse-query";
 
 describe("tenant-isolated ClickHouse queries", () => {
+  test("uses the configured Collector database when the public URL has no path", () => {
+    expect(
+      resolveClickHouseDatabase(
+        "https://clickhouse.example.com",
+        "versionless",
+      ),
+    ).toBe("versionless");
+    expect(
+      resolveClickHouseDatabase(
+        "https://clickhouse.example.com/legacy",
+        "versionless",
+      ),
+    ).toBe("versionless");
+  });
+
+  test("falls back to the URL database for local development", () => {
+    expect(
+      resolveClickHouseDatabase(
+        "http://clickhouse:password@localhost:8123/versionless",
+      ),
+    ).toBe("versionless");
+    expect(resolveClickHouseDatabase("http://localhost:8123")).toBe("default");
+  });
+
   test("provisions both OTLP tables with project and team row policies", () => {
     const sql = queryAccessStatements("versionless").join("\n");
 
