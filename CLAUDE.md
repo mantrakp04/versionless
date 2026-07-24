@@ -77,7 +77,7 @@ this sequence — CI's `db-compat` job enforces each step:
 ## Seed Data
 
 - `apps/server/scripts/seed-traffic.ts` (`bun run --cwd apps/server seed`) is the only source of dashboard preview data on dev — keep it truthful. Whenever a change touches storage or the wire surface — a DB schema change, an endpoint/route added, modified, or removed, a new API version or sunset, or a change to ingest/telemetry event fields — update the seed script in the same change so the seeded story exercises the new surface (its `ROUTES` list, version set, consumer mix, and event fields must reflect reality), then re-run the seed and confirm the insights UI renders it.
-- The seed resolves its team id in order: `SEED_TEAM_ID` (explicit override) → `SEED_ADMIN_ACCOUNT` (Hexclave account email; selected team, first team as fallback) → `"demo"`. New seed knobs go through `@versionless/env/server`, never raw `process.env`.
+- The seed resolves its team from `DEMO_VERSIONLESS_API_KEY` first, so synthetic demo traffic follows the same Hexclave `demo` team as real `apps/demo` traffic. `SEED_TEAM_ID` is only the trusted local-Collector fallback, then `"demo"` as a hidden local placeholder. With `VERSIONLESS_OTLP_LOGS_URL` plus the demo key, seed through the authenticated gateway; new seed knobs go through `@versionless/env/server`, never raw `process.env`.
 
 ## References
 

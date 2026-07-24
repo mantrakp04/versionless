@@ -1,52 +1,33 @@
 import { describe, expect, test } from "bun:test";
-import {
-  resolveSeedTeam,
-  type SeedUser,
-} from "../src/seed-team";
+import { resolveSeedTeam } from "../src/seed-team";
 
 describe("resolveSeedTeam", () => {
-  test("keeps SEED_TEAM_ID as the explicit override", async () => {
-    let lookedUpAccount = false;
+  test("uses the demo API key owner even when a stale team override exists", async () => {
+    let resolvedKey: string | undefined;
 
     const resolution = await resolveSeedTeam({
-      explicitTeamId: "team-explicit",
-      adminEmail: "owner@example.com",
-      listUsers: async () => {
-        lookedUpAccount = true;
-        return [];
+      demoApiKey: "demo-api-key",
+      explicitTeamId: "mantra-team",
+      resolveApiKeyTeam: async (apiKey) => {
+        resolvedKey = apiKey;
+        return { id: "demo-team", displayName: "demo" };
       },
     });
 
     expect(resolution).toEqual({
-      teamId: "team-explicit",
-      source: "explicit",
+      teamId: "demo-team",
+      source: "demo-api-key",
+      team: { id: "demo-team", displayName: "demo" },
     });
-    expect(lookedUpAccount).toBe(false);
+    expect(resolvedKey).toBe("demo-api-key");
   });
 
-  test("always uses the account's first team after selectedTeam changes", async () => {
-    const user: SeedUser = {
-      primaryEmail: "owner@example.com",
-      selectedTeam: {
-        id: "team-selected-later",
-        displayName: "Selected later",
-      },
-      listTeams: async () => [
-        { id: "team-original", displayName: "Original team" },
-        { id: "team-selected-later", displayName: "Selected later" },
-      ],
-    };
-
-    const resolution = await resolveSeedTeam({
-      adminEmail: "OWNER@example.com",
-      listUsers: async () => [user],
-    });
-
-    expect(resolution).toEqual({
-      teamId: "team-original",
-      source: "admin-account-first-team",
-      email: "OWNER@example.com",
-      team: { id: "team-original", displayName: "Original team" },
+  test("keeps SEED_TEAM_ID as the trusted local-Collector override", async () => {
+    expect(
+      await resolveSeedTeam({ explicitTeamId: "team-explicit" }),
+    ).toEqual({
+      teamId: "team-explicit",
+      source: "explicit",
     });
   });
 

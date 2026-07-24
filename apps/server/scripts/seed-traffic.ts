@@ -1,6 +1,6 @@
 /**
- * Seeds ~30 days of synthetic versionless telemetry through the trusted
- * local Collector port
+ * Seeds ~30 days of synthetic versionless telemetry through either the
+ * authenticated cloud gateway or the trusted local Collector port
  * so the insights dashboard has a story to tell on first run: adoption of
  * 2026-05-14 visibly overtakes 2025-06-01, while two stubborn consumers stay
  * pinned on 2025-01-01 (the sunset blockers). Every dashboard range (24h, 7d,
@@ -9,16 +9,13 @@
  * Usage:  bun db:start          (ClickHouse container)
  *         bun run seed          (from apps/server)
  *
- * The dashboard links projects to the account that owns the API key, so the
- * seed must land under your team id. Resolution order:
- *   1. SEED_TEAM_ID              — explicit override (copy from the /keys page)
- *   2. SEED_ADMIN_ACCOUNT        — your Hexclave account email; the script asks
- *                                  Hexclave for that user and always seeds under
- *                                  the first team returned for the account
- *   3. "demo"                    — placeholder team nobody's dashboard shows
+ * The dashboard links projects to the team that owns the API key. Resolution:
+ *   1. DEMO_VERSIONLESS_API_KEY — Hexclave resolves the authoritative demo team
+ *   2. SEED_TEAM_ID             — trusted local-Collector override
+ *   3. "demo"                   — hidden local fallback
  *
- *         SEED_ADMIN_ACCOUNT=you@example.com bun run seed
- *         SEED_TEAM_ID=<teamId> SEED_PROJECT_NAME=demo-api bun run seed
+ * Set VERSIONLESS_OTLP_LOGS_URL with DEMO_VERSIONLESS_API_KEY to seed through
+ * the cloud gateway. Without both, the script uses the local Collector.
  */
 import { getHexclaveServerApp } from "@versionless/api/lib/hexclave";
 import {
@@ -36,7 +33,13 @@ import { KNOWN_VERSIONS } from "demo/releases";
 import { createDemoSeedRoutes } from "demo/seed-fixtures";
 import { randomBytes } from "node:crypto";
 import { resolveSeedTeam } from "../src/seed-team";
-const COLLECTOR_URL = "http://127.0.0.1:14318";
+const LOCAL_COLLECTOR_URL = "http://127.0.0.1:14318";
+const GATEWAY_LOGS_URL = env.VERSIONLESS_OTLP_LOGS_URL;
+const DEMO_API_KEY = env.DEMO_VERSIONLESS_API_KEY;
+const USE_AUTHENTICATED_GATEWAY = Boolean(GATEWAY_LOGS_URL && DEMO_API_KEY);
+const OTLP_BASE_URL = USE_AUTHENTICATED_GATEWAY
+  ? GATEWAY_LOGS_URL!.replace(/\/v1\/logs\/?$/, "")
+  : LOCAL_COLLECTOR_URL;
 const TEAM_ID = await resolveTeamId();
 const PROJECT_NAME = env.SEED_PROJECT_NAME ?? "versionless demo API";
 
@@ -50,20 +53,22 @@ if (PROJECT_NAME === "internal") {
 }
 
 async function resolveTeamId(): Promise<string> {
-  const hexclave =
-    !env.SEED_TEAM_ID && env.SEED_ADMIN_ACCOUNT
-      ? getHexclaveServerApp()
-      : undefined;
+  const hexclave = DEMO_API_KEY ? getHexclaveServerApp() : undefined;
   const resolution = await resolveSeedTeam({
+    demoApiKey: DEMO_API_KEY,
     explicitTeamId: env.SEED_TEAM_ID,
-    adminEmail: env.SEED_ADMIN_ACCOUNT,
-    listUsers: hexclave
-      ? (email) => hexclave.listUsers({ query: email })
+    resolveApiKeyTeam: hexclave
+      ? async (apiKey) => {
+          const team = await hexclave.getTeam({ apiKey }).catch(() => null);
+          return team
+            ? { id: team.id, displayName: team.displayName }
+            : null;
+        }
       : undefined,
   });
-  if (resolution.source === "admin-account-first-team") {
+  if (resolution.source === "demo-api-key") {
     console.log(
-      `Seeding under ${resolution.email}'s first team "${resolution.team.displayName}" (${resolution.team.id}); dashboard team selection is ignored`,
+      `Seeding under the demo API key's team "${resolution.team.displayName}" (${resolution.team.id})`,
     );
   }
   return resolution.teamId;
@@ -205,6 +210,7 @@ for (const event of events) {
 }
 
 function trustedResource(attributes: OtlpKeyValue[]): OtlpKeyValue[] {
+  if (USE_AUTHENTICATED_GATEWAY) return attributes;
   return [
     ...attributes,
     {
@@ -219,9 +225,17 @@ function trustedResource(attributes: OtlpKeyValue[]): OtlpKeyValue[] {
 }
 
 async function post(signal: "logs" | "traces", body: unknown): Promise<void> {
-  const response = await fetch(`${COLLECTOR_URL}/v1/${signal}`, {
+  const response = await fetch(`${OTLP_BASE_URL}/v1/${signal}`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: {
+      "content-type": "application/json",
+      ...(USE_AUTHENTICATED_GATEWAY
+        ? {
+            authorization: `Bearer ${DEMO_API_KEY}`,
+            "x-versionless-project": PROJECT_NAME,
+          }
+        : {}),
+    },
     body: JSON.stringify(body),
   });
   if (!response.ok) {

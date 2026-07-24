@@ -35,8 +35,8 @@ export const env = createEnv({
     VERCEL: z.string().optional(),
     VERSIONLESS: z.string().optional(),
     // Knobs for apps/server/scripts/seed-traffic.ts only.
+    DEMO_VERSIONLESS_API_KEY: z.string().optional(),
     SEED_TEAM_ID: z.string().optional(),
-    SEED_ADMIN_ACCOUNT: z.email().optional(),
     SEED_PROJECT_NAME: z.string().optional(),
     CORS_ORIGIN: z.url(),
     HEXCLAVE_PROJECT_ID: z.string().min(1),
