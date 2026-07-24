@@ -29,15 +29,15 @@ export interface ProjectQueryResult {
 }
 
 export class ProjectQueryError extends Error {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
     this.name = "ProjectQueryError";
   }
 }
 
 export class ProjectQueryUnavailableError extends ProjectQueryError {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
     this.name = "ProjectQueryUnavailableError";
   }
 }
@@ -176,6 +176,7 @@ export function ensureQueryAccess(): Promise<void> {
     accessReady = undefined;
     throw new ProjectQueryUnavailableError(
       safeClickHouseError(error, env.NODE_ENV === "development"),
+      { cause: error },
     );
   });
   return accessReady;
