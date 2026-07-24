@@ -43,7 +43,9 @@ exporters:
       queue_size: 10000
       sizer: items
       batch:
-        min_size: 100
+        # Dashboard traffic is sparse in production; flush a single request
+        # instead of waiting for a seed-sized batch before the timeout starts.
+        min_size: 1
         max_size: 5000
         flush_timeout: 1s
         sizer: items
@@ -64,4 +66,3 @@ service:
       receivers: [otlp]
       processors: [memory_limiter, resource/versionless]
       exporters: [clickhouse]
-
