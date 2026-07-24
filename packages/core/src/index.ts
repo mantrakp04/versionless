@@ -105,11 +105,10 @@ export function createVersionless<const C extends VersionlessConfig>(
   const pipelines = new PipelineCache(registry);
   const clock = config.clock ?? (() => new Date());
   const sunsetGate = new SunsetGate(registry, clock);
-  const hub = new TelemetryHub(
-    config.sample,
+  const onSinkError =
     config.onSinkError ??
-      ((err) => console.warn("[versionless] telemetry sink error:", err)),
-  );
+    ((err: unknown) => console.warn("[versionless] telemetry sink error:", err));
+  const hub = new TelemetryHub(config.sample, onSinkError);
 
   let tracing: Tracing | undefined = config.tracing;
   // Serverless mode: no interval timers; batched sinks drain per response
@@ -129,7 +128,7 @@ export function createVersionless<const C extends VersionlessConfig>(
         apiKey: config.apiKey,
         project,
         immediate,
-        onError: config.onSinkError,
+        onError: onSinkError,
       }),
     );
 
@@ -145,7 +144,7 @@ export function createVersionless<const C extends VersionlessConfig>(
         apiKey: config.apiKey,
         project,
         immediate,
-        onError: config.onSinkError,
+        onError: onSinkError,
       });
       const capture = createCaptureTracing({
         sample: config.traces?.sample ?? DEFAULT_TRACE_SAMPLE,

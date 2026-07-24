@@ -75,6 +75,25 @@ describe("named cloud projects", () => {
       "billing-api",
     );
   });
+
+  test("reports the first failed export in serverless mode", async () => {
+    const errors: unknown[] = [];
+    const sink = httpOtlpLogsSink({
+      url: "https://ingest.example.test/v1/logs",
+      apiKey: "vl_demo_secret",
+      project: "billing-api",
+      immediate: true,
+      onError: (error) => errors.push(error),
+      fetchImpl: (async () =>
+        new Response(null, { status: 401 })) as unknown as typeof fetch,
+    });
+
+    sink.record(event);
+    await sink.flush?.();
+
+    expect(errors).toHaveLength(1);
+    expect(String(errors[0])).toContain("ingest responded 401");
+  });
 });
 
 test("flushes and closes non-log telemetry lifecycles", async () => {

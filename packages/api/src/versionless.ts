@@ -5,6 +5,15 @@ export const CURRENT_VERSION = "2026-07-24";
 
 const sampleByRate = rateSample(env.TELEMETRY_SAMPLE_RATE);
 
+if (
+  env.NODE_ENV === "production" &&
+  (!env.VERSIONLESS_API_KEY || !env.VERSIONLESS_OTLP_LOGS_URL)
+) {
+  console.warn(
+    "[versionless] cloud telemetry is disabled: API key or OTLP logs URL is missing",
+  );
+}
+
 /**
  * The cloud server's own versionless instance — apps/server dogfoods the
  * product on its own service API (query plane + dashboard tRPC) under the

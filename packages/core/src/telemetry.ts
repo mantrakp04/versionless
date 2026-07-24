@@ -165,7 +165,11 @@ export function batchedPoster<T>(options: BatchedPosterOptions<T>): BatchedPoste
       consecutiveFailures++;
       // Re-buffer, oldest items dropped first when over capacity.
       buffer = [...batch, ...buffer].slice(-maxBuffered);
-      if (consecutiveFailures === 3) {
+      if (immediate) {
+        // A serverless instance may process only one request, so report its
+        // first failed export instead of waiting for a third invocation.
+        onError(err);
+      } else if (consecutiveFailures === 3) {
         breakerOpenUntil = Date.now() + 30_000;
         consecutiveFailures = 0;
         onError(err);
