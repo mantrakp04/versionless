@@ -1,0 +1,25 @@
+packages/core/src/index.ts
+  s_4a5680375148c3::t_c53dc3b146d337 117
+packages/core/test/http.test.ts
+  s_4a5680375148c3::t_c53dc3b146d337 322-344
+packages/api/src/versionless.ts
+  s_4a5680375148c3::t_c53dc3b146d337 25-27
+packages/core/src/types.ts
+  s_4a5680375148c3::t_c53dc3b146d337 252-257
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "299df431f2abfe6be4901d6a65e1167ed9d9f885",
+  "prompts": {},
+  "sessions": {
+    "s_4a5680375148c3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f95c0-ce17-7b83-b94a-4f8cc3f80a16",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    }
+  }
+}
