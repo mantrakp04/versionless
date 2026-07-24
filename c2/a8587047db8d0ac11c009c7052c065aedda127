@@ -1,0 +1,29 @@
+apps/server/test/seed-team.test.ts
+  s_4a5680375148c3::t_edab33d472af6c 2,5-6,9-13,18-20,22,25-30
+apps/server/scripts/seed-traffic.ts
+  s_4a5680375148c3::t_edab33d472af6c 2-3,12-15,17-18,36-42,56,58,60-66,69,71,213,228,230-238
+CLAUDE.md
+  s_4a5680375148c3::t_edab33d472af6c 80
+apps/server/src/seed-team.ts
+  s_4a5680375148c3::t_edab33d472af6c 7,9,16,23-25,28,30,32-47,51
+packages/env/src/server.ts
+  s_4a5680375148c3::t_edab33d472af6c 38
+apps/server/.env.example
+  s_4a5680375148c3::t_edab33d472af6c 9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "c2a8587047db8d0ac11c009c7052c065aedda127",
+  "prompts": {},
+  "sessions": {
+    "s_4a5680375148c3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f95c0-ce17-7b83-b94a-4f8cc3f80a16",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    }
+  }
+}
