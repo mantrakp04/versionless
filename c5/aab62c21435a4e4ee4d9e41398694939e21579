@@ -1,0 +1,19 @@
+packages/adapter-elysia/src/index.ts
+  s_4a5680375148c3::t_a62cf1a7b207e7 9,40-55,101-128,133-146,148-149
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "c5aab62c21435a4e4ee4d9e41398694939e21579",
+  "prompts": {},
+  "sessions": {
+    "s_4a5680375148c3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f95c0-ce17-7b83-b94a-4f8cc3f80a16",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    }
+  }
+}
