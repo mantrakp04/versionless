@@ -114,7 +114,7 @@ export function createVersionless<const C extends VersionlessConfig>(
   let tracing: Tracing | undefined = config.tracing;
   // Serverless mode: no interval timers; batched sinks drain per response
   // (exchange.finish() self-flushes when immediate).
-  const immediate = !!process.env.VERCEL;
+  const immediate = config.serverless ?? !!process.env.VERCEL;
 
   if (config.apiKey) {
     const project = config.project?.trim();

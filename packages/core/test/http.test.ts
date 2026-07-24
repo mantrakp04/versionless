@@ -319,6 +319,29 @@ describe("serverless self-flush", () => {
     expect(flushes).toBeGreaterThanOrEqual(1);
   });
 
+  test("explicit serverless mode drains without a platform environment flag", async () => {
+    const v = createVersionless({
+      scheme: "date",
+      current: CURRENT,
+      resolve: [{ default: "current" }],
+      serverless: true,
+    });
+    let flushes = 0;
+    v.telemetry.use({ record: () => {}, flush: async () => { flushes++; } });
+    let handedOff: Promise<void> | undefined;
+    const ex = await v.openExchange({
+      method: "GET",
+      path: "/x",
+      getHeader: () => null,
+      adapter: "test",
+    });
+    ex.finish({ status: 200, waitUntil: (p) => (handedOff = p) });
+
+    expect(handedOff).toBeDefined();
+    await handedOff;
+    expect(flushes).toBeGreaterThanOrEqual(1);
+  });
+
   test("finish() does not flush outside immediate mode", async () => {
     const v = createVersionless({
       scheme: "date",

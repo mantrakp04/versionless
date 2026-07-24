@@ -249,6 +249,12 @@ export interface VersionlessConfig {
   apiKey?: string;
   /** OTLP/HTTP JSON logs endpoint. Defaults to the hosted cloud `/v1/logs`. */
   otlpLogsUrl?: string;
+  /**
+   * Flush cloud telemetry during each request instead of on an interval.
+   * Enable for serverless deployments whose runtime may freeze after returning.
+   * Defaults to Vercel environment detection.
+   */
+  serverless?: boolean;
   /** Injectable clock, for testing sunset behavior. */
   clock?: () => Date;
   /** Sampling hook applied before fan-out to sinks. Return false to drop. */
