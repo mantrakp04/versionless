@@ -1,4 +1,5 @@
 import { publicQueryHttpError } from "@versionless/api/error-policy";
+import { finishVersionlessResponse } from "@versionless/adapter-elysia";
 import {
   executeProjectQuery,
   MAX_QUERY_TIMEOUT_MS,
@@ -10,6 +11,7 @@ import {
   type ProjectAccessUser,
 } from "@versionless/api/lib/project-access";
 import { Elysia } from "elysia";
+import { waitUntil } from "@vercel/functions";
 import { z } from "zod";
 
 const queryParameterSchema = z.union([
@@ -62,7 +64,13 @@ const defaultDependencies: QueryRouteDependencies = {
 export function createProjectQueryApp(
   dependencies: QueryRouteDependencies = defaultDependencies,
 ) {
-  return new Elysia({ name: "versionless-project-query" }).post(
+  return new Elysia({ name: "versionless-project-query" })
+    // Parent lifecycle hooks do not propagate into mounted Elysia plugins.
+    // Finalize inside this child while its handler promise is still awaited.
+    .onAfterHandle((ctx) =>
+      finishVersionlessResponse(ctx, { waitUntil }),
+    )
+    .post(
     "/v1/query",
     async ({ body, request, status }) => {
       const user = await dependencies.getUser(request);
@@ -95,7 +103,7 @@ export function createProjectQueryApp(
       }
     },
     { body: projectQueryRequestSchema },
-  );
+    );
 }
 
 export const projectQueryApp = createProjectQueryApp();
