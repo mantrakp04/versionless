@@ -1,0 +1,32 @@
+apps/server/src/app.ts
+  s_4a5680375148c3::t_6671c4a2657049 9,82
+packages/adapter-elysia/src/index.ts
+  s_4a5680375148c3::t_6671c4a2657049 39-43,45,132
+  s_4a5680375148c3::t_e167657172005b 130-131,133
+packages/adapter-elysia/test/adapter.test.ts
+  s_4a5680375148c3::t_6671c4a2657049 5-9,50,52,211,213,227-231,233,236,239
+  s_4a5680375148c3::t_7db57e7109fbdd 232
+  s_4a5680375148c3::t_e167657172005b 1,84-87,212,214-226,235,237-238,240
+  s_4a5680375148c3::t_17cb9ec20156cf 234
+  s_4a5680375148c3::t_7d30f14b3a6642 241
+apps/server/package.json
+  s_4a5680375148c3::t_6671c4a2657049 21
+bun.lock
+  s_4a5680375148c3::t_48c2905c5577df 85
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "57adbf4f0f2ea3c722290f699b7300d37f046848",
+  "prompts": {},
+  "sessions": {
+    "s_4a5680375148c3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f95c0-ce17-7b83-b94a-4f8cc3f80a16",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    }
+  }
+}
