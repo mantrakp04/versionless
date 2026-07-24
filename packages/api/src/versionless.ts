@@ -1,9 +1,7 @@
-import { createVersionless, rateSample } from "@versionless/core";
+import { createVersionless } from "@versionless/core";
 import { env } from "@versionless/env/server";
 
 export const CURRENT_VERSION = "2026-07-24";
-
-const sampleByRate = rateSample(env.TELEMETRY_SAMPLE_RATE);
 
 if (
   env.NODE_ENV === "production" &&
@@ -41,8 +39,9 @@ export const v = createVersionless({
     // Skip the raw HTTP hop of tRPC calls (the tRPC middleware emits the real
     // per-procedure event with a "trpc:" route).
     if (event.route.includes("/trpc") && !event.route.startsWith("trpc:")) return false;
-    // Cheap deterministic sampling on the event timestamp.
-    return sampleByRate(event);
+    // Request logs are the dashboard's source of truth. Keep every event;
+    // trace capture has its own independent head sampling.
+    return true;
   },
   traces: {
     filter: (attrs) => {
