@@ -1,5 +1,4 @@
 import { publicQueryHttpError } from "@versionless/api/error-policy";
-import { finishVersionlessResponse } from "@versionless/adapter-elysia";
 import {
   executeProjectQuery,
   MAX_QUERY_TIMEOUT_MS,
@@ -10,8 +9,10 @@ import {
   requireProjectAccess,
   type ProjectAccessUser,
 } from "@versionless/api/lib/project-access";
+import {
+  CURRENT_VERSION, v,
+} from "@versionless/api/versionless";
 import { Elysia } from "elysia";
-import { waitUntil } from "@vercel/functions";
 import { z } from "zod";
 
 const queryParameterSchema = z.union([
@@ -38,6 +39,7 @@ type QueryRouteDependencies = {
   authorizeProject: typeof requireProjectAccess;
   executeQuery(input: ProjectQueryInput): ReturnType<typeof executeProjectQuery>;
   reportError?(error: unknown, projectId: string): void;
+  recordTelemetry?(status: number, latencyMs: number): Promise<void>;
 };
 
 const defaultDependencies: QueryRouteDependencies = {
@@ -54,6 +56,21 @@ const defaultDependencies: QueryRouteDependencies = {
       error,
     });
   },
+  async recordTelemetry(status, latencyMs) {
+    v.telemetry.emit({
+      ts: Date.now(),
+      method: "POST",
+      route: "POST /v1/query",
+      adapter: "elysia",
+      version: CURRENT_VERSION,
+      latencyMs,
+      transformCount: 0,
+      status,
+    });
+    // emit() fans out in a microtask; yield once before draining the sinks.
+    await Promise.resolve();
+    await v.telemetry.flush();
+  },
 };
 
 /**
@@ -64,46 +81,51 @@ const defaultDependencies: QueryRouteDependencies = {
 export function createProjectQueryApp(
   dependencies: QueryRouteDependencies = defaultDependencies,
 ) {
-  return new Elysia({ name: "versionless-project-query" })
-    // Parent lifecycle hooks do not propagate into mounted Elysia plugins.
-    // Finalize inside this child while its handler promise is still awaited.
-    .onAfterHandle((ctx) =>
-      finishVersionlessResponse(ctx, { waitUntil }),
-    )
-    .post(
+  return new Elysia({ name: "versionless-project-query" }).post(
     "/v1/query",
     async ({ body, request, status }) => {
-      const user = await dependencies.getUser(request);
-      if (!user) {
-        return status(401, { error: "Sign in required" });
-      }
-
+      const startedAt = performance.now();
+      let responseStatus = 200;
       try {
-        const { project } = await dependencies.authorizeProject(
-          user,
-          body.projectId,
+        const user = await dependencies.getUser(request);
+        if (!user) {
+          responseStatus = 401;
+          return status(401, { error: "Sign in required" });
+        }
+
+        try {
+          const { project } = await dependencies.authorizeProject(
+            user,
+            body.projectId,
+          );
+          const result = await dependencies.executeQuery({
+            projectId: project.id,
+            teamId: project.teamId,
+            query: body.query,
+            params: body.params,
+            timeoutMs: body.timeoutMs,
+          });
+          return {
+            result: result.result,
+            query_id: result.queryId,
+          };
+        } catch (error) {
+          dependencies.reportError?.(error, body.projectId);
+          // Same policy table as the tRPC error formatter: production gets
+          // public copy, development keeps the diagnostic (server logs own it).
+          const publicError = publicQueryHttpError(error);
+          responseStatus = publicError.status;
+          return status(publicError.status, { error: publicError.message });
+        }
+      } finally {
+        await dependencies.recordTelemetry?.(
+          responseStatus,
+          Math.round(performance.now() - startedAt),
         );
-        const result = await dependencies.executeQuery({
-          projectId: project.id,
-          teamId: project.teamId,
-          query: body.query,
-          params: body.params,
-          timeoutMs: body.timeoutMs,
-        });
-        return {
-          result: result.result,
-          query_id: result.queryId,
-        };
-      } catch (error) {
-        dependencies.reportError?.(error, body.projectId);
-        // Same policy table as the tRPC error formatter: production gets
-        // public copy, development keeps the diagnostic (server logs own it).
-        const publicError = publicQueryHttpError(error);
-        return status(publicError.status, { error: publicError.message });
       }
     },
     { body: projectQueryRequestSchema },
-    );
+  );
 }
 
 export const projectQueryApp = createProjectQueryApp();

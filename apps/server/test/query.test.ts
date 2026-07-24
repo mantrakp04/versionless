@@ -28,6 +28,7 @@ function request(body: unknown, authenticated = true) {
 describe("POST /v1/query", () => {
   test("authenticates the project and passes only trusted tenancy to SQL", async () => {
     const calls: unknown[] = [];
+    const telemetry: Array<{ status: number; latencyMs: number }> = [];
     const app = createProjectQueryApp({
       getUser: async (req) =>
         req.headers.has("authorization")
@@ -40,6 +41,9 @@ describe("POST /v1/query", () => {
       executeQuery: async (input) => {
         calls.push(input);
         return { result: [{ total: 1 }], queryId: "query_1" };
+      },
+      recordTelemetry: async (status, latencyMs) => {
+        telemetry.push({ status, latencyMs });
       },
     });
 
@@ -64,6 +68,9 @@ describe("POST /v1/query", () => {
         timeoutMs: 10_000,
       },
     ]);
+    expect(telemetry).toHaveLength(1);
+    expect(telemetry[0]!.status).toBe(200);
+    expect(telemetry[0]!.latencyMs).toBeGreaterThanOrEqual(0);
   });
 
   test("fails closed before query execution when signed out or forbidden", async () => {
