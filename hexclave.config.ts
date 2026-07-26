@@ -8,6 +8,7 @@ export const config = defineHexclaveConfig({
       "api-keys": { enabled: true },
       authentication: { enabled: true },
       analytics: { enabled: true },
+      gtm: { enabled: true },
     },
   },
   auth: {
