@@ -1,0 +1,941 @@
+packages/core/src/types.ts
+  s_8a36f036fe6e8f::t_2dacbfa0043f0c 146-153
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 1,128-145,179-183,231-235,245-260,265-269,298-302,324-331,400,465-480,486-502
+packages/cli/src/surface/types.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 75-89,99-100
+packages/db/src/migrations/meta/_journal.json
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 18-31
+apps/web/src/components/insights/trace-waterfall.tsx
+  s_f335b29084a66e::t_56be69d0748f0d 1,6-17,19-28,30-31,36,38-42,146,175-221,223-230,262-272,275-301,311-313,329,337,364,367-379,395,406,415,444,447-451
+  s_dd4e7244793ca8::t_a08790d0f43c26 32-35,96-103
+  s_f335b29084a66e::t_d51ddd944a4bcf 316,338,341-344,382
+  s_f335b29084a66e::t_77f5c52105f039 3-5,18,29,37,43,62-95,104-145,147-174,273-274,302-310,314-315,317-328,330-336,339-340,345-363,365-366,380-381,383-394,396-405,407-414,416-443,445-446
+  s_f335b29084a66e::t_9718834d85974b 222
+  s_2a7c44379b0d2d::t_7764eeb3c1ec29 2,44-61,231-261
+packages/api/src/versionless.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 32
+apps/web/src/components/insights/error-overview.tsx
+  s_f335b29084a66e::t_d89610bf3bc8cd 37
+  s_73c718abf7d82c::t_7c6414fedd6a19 262-263,267-271
+  s_73c718abf7d82c::t_7f6128838c6845 226-227
+  s_f335b29084a66e::t_e0a837389af7a7 123
+  s_f335b29084a66e::t_262249532349e4 19,26-29,33,258-261,264-266,272-275,277,279-286,288-289,291-294,296,298-329,331-334,336-338,347-348
+  s_f335b29084a66e::t_bbb9b752551de0 1-2,4-18,35-36,39,41,46-56,91-94,100,107-108,192-211,216,222,225,229-239,255,290,295,330,358-359
+  s_f335b29084a66e::t_f42429e7dcfe26 20-25,30-32,57-58,66-90,109,164,184,191
+  s_f335b29084a66e::t_2bbcb3020e833f 34,95-96,99,102-103,106,110-118,121-122,124-149,151-163,165-183,185-190,339,342-346
+  s_f335b29084a66e::t_171fe8558c63d5 42-43,212-215,218-221,240-241,243-253,353-354
+  s_f335b29084a66e::t_570a76c8d2c2b5 150
+  s_73c718abf7d82c::t_ab1742ea350c5d 287
+  s_f335b29084a66e::t_bc545c11b2d221 40,217
+  s_f335b29084a66e::t_0d313be8f7e3b1 3,38,45,97-98,101,104-105,254,256-257,349-352,355-357
+  s_73c718abf7d82c::t_30bd8ff7fb7613 335
+  s_73c718abf7d82c::t_024e0b3c4bce4f 119-120
+  s_0605fb603bcb36::t_579d7c1e2c9384 44,223-224,228,242,276,278,297,340-341
+  s_73c718abf7d82c::t_0e73023a3bffa5 59-65
+packages/api/src/routers/projects.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 1,5-6,8-9,20-21,31-201,213-216,219-268,276,279-286
+  s_73c718abf7d82c::t_897ab0b0cd9bc2 217-218
+apps/web/src/components/chat/mdx-message.tsx
+  s_dcb184a6edbeba::t_638042d03e6279 16-19,135
+  s_dcb184a6edbeba::t_88e6e31421ca63 22,82-83,129-130,207,212-213,219-221,240
+  s_eb7dae893978c4::t_01a617e83ff5c1 41,109
+  s_dcb184a6edbeba::t_1d00bb390bfd53 110-114,214-218
+  s_dcb184a6edbeba::t_635a1036362c16 2,4,6-15,20-21,23-35,37-40,43-45,47-57,59-63,67,79-81,84-86,88-102,105-107,115-128,131-134,136-153,167-202,204-206,208-209,222,227-228,235-237,239,241-246
+  s_dcb184a6edbeba::t_8e60e41129a9eb 1,87,154-166,210,238
+  s_1722a2f12f9c14::t_6637b3c3e49a0c 3,5,36,42,46,58,64-66,68-78,103-104,108,203,211,223-226,229-234,247-248
+packages/core/test/content-hash.test.ts
+  s_9ac8b1fbccd156::t_1a8d267024f2d2 1-15
+apps/web/src/components/insights/error-detail-sheet.test.tsx
+  s_f335b29084a66e::t_de31948dd71a9c 1,3,5,7,9,29-32,35-37
+  s_f335b29084a66e::t_4bae07dfcffe8e 4,17
+  s_f335b29084a66e::t_39dfe01e4b351d 6
+  s_0605fb603bcb36::t_841c7637bcd34d 2,10-16,18-28
+  s_f335b29084a66e::t_214e65a2a232df 8,33-34
+packages/cli/test/coverage.test.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 3-4,24
+apps/web/src/components/chat/query-sql.ts
+  s_1722a2f12f9c14::t_360da7ee5475ed 1-39,59-142,153-173
+  s_1722a2f12f9c14::t_52b135f82238fb 40-58
+  s_1722a2f12f9c14::t_f71d76087b3347 143-152
+packages/cli/src/commands/watch.ts
+  s_8a36f036fe6e8f::t_c7d11e8dc99f4e 45-49,54-108
+  s_8a36f036fe6e8f::t_8078849cf7a9c2 168
+  s_8a36f036fe6e8f::t_40b9f45a7ed962 184-186,191,196
+  s_8a36f036fe6e8f::t_e7a8dfbee7411e 109
+apps/web/src/components/chat/normalize-assistant-mdx.test.ts
+  s_dcb184a6edbeba::t_d00857649c2c49 1-44
+apps/web/src/components/chat/chat-panel.tsx
+  s_dcb184a6edbeba::t_2d4fc0b2080124 252-256
+  s_1722a2f12f9c14::t_55722308517799 358-368
+  s_38235d498bcf9b::t_4b81cc2e968518 25,201-241,244-251,257-264,269-283
+  s_1722a2f12f9c14::t_e6f9e7b0eeedf5 115
+  s_1722a2f12f9c14::t_0bfee439350dad 1-24,26-36,38-114,116-168,177-179,194-200,242-243,265-268,284-357,369-371
+  s_eb7dae893978c4::t_e2414baae09d38 37,169-176,180-193
+apps/web/src/components/chat/registry.test.tsx
+  s_dcb184a6edbeba::t_4633bc712635a6 5,7-8,10,14-15,19-20,26,36
+  s_1722a2f12f9c14::t_d499f2d5c64669 1-4,6,9,11-13,16-18,21-25,27-35,37-91
+apps/web/src/components/chat/use-source-query.ts
+  s_dcb184a6edbeba::t_266023643fa241 7,20,36-40
+  s_1722a2f12f9c14::t_19df7d8a55785b 1-6,8-19,21-35,41-42
+apps/web/src/components/chat/sandbox-query-client.test.ts
+  s_dcb184a6edbeba::t_4633bc712635a6 1-57
+packages/cli/src/index.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 45
+apps/web/src/components/chat/chat-panel.test.tsx
+  s_dcb184a6edbeba::t_15af810831e1e2 89-99
+  s_38235d498bcf9b::t_0741ad9a494c9f 2,49,51-58
+  s_38235d498bcf9b::t_4b81cc2e968518 1,4-6,9-10,12,14,16-48,50,59-63,101
+  s_dcb184a6edbeba::t_2d4fc0b2080124 3,7-8,13,66-88,100
+  s_eb7dae893978c4::t_e2414baae09d38 11,15,64-65
+packages/db/src/migrations/meta/0002_snapshot.json
+  s_0a0fb5f149daf3::t_a823a169ecd118 1-356
+apps/server/test/pg-query.test.ts
+  s_1722a2f12f9c14::t_fef23f60c9ec35 1-182
+apps/server/src/chat.ts
+  s_1722a2f12f9c14::t_6e770a88cf45ed 114-115
+  s_1722a2f12f9c14::t_e211d3b64e7190 431-434
+  s_1722a2f12f9c14::t_af0371c3aa0798 1-11,21-28,42-51,61-113,116-148,160-311,321-430,435-460
+  s_eb7dae893978c4::t_7f84d9d52368d2 30,149-150,152-159
+  s_1722a2f12f9c14::t_1710f76865ee21 52-60
+  s_eb7dae893978c4::t_91a67ac1d586aa 29,31-41,151,312-320
+  s_1722a2f12f9c14::t_be40c0978ea55f 12-20
+README.md
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 40,69-70
+packages/cli/src/snapshot/store.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 14,16-18,21
+packages/adapter-trpc/README.md
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 4
+apps/web/src/components/insights/version-contract-details.test.tsx
+  s_06b600f521c126::t_30ca8f1eb7268d 254
+  s_5f056dd2bbe729::t_7db2b09bce6b94 6,10,12-14
+  s_5f056dd2bbe729::t_643e0037180917 134-137,139-140
+  s_5f056dd2bbe729::t_06675454ff80ac 237
+  s_5f056dd2bbe729::t_5053ff7cc38eb3 109-113,116-117,121-122,124-126,129-133,138,141-155,157-158
+  s_0a0fb5f149daf3::t_56829144faf6e5 1,3-4,18,217,219-220,251,296
+  s_5f056dd2bbe729::t_e77d8352659b55 258-259
+  s_5f056dd2bbe729::t_e1c3b238cd220c 8,11,15,114-115,118-120,123,127-128,156,159-176,182-193,199-215,225,228-236,238-249,257,260-261,285-295
+  s_5f056dd2bbe729::t_2bf6051f7d8849 216,221-224
+  s_f335b29084a66e::t_15da08980de5e4 9,92-108,226-227,252
+  s_31701c4a5abadf::t_2b2b0618177c7c 262-284
+  s_5f056dd2bbe729::t_7e3e321b3780e8 194-198
+  s_06b600f521c126::t_ef97010e4e5603 253
+  s_06b600f521c126::t_99031bce2ee946 250,255-256
+  s_06b600f521c126::t_9fd81b540f0004 2,5,7,16-17,19-91,218
+  s_5f056dd2bbe729::t_ddbd3333c059d1 177-181
+packages/ui/src/components/card.tsx
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 15
+apps/web/src/queries/rollup.ts
+  s_73c718abf7d82c::t_f715d82b17a8a5 55-64
+  s_73c718abf7d82c::t_1a0e64fccab28e 334-350
+  s_73c718abf7d82c::t_e6851d26e06557 106-108
+  s_73c718abf7d82c::t_0a4e8b6e3485c1 26-27,29-32,34-39,41
+  s_73c718abf7d82c::t_812244a421f880 1-24,43-54,65-76,92-105,109-125,130-141,167-202,218-237,298-333,351-371
+  s_73c718abf7d82c::t_bdaf37253aaf48 77-91
+  s_73c718abf7d82c::t_4f998825c23bb0 142-166
+  s_73c718abf7d82c::t_3d8eb0fd54c1b7 25,28,33,40,42
+  s_73c718abf7d82c::t_6fa51e5353cf62 203-217
+  s_2a7c44379b0d2d::t_43310fdf6c7419 274-278
+  s_73c718abf7d82c::t_9b7878ae1198db 126-129
+  s_2a7c44379b0d2d::t_1749633128fb1d 238-273,279-297
+packages/api/src/error-policy.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 8-11,64-66,80-85,93-96
+apps/web/src/components/insights/report-visuals.tsx
+  s_5f056dd2bbe729::t_e63f788f8f327f 1-115
+packages/core/test/signal-sampling.test.ts
+  s_73c718abf7d82c::t_e3355b21be0aa5 1-2,4-6,10,14-15,18,21-23,26,28,32,54,67,71,82,89,91-92,96-100,102,113-114,118-119,137-138,143-144,146-147
+  s_73c718abf7d82c::t_773de40a76021e 3,7,16-17,19-20,24-25,30-31,33-34,42-52,90,94,104-112,116,120-123,125-128,130-136,139,141-142,145
+  s_69e49cc68fb784::t_f78a2212119886 8-9,11-13,27,29,80,93,95,101,103,115,117,124,129,140
+  s_73c718abf7d82c::t_09ce43c8ceaa90 35-37,53,55-66,68-70,72-79,81,83-88
+  s_73c718abf7d82c::t_c1c6b2ee47cd08 38-41
+apps/web/src/queries/telemetry.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 29-34,38,40-43,46-50,55,58-61
+vercel.json
+  s_dcb184a6edbeba::t_4fbb417081f2b1 47-57
+packages/cli/src/surface/canonical.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 2,4
+packages/api/src/error-policy.test.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 10-13,77,104-129
+  s_1722a2f12f9c14::t_c19740107ae45a 130-131
+apps/web/src/components/chat/registry.tsx
+  s_dcb184a6edbeba::t_266023643fa241 24,65-68,73,76,79
+  s_1722a2f12f9c14::t_e198e2134c9ffa 152
+  s_1722a2f12f9c14::t_7c5307f934331f 1
+  s_eb7dae893978c4::t_e2414baae09d38 26-55,70-71,157-158
+  s_1722a2f12f9c14::t_1711bcd6cf5f16 2-23,25,56-64,69,72,74-75,77-78,80-151,153-156,159-178
+apps/server/test/versions.test.ts
+  s_0a0fb5f149daf3::t_b6346bc62f7f55 183-197
+  s_0a0fb5f149daf3::t_f90fad6b03bafb 1,3-7,9-11,13-17,25-50,60-62,124-182,198-199
+  s_73c718abf7d82c::t_b61a5090998221 8
+  s_73c718abf7d82c::t_de4bae5814b790 63-123
+  s_9ac8b1fbccd156::t_1a8d267024f2d2 2,12,18-24,51-59
+apps/web/src/components/insights/version-runtime-analytics.test.ts
+  s_5f056dd2bbe729::t_49d6288f62d50f 39,44,53-55,60-73,78,82-84,87-89,92
+  s_f335b29084a66e::t_422c180c2275d4 1-2,4,11-38
+  s_5f056dd2bbe729::t_5b1978cdaa6987 74-77,79-81,85-86,90-91
+  s_5f056dd2bbe729::t_3fe85b826a9cd4 40-43,45-52,56-59
+  s_5f056dd2bbe729::t_cae10354145b8a 6-8
+  s_5f056dd2bbe729::t_459fba634ca9c8 3,5,9-10
+apps/web/src/queries/safe-telemetry-metadata.ts
+  s_f335b29084a66e::t_5558e7dc0333a6 14-23
+  s_f335b29084a66e::t_be456f90b15192 1-13,24-45
+apps/web/vite.config.ts
+  s_dcb184a6edbeba::t_88e6e31421ca63 31-32
+  s_dcb184a6edbeba::t_635a1036362c16 8-17,27
+  s_dcb184a6edbeba::t_4fbb417081f2b1 19-22,25-26
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 5,29-30,33-39
+packages/cli/src/commands/snapshot.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 4,32-34,70-96,99-105,111-117
+packages/core/src/registry.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 68-72,135-136,199-206,213-219
+packages/cli/src/commands/explain.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 100,110
+packages/env/src/demo.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 14
+packages/adapter-trpc/test/adapter.test.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 38,44,55-56,153,204-205
+apps/web/src/components/chat/sandbox-height.test.ts
+  s_dcb184a6edbeba::t_638042d03e6279 1-16
+apps/demo/package.json
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 7
+apps/web/src/routes/insights/$projectId/telemetry.tsx
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 38-40,63,141-219
+apps/web/src/components/insights/blockers-table.tsx
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 3,12-14,20-22,28-30,35-39,96
+apps/web/src/components/insights/adoption-chart.tsx
+  s_06b600f521c126::t_c0864d7f43b6c4 51
+  s_06b600f521c126::t_be699a3665b715 144-145
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 9-19,21,24-31,33-50,52-58,61-64,67-84,86-89,91,94,96,99,111-143,166,207,209-210,212-230,235,238,242-254,265-275,277-321,323-331,336,340,344-345,347-349,352-354,357-358,362,364,367,371-427
+packages/cli/src/config.ts
+  s_8a36f036fe6e8f::t_845f4ac9262359 5
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 6,114-130,140,142,152-159,161-171,203-208
+  s_8a36f036fe6e8f::t_a535fcb215e841 141,160
+packages/cli/test/upload.test.ts
+  s_0a0fb5f149daf3::t_f86381def84cdd 6-11,22-59
+  s_0a0fb5f149daf3::t_ace7a5fb26df97 1-5,12-21,60-115
+apps/web/src/routes/insights/$projectId/route.tsx
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 3,9,12,20-30,36-37,39-40,45,62-69
+.claude/launch.json
+  s_d3e20ab44db8a6::t_4631e6923532b1 6-7
+  s_d3e20ab44db8a6::t_9088da5796f74b 1-5,8-11
+apps/web/src/components/dashboard-table.tsx
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 8,17,28-41,47,61-62,71,85-89,93,98,101,108-109,120-121,123-127,129-131,133,135-139,141-143,148-163,166-172,184,186-190,195-240,249,259-260,264-269,274,285,287,292,297-304,306-344,346-351,354-362,364-369,388-391,410-413,421,425,433,444,446,459-463,467-469,536,543,549,561-571,595,597,602,607-612,614,616-622,625-627,630,636-640,643-691
+  s_06b600f521c126::t_74d40df2061941 572-573
+apps/web/src/components/insights/error-overview.test.tsx
+  s_f335b29084a66e::t_de31948dd71a9c 6,11,15-16
+  s_f335b29084a66e::t_f42429e7dcfe26 26,29-32
+  s_f335b29084a66e::t_39dfe01e4b351d 28
+  s_f335b29084a66e::t_c21cd2b1aa37f3 19
+  s_f335b29084a66e::t_bbb9b752551de0 1-5,7-10,12-14,17-18,20-25,27,33-35
+apps/web/src/queries/traces.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 4-13,17,43-52,82,118,121-125,152,160-161,167-168,173,175,186-223
+apps/web/src/queries/request-log-correlation.ts
+  s_2a7c44379b0d2d::t_d0a2898c801505 1-10,25-41,47-54,65-66,68-89
+  s_2a7c44379b0d2d::t_34a6251adb1878 11-24
+  s_2a7c44379b0d2d::t_e07a4c6bda0131 42-46,55-64,67
+apps/web/src/components/insights/report-section.tsx
+  s_5f056dd2bbe729::t_06199e8fe3aee3 29-30
+  s_5f056dd2bbe729::t_0a99fcc3a63d7d 211-214,219-224,231-240
+  s_5f056dd2bbe729::t_7112ce681eef4f 109,111,113-114,116-117,120-196
+  s_5f056dd2bbe729::t_85730bb19535c0 1-28,31-108,110,112,115,118-119,197-210,215-218,225-230,241-257,260-261,269,273,283,289-290,292-328
+  s_5f056dd2bbe729::t_6ae7760ba581e9 258-259,262-268,270-272,274-282,284-288,291
+apps/server/scripts/seed-transport.ts
+  s_06b600f521c126::t_33ebf8a12fd793 44
+  s_06b600f521c126::t_8868662fd2f79f 1-43,45-59
+apps/server/src/chat/system-prompt.ts
+  s_1722a2f12f9c14::t_c77443e1550b8f 1-142,144,146-169,174-248,250-253,324-397,401-402,404-411,416-430,436-467
+  s_eb7dae893978c4::t_e2414baae09d38 249,263-323,398-400,403,412-415,431-435
+  s_1722a2f12f9c14::t_142e45506de32c 143,145
+  s_eb7dae893978c4::t_7f84d9d52368d2 170-173
+  s_dcb184a6edbeba::t_576cb71d8fa7a9 254-262
+packages/cli/src/snapshot/upload.ts
+  s_0a0fb5f149daf3::t_94bdaeefa2ad6d 33
+  s_0a0fb5f149daf3::t_293c298fab3213 5-6,8-27,46
+  s_0a0fb5f149daf3::t_ace7a5fb26df97 1-4,7,28-32,34-45,47-109
+apps/web/src/components/insights/insights-page.tsx
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 1,12,21,30-34,36-43
+apps/web/src/components/chat/work-timeline.tsx
+  s_1722a2f12f9c14::t_7b895d330d1279 8
+  s_1722a2f12f9c14::t_34a8a376264038 75
+  s_1722a2f12f9c14::t_172db38d6bb960 1-7,9-15,17,19-74,76-89
+  s_1722a2f12f9c14::t_db7ea1d026767d 16,18
+apps/server/package.json
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 6,17-18,30
+apps/docs/content/docs/telemetry.mdx
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 208-211
+packages/core/src/client-types.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 20,93,95-96,98,101-102,104,107-108,111
+packages/env/src/server.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 27-39,43
+apps/web/src/components/chat/work-summary.ts
+  s_1722a2f12f9c14::t_2c6d91cbef1e69 1-82
+packages/db/src/schema/projects.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 4,67-138
+apps/demo/src/versionless.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 19
+apps/web/src/queries/insights.ts
+  s_f335b29084a66e::t_422c180c2275d4 63,67-68
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 60-62,64-66,69-74,76,98-118,121-128,135-138,141-153,156,162-165,171-176,180-183,188-196,202,221,245-248,250,265-268,282,422-427,430-431,448-507
+  s_73c718abf7d82c::t_f34fcb3a7835e1 119-120
+apps/server/scripts/seed-scenario.test.ts
+  s_f335b29084a66e::t_05b6168b9a4a55 28,41-47,70
+  s_06b600f521c126::t_fb8898032109b3 72
+  s_f335b29084a66e::t_c4462d2930ac68 3-5,9,22,53-56,76-80,86-95
+  s_73c718abf7d82c::t_472a464c7fbca1 121,123-133,135-163,175-180,182-187,220-223,227-236,238-239,242,244
+  s_73c718abf7d82c::t_32b4876c0b4823 188-219
+  s_73c718abf7d82c::t_db641df413c1ae 246-302
+  s_f335b29084a66e::t_4c5ed7dc24b913 6,8,106-118
+  s_06b600f521c126::t_bf99cd3d991f67 21,23-27,29-30,38-40,48-49,69,71
+  s_06b600f521c126::t_7f484d7568102d 60-67,102
+  s_73c718abf7d82c::t_a4079fc552ae35 224-226,237,240-241,243
+  s_06b600f521c126::t_7c65c5e8d4e791 1-2,10-20,31-32,34-37,50-52,57-59,68,73-75,81-85,96-101,103-105,245,303
+  s_73c718abf7d82c::t_78df1b6d420779 7
+  s_06b600f521c126::t_4be6809e8e31f6 33
+  s_f335b29084a66e::t_14338b57e818f7 119-120,122,134,181
+  s_73c718abf7d82c::t_745bd8b1dc1d09 164-174
+apps/server/test/openai-compatible.test.ts
+  s_1722a2f12f9c14::t_3a2f156d4d6184 1-250
+apps/server/scripts/seed-transport.test.ts
+  s_06b600f521c126::t_8868662fd2f79f 1-28
+apps/web/src/components/chat/query-sql.test.ts
+  s_1722a2f12f9c14::t_762d3e092415ed 1-161
+apps/web/src/components/chat/work-summary.test.ts
+  s_1722a2f12f9c14::t_20456d55d4fab6 1-109
+apps/docs/public/SKILL.md
+  s_355328e4b20c74::t_8aa67fb6e045e9 34
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 4-15,23-33
+packages/api/src/lib/postgres-errors.test.ts
+  s_1722a2f12f9c14::t_24403709ee370f 1-57
+packages/core/test/client-types.test-d.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 64,128-130,132-134,137-138
+apps/web/src/components/chat/normalize-assistant-mdx.ts
+  s_dcb184a6edbeba::t_7607da710356ec 4
+  s_dcb184a6edbeba::t_d00857649c2c49 1-3,5-22
+apps/server/.env.example
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 6-12
+apps/web/src/queries/latency.ts
+  s_73c718abf7d82c::t_d369e49226f46d 154,158-159,161-163
+  s_73c718abf7d82c::t_6691f82075e77f 44,51,53-55
+  s_73c718abf7d82c::t_9e4873d95cd0ee 1-43,45-50,52,56-153,155-157,160,164-190
+packages/core/test/fingerprint.test.ts
+  s_9ac8b1fbccd156::t_1a8d267024f2d2 65-67,69-72
+  s_73c718abf7d82c::t_5b955f08c22f3d 1-64,68,73-91
+packages/core/src/content-hash.ts
+  s_9ac8b1fbccd156::t_4d668d4276b855 1-54
+packages/db/src/migrations/0002_mature_sentinel.sql
+  s_0a0fb5f149daf3::t_86719c30e79d2b 1,10-16
+  s_0a0fb5f149daf3::t_a823a169ecd118 2-9
+packages/adapter-orpc/test/adapter.test.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 31,37,48-49,66,72,149,168-169
+packages/cli/src/coverage/match.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 1-2,4,9,14,27,37,43,88,94,165
+packages/core/test/introspection.test.ts
+  s_8a36f036fe6e8f::t_02d3e61a120276 113,115-117
+  s_8a36f036fe6e8f::t_74d00b8062c730 1-36,39-70,72-112,114,121-145
+  s_8a36f036fe6e8f::t_75cd6ed7e84ba5 118-120
+  s_8a36f036fe6e8f::t_1fea7696e88a61 71
+  s_8a36f036fe6e8f::t_f21c5dd5d5827d 37-38
+apps/web/src/components/chat/query-table.tsx
+  s_dcb184a6edbeba::t_266023643fa241 34,74,97-104,107-114,147-148,178
+  s_1722a2f12f9c14::t_86ce36aa56c87d 1-33,35-73,75-96,105-106,115-146,149-177,179-313
+packages/api/src/lib/postgres-query.ts
+  s_1722a2f12f9c14::t_df05f7c6b2aa44 1-198,205-225,228-290,301-303,306-321
+  s_9ac8b1fbccd156::t_4d668d4276b855 226-227,291-300,304-305
+  s_1722a2f12f9c14::t_7b17762395fd9f 199-204
+apps/web/src/routes/insights/$projectId/drift.tsx
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 20,37,50-51,54-55,70-73,77,86,91-93,101,104,144-146,148
+apps/demo/src/surface.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 39,56
+apps/web/src/routes/handler/$.tsx
+  s_835f1a6071c10d::t_0ef8898526b76a 1-10
+apps/web/src/routes/insights/$projectId/sunset.tsx
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 33,47-53,135-149
+packages/cli/src/commands/verify.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 1,4,29
+packages/cli/src/commands/shared.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 6,76-91,94-101
+packages/cli/src/commands/changelog.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 3-5,94
+packages/db/src/restricted-pool.ts
+  s_1722a2f12f9c14::t_938eb8374948b2 1-47
+packages/cli/test/store.test.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 87-99
+packages/api/src/lib/clickhouse-query.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 87,110-160,167-179,183-248,252
+apps/web/src/components/chat/query-chart.tsx
+  s_1722a2f12f9c14::t_5c17cd9d864631 1-21,23,26-126,137-237
+  s_1722a2f12f9c14::t_3a58a1d3e739d8 129-134,136
+  s_1722a2f12f9c14::t_b2c2bb58eabe62 22,25
+  s_dcb184a6edbeba::t_266023643fa241 24,127-128,135
+apps/web/src/components/chat/mdx-message.test.tsx
+  s_eb7dae893978c4::t_e2414baae09d38 50-57,92-93
+  s_dcb184a6edbeba::t_90419e81cfe4c9 77
+  s_dcb184a6edbeba::t_7607da710356ec 105
+  s_eb7dae893978c4::t_12bc8f0e3930ba 109
+  s_1722a2f12f9c14::t_b519a1a26162f2 1-5,8,10-11,13-15,17-18,20-22,26-49,94-104,106-108,110-111
+  s_dcb184a6edbeba::t_4633bc712635a6 9,12,23-25
+  s_dcb184a6edbeba::t_d00857649c2c49 6-7,16,19,58-76,78-91
+apps/web/src/components/chat/query-runner.ts
+  s_dcb184a6edbeba::t_266023643fa241 1-17
+packages/cli/test/sunsets.test.ts
+  s_73c718abf7d82c::t_8b54a0af468e82 1,4,18-19,24-30,37-43,45-46,48-49,61-63,86-87
+  s_8a36f036fe6e8f::t_a1d5d0b5ba0701 2-3,5-17,20-23,31-36,44,47,50-60,64-85
+apps/server/scripts/seed-traffic.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 2-7,9,23,31-35,37,40-41,51-52,71,96-105,107-117,120-141,143-154,157-162,165-174,181,184-190,195-201,206-207,216,222,230-233,242,245,268-280,285-287,297-301,374
+packages/core/test/exchange.test.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 2,284,291-347,353
+apps/server/src/app.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 23,25,27,87-97,108-114
+packages/api/src/routers/projects.test.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 4-9,56-264,326-330
+apps/web/src/components/insights/overview-verdicts.ts
+  s_73c718abf7d82c::t_0808a53c05eb76 1-365
+apps/web/src/queries/errors.ts
+  s_73c718abf7d82c::t_0103201cf2ccb5 115-117,122,125-126,137-141,143-146,152,154,161-170,177-178,180-181,188-190
+  s_73c718abf7d82c::t_b50e74e4439654 129-130
+  s_73c718abf7d82c::t_3c6465d2da0dd0 335
+  s_73c718abf7d82c::t_d0ee9aff9bcaa9 308,314-315,320
+  s_f335b29084a66e::t_56be69d0748f0d 66,69,71,77
+  s_f335b29084a66e::t_262249532349e4 199
+  s_73c718abf7d82c::t_8f07af389ce879 20-21
+  s_dd4e7244793ca8::t_5d61b1895d0499 443-444
+  s_0605fb603bcb36::t_f94b913dfb5531 1-5,96-105,184,186-187,348-354,356,358-360,368-375,377-393,401-408,410-411
+  s_2a7c44379b0d2d::t_c45590d179da8c 10-12,14,471-476
+  s_f335b29084a66e::t_14711f79504558 200-201,304-305
+  s_0605fb603bcb36::t_69f7919ace23c8 357,376
+  s_2a7c44379b0d2d::t_e07a4c6bda0131 466
+  s_73c718abf7d82c::t_182d6eb2e284dc 203-208,211,217,226-227,230-233,236-240,243-244,248,256,258,262-291
+  s_f335b29084a66e::t_bbb9b752551de0 16-19,22-23,26-28,90,113-114,194-195,197-198,202,209-210,213-215,220,222,224-225,261,336,508
+  s_f335b29084a66e::t_74c27837508f56 24-25,29-32,64-65,67-68,70,73-76,78-79,85-89,94-95,216,218-219,257,260,292-303,306-307,309-313,319,321-334,337-347,355,362,396-398,409
+  s_73c718abf7d82c::t_660cd5f51668bf 153,155-160
+  s_f335b29084a66e::t_0e586fe72300f9 127-128,136,171-176,179,191-192,363-364,366
+  s_73c718abf7d82c::t_94a0b8210f3b32 131-135,142,147-151
+  s_69e49cc68fb784::t_f78a2212119886 118-121,123-124
+  s_f335b29084a66e::t_be456f90b15192 6-9,72,84
+  s_73c718abf7d82c::t_906b28e9c74112 316-318
+  s_0605fb603bcb36::t_7959e6467de880 182-183,185
+  s_73c718abf7d82c::t_a6725a5589b1dd 361
+  s_f335b29084a66e::t_81477b5dca3e81 43-45
+  s_2a7c44379b0d2d::t_34a6251adb1878 13,500
+  s_dd4e7244793ca8::t_a08790d0f43c26 80-83,432-433,451,463-464
+  s_f335b29084a66e::t_171fe8558c63d5 33-42,46-63
+  s_73c718abf7d82c::t_bed332e3180aaa 111-112
+  s_0605fb603bcb36::t_870a2b847cc12e 91-93,106-110,193,196,212,221,223,228-229,234-235,241-242,245-247,249-255,259,365,367,394-395,399-400,412-431,434-442,445-450,452-462,465,467-470,477-499,501-507
+  s_8a36f036fe6e8f::t_6ec53f400cbb5c 15
+apps/web/src/hooks/use-project-releases.ts
+  s_73c718abf7d82c::t_01c26f28896ec4 1-53
+apps/demo/.versionless/2026-07-21.json
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 224-230
+apps/web/src/queries/overview.test.ts
+  s_73c718abf7d82c::t_9ca0fb87b2492e 1-238
+apps/server/scripts/seed-scenario.ts
+  s_73c718abf7d82c::t_44767d08d1252f 556-587
+  s_06b600f521c126::t_7c65c5e8d4e791 7-116,125-127,129-131,186-198,212,216-352,356-358,360-406,408-418,451-452,471,554-555,588-598,611-625,631-632,634-636,646-662,696,707-712,722-723,727-737,739,741-742,745,748-749
+  s_f335b29084a66e::t_4c5ed7dc24b913 132-185,626-630,633,637-645,674-695,721
+  s_f335b29084a66e::t_c4462d2930ac68 453-460,740,743-744
+  s_73c718abf7d82c::t_68cb42bce993da 2,117-124,128,419-450,599-610,663-673,738,746-747
+  s_73c718abf7d82c::t_e58ddae912e0d5 461-470,472-553
+  s_73c718abf7d82c::t_46b99226915a0c 697-706,713-720
+  s_9ac8b1fbccd156::t_4d668d4276b855 4,407
+  s_06b600f521c126::t_28e96920aac0b0 199-211,213-215
+  s_06b600f521c126::t_4be6809e8e31f6 353-355,359
+  s_f335b29084a66e::t_b91606e5d4d3b2 1,3,5-6,724-726
+apps/server/test/query.test.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 141
+apps/web/src/components/insights/versions-table.test.tsx
+  s_f335b29084a66e::t_18cf96c9dd29f3 4-7,18-23
+  s_06b600f521c126::t_74d40df2061941 9,15-17
+  s_06b600f521c126::t_dd21c41381395c 1-3,8,10-14,24
+apps/web/src/routes/insights/$projectId/versions/index.tsx
+  s_06b600f521c126::t_e225c6edfd710b 1-2,4-7
+  s_f335b29084a66e::t_62df8b66c35ade 3
+apps/web/src/components/insights/overview-report.tsx
+  s_73c718abf7d82c::t_79b0b1965293a1 1,6-13,15-16,22,24-36,73-80,98-104,106-107,123-127,129-130,132-133,184-185,188-191,193,321-324,327-344,346-348,350,352-366,368-375,377-380,382-397,399,401-405,407,409-475,480-482,484-493,495-501,503-587,591,598,606-609,618-728,730-732,734-736,738-778,781,783-785,789-792,794-795,798-892,894-1016
+  s_2a7c44379b0d2d::t_1749633128fb1d 62,146,158,186-187,192,209,243,247,476-479,483,502
+  s_73c718abf7d82c::t_6aeca28c08b95a 47-50,115-116,120,156-157,159-161,168,170,175-182,195,232-239,254,317,588-590,592-597,599,601-605,610-617,737,779-780,782,786-788,793,796-797,893
+  s_2a7c44379b0d2d::t_038474a5f69fd9 108-112,376
+  s_73c718abf7d82c::t_12d4361c0fb5c1 2-5,14,17-21,23,37-46,51-61,63-72,81-97,105,113-114,117-119,121-122,128,131,134-145,147-155,162-167,169,171-174,183,194,196-208,210-231,240-242,244-246,248-253,255-316,318-320,325-326,345,349,351,367,381,398,400,406,408,494,600,729,733,1017-1018
+apps/web/src/components/chat/mdx-sandbox-policy.test.ts
+  s_dcb184a6edbeba::t_b1dc2f72544e88 1-53
+apps/web/src/components/insights/overview-stats.tsx
+  s_73c718abf7d82c::t_e7e6901d70cbba 1-236
+apps/web/src/components/dashboard-table.test.tsx
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 8,20-21,25-30,103,124,126-128
+packages/db/src/migrations/meta/0003_snapshot.json
+  s_73c718abf7d82c::t_e41c57827b4340 1-458
+apps/web/scripts/validate-queries.ts
+  s_73c718abf7d82c::t_0e36d60c044944 174
+  s_73c718abf7d82c::t_f2629428001c10 208-212,214-249,254
+  s_73c718abf7d82c::t_aed8489689c012 17-20
+  s_73c718abf7d82c::t_5691c5a1881918 1-15,21-173,175-189,191-201,203-207,213,250-253,255-284
+  s_73c718abf7d82c::t_98aaa70ac1d147 16
+  s_73c718abf7d82c::t_9049ea3a5eafeb 190
+  s_73c718abf7d82c::t_a54cbb3f799881 202
+packages/core/src/index.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 35-39,79,104-109,233-249,258-262
+  s_8a36f036fe6e8f::t_77ea7dbc699b41 250-251
+apps/web/src/components/insights/version-sheet.test.ts
+  s_f335b29084a66e::t_14338b57e818f7 23-26,28-37
+  s_f335b29084a66e::t_a663737a054ad8 4,6-7,14-16,18-21
+  s_f335b29084a66e::t_91c1c980c9cdc8 1-2,5,8-13,22
+  s_f335b29084a66e::t_a5216c775f2396 3,17
+  s_f335b29084a66e::t_679787221ad273 27
+apps/web/src/components/chat/sandbox-protocol.test.ts
+  s_dcb184a6edbeba::t_4633bc712635a6 1-47,55-83
+  s_dcb184a6edbeba::t_638042d03e6279 48-54
+apps/web/src/components/chat/sandbox-height.ts
+  s_dcb184a6edbeba::t_638042d03e6279 1-9
+apps/server/src/versions.ts
+  s_0a0fb5f149daf3::t_f90fad6b03bafb 4,6-11,15,22-31,39-52,54-59,104-121,124-125,175-178,185-219,230,236,246,250,256-259
+  s_73c718abf7d82c::t_2ea1543e2065ae 126-174,179-184
+  s_0a0fb5f149daf3::t_b6346bc62f7f55 2,53,220-229,231-235,237-245,247-249,251-255
+  s_73c718abf7d82c::t_5328b81f9fcb02 70-103
+  s_73c718abf7d82c::t_91331a2e2b0241 1,5,12-14,16-21,32-38
+  s_9ac8b1fbccd156::t_4d668d4276b855 3,60-69,122-123
+packages/cli/test/watch.test.ts
+  s_8a36f036fe6e8f::t_4a72b1daa05b0f 1-204
+apps/server/.versionless/2026-07-24.json
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 39-47,66-216,279-283,296-316,337-376,384,387
+  s_0a0fb5f149daf3::t_43ea5ff82e2bb2 377-378
+  s_0a0fb5f149daf3::t_b67de91384d8d4 284-287
+scripts/restart-deps.test.ts
+  s_e24780a3075edf::t_c6b4ee5064d434 5,8,14-17
+  s_e24780a3075edf::t_9ae93f534e1a40 1-4,6-7,9-13,18-19
+apps/web/src/components/insights/adoption-chart.test.tsx
+  s_06b600f521c126::t_9b04ad2c4c8acc 70-71
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 6,9-12,15-25,37-69,72-87,90-91,96-105,109-125,127-152
+apps/web/src/components/insights/report-section.test.tsx
+  s_5f056dd2bbe729::t_43aaa164197248 1-3,6-13,17,21-27,29-31,36-54,63
+  s_5f056dd2bbe729::t_58e75afacf5a98 4-5,14-16,18-20,28,32-35,55-62
+apps/web/src/hooks/use-insights-sheet-navigation.ts
+  s_f335b29084a66e::t_c8ef5313f7d2ce 1-16,19-28
+  s_f335b29084a66e::t_9718834d85974b 17-18
+packages/core/test/trace-capture.test.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 10,110-130,154,161,174,186-189,271-294,296-302
+  s_69e49cc68fb784::t_6bb942e2abbb52 295
+  s_8a36f036fe6e8f::t_46150d55ee4a62 303
+apps/web/src/queries/overview.ts
+  s_73c718abf7d82c::t_e079ddadfd26d7 1-303
+apps/server/src/pg-query.ts
+  s_1722a2f12f9c14::t_02111c362259d7 1-138
+apps/web/src/components/chat/chat-launcher.tsx
+  s_eb7dae893978c4::t_d13f9fbd996787 9-10,26
+  s_eb7dae893978c4::t_01a617e83ff5c1 15,17-21,27,33-35
+  s_1722a2f12f9c14::t_21a8ab817b24e0 1-8,11-14,16,22-25,28-32,36-45
+apps/docs/content/docs/adapters/trpc.mdx
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 8,20
+packages/api/src/lib/postgres-query.test.ts
+  s_1722a2f12f9c14::t_5549a997d63972 1,3-124,126-128,134-136,142,145,148-237,240-280,285-292
+  s_9ac8b1fbccd156::t_1a8d267024f2d2 2,125,129-133,137,144,146-147,238-239
+  s_1722a2f12f9c14::t_78406f0d0d6fc4 138-141,143
+  s_1722a2f12f9c14::t_fcb729c72f11fb 281-284
+apps/web/src/queries/latency.test.ts
+  s_73c718abf7d82c::t_55224d25ceb339 1-136
+packages/db/src/migrations/0003_familiar_amazoness.sql
+  s_73c718abf7d82c::t_e41c57827b4340 1-12
+packages/cli/src/chain.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 1,6,10,26-28,35-36,59
+apps/web/src/components/insights/error-occurrence-record.tsx
+  s_dd4e7244793ca8::t_a08790d0f43c26 94
+  s_2a7c44379b0d2d::t_7764eeb3c1ec29 9-12,75
+  s_f335b29084a66e::t_39dfe01e4b351d 7,18-26,28-29,32,34-35,38,52,61,66,69-71,106-107
+  s_f335b29084a66e::t_5208d9de92ce1c 2-6,49,53-60,62-65,67-68,72-73,104-105
+  s_0605fb603bcb36::t_708b74bda5ae04 1,8,13-17,27,30-31,33,36-37,39-48,50-51,74,76-93,95-103
+packages/core/src/integrity.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 75,79
+apps/web/src/components/insights/version-details-sheet.tsx
+  s_f335b29084a66e::t_a14e4fe22a9b30 1-20,25,27-29,31-32,37,52-74,83-107,116,118-140,142-152
+  s_31701c4a5abadf::t_2b2b0618177c7c 26,75-82,108
+  s_5f056dd2bbe729::t_fd5ed163d9fec8 30,33-36,38-51
+  s_5f056dd2bbe729::t_301dc4c14a53b4 117
+  s_f335b29084a66e::t_f4f5685fd20c5b 141
+  s_5f056dd2bbe729::t_9969f536ec57cb 21-24
+  s_31701c4a5abadf::t_11c993fe7c0fe1 109-115
+apps/web/src/components/insights/trace-waterfall.test.tsx
+  s_f335b29084a66e::t_4bae07dfcffe8e 1-3,12,14-20,25-32,36,39-43,48,52,63-82,113
+  s_f335b29084a66e::t_918e7e2904571f 9-10
+  s_f335b29084a66e::t_4ecaf58b0454e7 13,37-38,53
+  s_2a7c44379b0d2d::t_c10b93211db9ef 8,54-62
+  s_dd4e7244793ca8::t_a08790d0f43c26 44-47,107-111
+  s_f335b29084a66e::t_7bb4a28b516b41 4-7,11,21-24,33-35,49-51,83-106,112
+apps/web/src/components/insights/version-runtime-analytics.tsx
+  s_f335b29084a66e::t_d89610bf3bc8cd 16
+  s_5f056dd2bbe729::t_15ce6fc4db0f66 5,12-13,29,31-35,37,39-41,47,53-54,64-65,67-68,79,92-93,164,168-199,201-208,222-235,237-238,240-274,320-324,332-348,354-356,358-366,381,383-395,402-407,417,419-424,426-428
+  s_f335b29084a66e::t_d4ab7a2b63b507 21,219,285
+  s_f335b29084a66e::t_8806aa1a65954d 239
+  s_5f056dd2bbe729::t_5da8a2bccacd87 408-416,418
+  s_5f056dd2bbe729::t_30560f0823e4e0 326-331
+  s_5f056dd2bbe729::t_d6c5bfdb39432e 378-379
+  s_5f056dd2bbe729::t_251600a5b2448a 367-377,380,382
+  s_5f056dd2bbe729::t_4d8a0cfee765c0 36,38,57-63,69-73,76-78,80-91
+  s_f335b29084a66e::t_422c180c2275d4 1-4,6-11,14-15,17-20,22-28,30,42-46,48-52,55-56,66,74-75,94-163,165-167,200,209-218,220-221,236,275-284,286-319,325,349-353,357,396-401,425,429-430
+packages/core/src/otlp.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 137-185,200-201,203,210-211,239-241,253,255
+apps/web/src/components/dashboard-list.test.tsx
+  s_8d7d9071f84a35::t_f87659fc70d7b1 77-92
+  s_f335b29084a66e::t_c21cd2b1aa37f3 1-76
+packages/cli/test/cli.test.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 21,23-33,37,135-143
+  s_8a36f036fe6e8f::t_dce2ab19587b53 370-371
+  s_8a36f036fe6e8f::t_88d845620b5822 144-145
+  s_8a36f036fe6e8f::t_6fed5820339061 333-336,338
+apps/web/src/components/insights/versions-page.tsx
+  s_f335b29084a66e::t_75a3011417c07d 22
+  s_f335b29084a66e::t_62df8b66c35ade 1-9,11-14,16-21,23-30,32-37
+  s_f335b29084a66e::t_c8ef5313f7d2ce 10,15,31
+apps/web/src/utils/project-query.test.ts
+  s_1722a2f12f9c14::t_f68300af1a4f84 1-163
+packages/cli/test/chain.test.ts
+  s_8a36f036fe6e8f::t_4ef14cb132e68e 1-34,36-91,99,117-138
+  s_8a36f036fe6e8f::t_89f1a639981ab3 110
+  s_8a36f036fe6e8f::t_53f43231d7b23e 35
+  s_8a36f036fe6e8f::t_01c211cf1cd0ed 92-98,100-109,111-116
+apps/web/src/routes/insights/$projectId/index.tsx
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 3,5,7,13-17,20-21,24-38
+apps/web/src/components/dashboard-list.tsx
+  s_f335b29084a66e::t_4dce5bc99bfb9d 134,144,151
+  s_8d7d9071f84a35::t_f87659fc70d7b1 15-16,22-23,30,36,41-51
+  s_f335b29084a66e::t_d89610bf3bc8cd 1-14,17-21,24-29,31-35,37-40,52-133,135-143,145-150,152-200
+apps/web/src/components/chat/chat-sandbox-entry.tsx
+  s_dcb184a6edbeba::t_2d4fc0b2080124 26,256
+  s_dcb184a6edbeba::t_b1dc2f72544e88 17,133-135,273
+  s_dcb184a6edbeba::t_c877c94c04b7de 73-80
+  s_dcb184a6edbeba::t_cc85ea0c740b16 269
+  s_dcb184a6edbeba::t_d00857649c2c49 18,130,132
+  s_dcb184a6edbeba::t_285a2024c49b42 1-16,19-25,27-72,81-129,131,136-255,257-268,270-272,274-285
+packages/core/src/trace-capture.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 8-11,21-22,52-53,88,90-94,104-108,113,121,135-137,144-145
+apps/demo/src/api-routes.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 1-36,38-43
+apps/web/src/components/chat/mdx-message.bridge.test.ts
+  s_dcb184a6edbeba::t_ecaabefbee2cc9 3,27-31
+  s_dcb184a6edbeba::t_0f5bdbd5594f93 33
+  s_dcb184a6edbeba::t_4633bc712635a6 1-2,4-26,32,34-49
+apps/web/src/components/header.tsx
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 37,64-68,106-107,113,118,128-133,154-161,224-227,239
+apps/web/src/routes/index.tsx
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 11,14,25,28,34,41-58,72-92,120-127
+apps/web/src/components/chat/sandbox-theme.test.ts
+  s_dcb184a6edbeba::t_2d4fc0b2080124 1-39
+apps/web/src/components/insights/versions-table.tsx
+  s_06b600f521c126::t_dd21c41381395c 44-45
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 6,8-9,12-13,15,19-26,32-43,52,55,59,62-70,80-83,85,88-92,96,130,140-179
+packages/cli/test/auth.test.ts
+  s_8a36f036fe6e8f::t_b08c9332d8e005 24-28,32
+  s_8a36f036fe6e8f::t_4f236ba516522e 2
+apps/web/src/components/insights/error-detail-sheet.tsx
+  s_f335b29084a66e::t_5208d9de92ce1c 4,254-255,258,287
+  s_73c718abf7d82c::t_63c9a13f8440f0 164
+  s_f335b29084a66e::t_55a2078ea55e76 2-3,5-24,27-28,30-73,75-83,115-129,131-141,145-147,152-163,165-218,223-225,227-229,231-235,237-242,246,250-253,264-266,269-270,288-295
+  s_69e49cc68fb784::t_f78a2212119886 219-222,226,247-249
+  s_f335b29084a66e::t_a85bc061eed408 90,92,107,256-257
+  s_f335b29084a66e::t_39dfe01e4b351d 25,29
+  s_0605fb603bcb36::t_517417b92ae7c9 261-263,267-268
+  s_f335b29084a66e::t_545dd7c6fd0e4a 130,142-144
+  s_f335b29084a66e::t_de31948dd71a9c 260
+  s_0605fb603bcb36::t_75014c68446b12 1,26,74,84-89,91,93-106,108-114,148-151,230,236,259,271-286
+  s_f335b29084a66e::t_262249532349e4 243-245
+apps/web/src/queries/rollup.test.ts
+  s_73c718abf7d82c::t_efdf37496dfa59 1-8,10-77,103-108,128-143,147-157,189-228
+  s_73c718abf7d82c::t_5328f7d5a5a03b 144-146,158-188
+  s_2a7c44379b0d2d::t_9dead26f0c365c 9,109-121,124-127
+  s_73c718abf7d82c::t_15d03a351ff8db 78-102
+  s_2a7c44379b0d2d::t_43310fdf6c7419 122-123
+apps/server/test/chat.test.ts
+  s_eb7dae893978c4::t_7f84d9d52368d2 7,321,324-328
+  s_1722a2f12f9c14::t_90b175a42f43d2 1-6,8-78,91-320,329-358
+  s_eb7dae893978c4::t_e2414baae09d38 79-84,89-90
+  s_dcb184a6edbeba::t_576cb71d8fa7a9 85-88
+  s_eb7dae893978c4::t_91a67ac1d586aa 322-323
+apps/web/src/components/chat/sandbox-query-client.ts
+  s_dcb184a6edbeba::t_285a2024c49b42 1-66
+apps/web/src/routes/insights/$projectId/traces.tsx
+  s_f335b29084a66e::t_b3a0a926a2fb06 77
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 1,20-23,35,44-45,66,72-76,80-82,85-87,115-134,136-142,144-259
+apps/docs/content/docs/cli.mdx
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 154-181
+apps/web/src/queries/project-queries.test.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 2-6,12-13,15-16,18-21,25-38,185-187,191-517,533-680
+  s_73c718abf7d82c::t_972b4ff1a29ce6 681-682
+CLAUDE.md
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 3-15,24,28,49-65,79
+  s_f335b29084a66e::t_545dd7c6fd0e4a 66
+apps/web/src/components/chat/sandbox-theme.ts
+  s_dcb184a6edbeba::t_2d4fc0b2080124 1-18
+packages/core/src/compiler.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 91,95
+apps/web/src/components/chat/mdx-sandbox-policy.ts
+  s_dcb184a6edbeba::t_d00857649c2c49 11-16
+  s_dcb184a6edbeba::t_b1dc2f72544e88 1-10,17-164
+apps/web/src/components/chat/query-stat.tsx
+  s_1722a2f12f9c14::t_8676c9a60f8dbd 4,7
+  s_eb7dae893978c4::t_e2414baae09d38 48
+  s_1722a2f12f9c14::t_ee23fe2652568d 1-3,5,8-30,41-47,49-68
+  s_dcb184a6edbeba::t_266023643fa241 6,31-32,39
+  s_1722a2f12f9c14::t_70f487618ecbbb 33-38,40
+apps/web/src/utils/project-query.ts
+  s_1722a2f12f9c14::t_810e371ca632a1 148-158
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 23-25,28,34,53-86,94-99,110,125-147
+apps/server/src/chat/openai-compatible.ts
+  s_1722a2f12f9c14::t_62cf178c995891 210-212
+  s_1722a2f12f9c14::t_83bf8d86ba377a 60-64
+  s_1722a2f12f9c14::t_7fd4029d05c183 1-59,65-108,110-209,213-496
+  s_1722a2f12f9c14::t_5f377b1cc227e8 109
+packages/api/src/lib/clickhouse-query.test.ts
+  s_73c718abf7d82c::t_f267b4e5a321a3 217-218
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 6-7,10,51-216
+apps/web/src/components/chat/sandbox-protocol.ts
+  s_dcb184a6edbeba::t_285a2024c49b42 1,3-86,89-125
+  s_dcb184a6edbeba::t_638042d03e6279 2,87-88
+packages/api/src/lib/postgres-errors.ts
+  s_1722a2f12f9c14::t_e7e5fdd662cda1 1-53
+apps/web/package.json
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 12,16,18,28-29,41
+packages/core/src/fingerprint.ts
+  s_73c718abf7d82c::t_df85da98886990 1-120,123-137
+  s_9ac8b1fbccd156::t_4d668d4276b855 121-122
+package.json
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 41-43
+apps/web/src/routes/__root.tsx
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 1-2,5-9,20,35-73,84-86
+  s_746562ea6a6e3c::t_d7e5b3e47094b5 74
+apps/docs/content/docs/adapters/orpc.mdx
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 36-37
+apps/web/src/hexclave/client.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 8
+apps/web/src/components/insights/overview-verdicts.test.ts
+  s_73c718abf7d82c::t_13cec418dc762e 1-354
+apps/web/src/routes/keys.tsx
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 49-51,63,200
+apps/web/src/components/dashboard-collection.tsx
+  s_f335b29084a66e::t_6067c790c8205b 163-164,169,171
+  s_f335b29084a66e::t_d89610bf3bc8cd 20
+  s_f335b29084a66e::t_1e1259c66b2a59 1-19,21-49,51-53,55-61,63-64,66-67,69-86,88-91,99-162,165-168,170,172-173,175-181,183-229
+  s_f335b29084a66e::t_055a8e9f40eb1a 50,54,62,65,174
+  s_f335b29084a66e::t_467e0a7714ddca 68,87,92-98,182
+packages/core/src/exchange.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 3,127-131,230-231
+packages/core/test/telemetry.test.ts
+  s_73c718abf7d82c::t_da6d5dac18c319 200,207-208
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 5,21-30,32-49,103,126-199,201-206
+apps/web/src/components/insights/version-contract-details.tsx
+  s_f335b29084a66e::t_214e65a2a232df 27
+  s_5f056dd2bbe729::t_4d843731bc13b1 204-205,208-212
+  s_5f056dd2bbe729::t_7f28537dc8ec4b 13
+  s_31701c4a5abadf::t_2b2b0618177c7c 34,361,366,391,408,413,425-439,441,444,451-452,462,464,473-491,493-498,520,525,538-541,578,581-582,587,758,766,938-939,941-943
+  s_5f056dd2bbe729::t_ca7dc749519f82 39,43
+  s_06b600f521c126::t_30ca8f1eb7268d 403
+  s_06b600f521c126::t_99031bce2ee946 335-353
+  s_5f056dd2bbe729::t_c17a1d6bd723fa 557-560,566,568
+  s_f335b29084a66e::t_a651f50cb15693 762,770,914-915
+  s_5f056dd2bbe729::t_1b4544135ca731 115-117
+  s_06b600f521c126::t_00a8d566580639 354-359
+  s_f335b29084a66e::t_15da08980de5e4 15-21,25-26,30,32,46-53,62-63,70-72,213-264,266,269-271,275-277,279-286,295,386,390,392-402,404-406,421,424,440,442-443,445-450,453-461,463,465-466,468-469,471-472,612-613,615-618,669-679,707,712,718-720,742,781-785,794,837,890,912
+  s_31701c4a5abadf::t_11c993fe7c0fe1 362,367,409-411,414-420,501-502,521,526,588,759,767,940
+  s_0a0fb5f149daf3::t_c3b2d20fb58d23 12,14,23,33,265,267-268,272-274,278,287,307,333-334,365,370,388,754-757,760,765,768,774,807,916,972,981,1003-1004
+  s_5f056dd2bbe729::t_5a1dae39273e20 801-805
+  s_5f056dd2bbe729::t_5c4d3fb1c4e012 516-518,531-532,536-537
+  s_5f056dd2bbe729::t_f209f7fc77159b 5,22,35-38,40-42,44,55-61,64-69,73-79,82-84,86,90,100,104-105,107-108,110-112,114,118,122-123,125,142,151-203,206-207,288-294,296-306,492,499-500,503-515,519,522-524,527-530,533-535,542-556,561-565,567,569-577,579-580,583-586,589-594,609-611,619-623,625-668,680-706,708-711,713-717,721-741,743-753,763-764,771-773,775-780,786-793,808,836,838-843,850-851,855-889,891-893,900,911,913,917-921,925,937,944-948,954,957-958,1000-1002
+  s_31701c4a5abadf::t_6a1f165fdd2b84 54,147-148,598-600,624,810-812,854,973-976
+  s_06b600f521c126::t_7612ee6473e598 319-321
+  s_5f056dd2bbe729::t_15729f2b7808a3 45
+  s_5f056dd2bbe729::t_6cdd8c946fd65e 595-597,601-608
+  s_5f056dd2bbe729::t_a3df9282a83b02 894-899,901-910
+  s_5f056dd2bbe729::t_64957c65b4d338 80-81,85,87-89,91-99,101-103,106,109,113,119-121,124,126-141,143-146,149-150
+  s_5f056dd2bbe729::t_e208939e55cc17 795-800,806,809,813-835,844-849,852-853
+  s_5f056dd2bbe729::t_cd129ac8bc4c27 922-924,926-936,949-953,955-956
+  s_06b600f521c126::t_711206dcbbee81 1-4,6-11,24,28-29,31,308-318,322-332,360,363-364,368-369,371-385,387,389,407,412,422-423,467,470,614,761,769,959-971,977-980,982-999
+packages/ui/src/components/sheet.tsx
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 1-2,4-6,9,13,17,21,24-41,45,48,56-57,60-63,67,72-73,89,95,105,115,124,128,141,148-149,155
+apps/web/src/components/insights/format.ts
+  s_8a36f036fe6e8f::t_9eec86bd77bb35 18-49
+apps/web/chat-sandbox.html
+  s_dcb184a6edbeba::t_285a2024c49b42 1-16,18-19,23-33
+  s_dcb184a6edbeba::t_cc85ea0c740b16 20-22
+  s_dcb184a6edbeba::t_638042d03e6279 17
+bun.lock
+  s_8a36f036fe6e8f::t_18921790656b31 81-82,94,112,114,124-125,136,2603,3071,3107-3108,3123-3124
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "6016d6d4eb92f0536ce76ae46b240f40ea0f035c",
+  "prompts": {},
+  "sessions": {
+    "s_0605fb603bcb36": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f9fe2-e16e-7a72-9334-c70f687e04fd",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_06b600f521c126": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f96b1-5bb5-74a3-98be-a91bb1af768b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_0a0fb5f149daf3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f966d-2893-72b0-8865-df103e2d951d",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_1722a2f12f9c14": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "64da048e-5a11-466f-b3f5-08efd9d7601a",
+        "model": "claude-opus-5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_2a7c44379b0d2d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fa088-fb12-77d0-adc7-93c0a42ea6c3",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_31701c4a5abadf": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fa067-8185-7c50-9055-e6d94e853006",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_355328e4b20c74": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "d7a0dc42-cd77-4dc4-a9c7-a777da505eaf",
+        "model": "grok-4.5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_38235d498bcf9b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fa0de-14e8-7923-8daf-c4f448b97db6",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_5f056dd2bbe729": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7a8a306d-3456-45d6-965c-c96ab5b10441",
+        "model": "claude-opus-5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_69e49cc68fb784": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fa060-69e7-7ec0-94b1-72ff6f65900b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_73c718abf7d82c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "91ff1f7a-1009-4068-b7d0-2c9ed42c6621",
+        "model": "claude-opus-5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_746562ea6a6e3c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9588b499-5e43-4f06-ab52-b5fe3e6a10c0",
+        "model": "claude-opus-5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_835f1a6071c10d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fa08d-1161-7872-b6c2-116981451692",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_8a36f036fe6e8f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7674a040-eeee-4c67-b6b2-d47bddffa7da",
+        "model": "claude-opus-5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_8d7d9071f84a35": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f9d7b-145d-7ca3-a62b-a3a6d3894baf",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_9ac8b1fbccd156": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fa127-d9cb-7531-9466-9920c0feb735",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_d3e20ab44db8a6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b298beb0-6bf1-480a-a104-dc43ecc69747",
+        "model": "claude-opus-5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_dcb184a6edbeba": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fa68c-54e9-7a02-ae66-6b933142a95a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_dd4e7244793ca8": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fa093-fa4a-72b1-9211-7dc8586087ca",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_e24780a3075edf": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fa07e-199f-7240-92da-38f9d4b4dcd6",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_eb7dae893978c4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fa0e7-e184-73a2-9142-12531ad96ae8",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_f335b29084a66e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f96ec-b12f-7790-9c5a-2ee6f1488802",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    }
+  }
+}
