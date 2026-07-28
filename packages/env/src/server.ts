@@ -5,9 +5,16 @@ import { z } from "zod";
 import { getVercelOrigin } from "./vercel";
 
 const vercelOrigin = getVercelOrigin();
+const defaultAiBaseUrl =
+  process.env.NODE_ENV === "production"
+    ? "https://openrouter.ai/api/v1"
+    : "http://localhost:8317/v1";
 
 const runtimeEnv = {
   ...process.env,
+  // Resolve dynamic defaults before createEnv so they remain available when
+  // SKIP_ENV_VALIDATION returns the raw runtime environment in deployments.
+  AI_BASE_URL: process.env.AI_BASE_URL || defaultAiBaseUrl,
   CORS_ORIGIN: process.env.CORS_ORIGIN ?? vercelOrigin,
 };
 
@@ -33,7 +40,7 @@ export const env = createEnv({
       .default("versionless-local-pg-query-password"),
     // OpenAI-compatible endpoint backing the dashboard assistant: a local
     // server in development, OpenRouter in production.
-    AI_BASE_URL: z.url().default("http://localhost:8317/v1"),
+    AI_BASE_URL: z.url(),
     AI_API_KEY: z.string().optional(),
     /** Model used when the client does not pick one from `/v1/chat/models`. */
     AI_MODEL: z.string().optional(),

@@ -8,7 +8,6 @@ import {
   createChatApp,
   createQueryTools,
   promptTextLength,
-  resolveAiBaseUrl,
   type RunModelOptions,
 } from "../src/chat";
 
@@ -40,13 +39,6 @@ function ask(text: string) {
     ],
   };
 }
-
-test("an omitted optional AI URL cannot crash the server at module load", () => {
-  expect(resolveAiBaseUrl(undefined)).toBe("http://localhost:8317/v1");
-  expect(resolveAiBaseUrl(" https://models.example/v1 ")).toBe(
-    "https://models.example/v1",
-  );
-});
 
 /** Base dependencies with a model stub that just echoes what it was handed. */
 function deps(overrides: Partial<Parameters<typeof createChatApp>[0]> = {}) {
