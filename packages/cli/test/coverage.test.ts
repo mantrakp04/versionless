@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
-import type { ChangeLike } from "../src/chain";
+import type { ChangeMeta } from "@versionless/core";
+
 import { matchCoverage } from "../src/coverage/match";
 import type { DiffEntry } from "../src/diff/diff";
 
@@ -20,7 +21,7 @@ function entry(overrides: Partial<DiffEntry> = {}): DiffEntry {
   };
 }
 
-function change(overrides: Partial<ChangeLike> = {}): ChangeLike {
+function change(overrides: Partial<ChangeMeta> = {}): ChangeMeta {
   return {
     kind: "change",
     version: "2026-02-01",

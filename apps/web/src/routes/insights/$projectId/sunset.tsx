@@ -30,6 +30,7 @@ import { OfflineCard, isTelemetryOffline } from "@/components/insights/offline-c
 import { useTableSort } from "@/components/insights/sortable-table-head";
 import Loader from "@/components/loader";
 import { useInsightsContext } from "@/hooks/use-insights-context";
+import { useProjectReleases } from "@/hooks/use-project-releases";
 import {
   sunsetBlockersQueryOptions,
   versionsQueryOptions,
@@ -43,7 +44,13 @@ export const Route = createFileRoute("/insights/$projectId/sunset")({
 function SunsetPage() {
   const { project } = useInsightsContext();
 
-  const versions = useQuery(versionsQueryOptions(project.id));
+  const releases = useProjectReleases(project.id);
+  const versions = useQuery(
+    versionsQueryOptions(project.id, 30, "version", "desc", {
+      versions: releases.versions,
+      sunsets: releases.sunsets,
+    }),
+  );
 
   // Sunset-scheduled versions plus anything that is not the newest release.
   // The versions query returns versions sorted descending, so index 0 is newest.
@@ -83,7 +90,6 @@ function SunsetPage() {
   return (
     <InsightsPage
       title="Can I sunset?"
-      description="Pick a version to see which consumers would break if you removed it today."
       showTimeRange={false}
     >
       {offline ? (
@@ -120,26 +126,27 @@ function SunsetPage() {
               <p className="text-xs text-muted-foreground">
                 No sunset candidates — every known version is current.
               </p>
-            ) : blockers.isLoading ? (
-              <Loader />
-            ) : (blockers.data?.length ?? 0) === 0 ? (
-              <Empty className="border border-dashed border-green-500/40 bg-green-500/5">
-                <EmptyHeader>
-                  <EmptyMedia variant="icon" className="bg-green-500/10">
-                    <CircleCheck className="text-green-600 dark:text-green-400" />
-                  </EmptyMedia>
-                  <EmptyTitle className="text-green-600 dark:text-green-400">
-                    Safe to sunset {version}
-                  </EmptyTitle>
-                  <EmptyDescription>No traffic in 30 days</EmptyDescription>
-                </EmptyHeader>
-              </Empty>
             ) : (
               <BlockersTable
                 blockers={blockers.data ?? []}
                 sort={blockerSort}
                 direction={blockerDirection}
                 onSort={sortBlockers}
+                isLoading={blockers.isLoading}
+                isError={blockers.isError}
+                emptyState={
+                  <Empty className="border border-dashed border-green-500/40 bg-green-500/5">
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon" className="bg-green-500/10">
+                        <CircleCheck className="text-green-600 dark:text-green-400" />
+                      </EmptyMedia>
+                      <EmptyTitle className="text-green-600 dark:text-green-400">
+                        Safe to sunset {version}
+                      </EmptyTitle>
+                      <EmptyDescription>No traffic in 30 days</EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                }
               />
             )}
           </CardContent>

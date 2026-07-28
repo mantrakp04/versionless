@@ -1,16 +1,17 @@
-import { normalizeRouteKey, type ModelDeclaration } from "@versionless/core";
+import { normalizeRouteKey } from "@versionless/core";
+import type { ChangeMeta, ModelDeclaration } from "@versionless/core";
 
-import { changeVersion, type ChangeLike } from "../chain";
+import { changeVersion } from "../chain";
 import type { DiffEntry } from "../diff/diff";
 
 export interface CoverageItem {
   entry: DiffEntry;
-  by?: ChangeLike;
+  by?: ChangeMeta;
   reason?: string;
 }
 
 export interface StaleDeclaration {
-  by: ChangeLike;
+  by: ChangeMeta;
   declaration: string;
   reason: string;
 }
@@ -23,7 +24,7 @@ export interface CoverageReport {
   stale: StaleDeclaration[];
 }
 
-export function changeLabel(change: ChangeLike): string {
+export function changeLabel(change: ChangeMeta): string {
   return change.kind === "jump"
     ? `jump ${change.from ?? "?"} → ${change.to ?? "?"}`
     : `change ${change.version ?? "?"}`;
@@ -33,13 +34,13 @@ function routeKey(route: string): string {
   return route.startsWith("trpc:") ? route : normalizeRouteKey(route);
 }
 
-function appliesToRoute(change: ChangeLike, endpoint: string): boolean {
+function appliesToRoute(change: ChangeMeta, endpoint: string): boolean {
   if (change.routes.length === 0) return true;
   const target = routeKey(endpoint);
   return change.routes.some((route) => routeKey(route) === target);
 }
 
-function directionProblem(change: ChangeLike, entry: DiffEntry): string | undefined {
+function directionProblem(change: ChangeMeta, entry: DiffEntry): string | undefined {
   if (entry.requires === "up" && !change.hasUp) {
     return `${changeLabel(change)} declares ${entrySubject(entry)} but has no up()`;
   }
@@ -84,13 +85,13 @@ function declarationMatchesEntry(
   return declaration.typeChanged?.includes(path) === true;
 }
 
-function declaresEntry(change: ChangeLike, entry: DiffEntry): boolean {
+function declaresEntry(change: ChangeMeta, entry: DiffEntry): boolean {
   return change.declarations.some((declaration) =>
     declarationMatchesEntry(declaration, entry),
   );
 }
 
-function candidateMatchesEntry(change: ChangeLike, entry: DiffEntry): boolean {
+function candidateMatchesEntry(change: ChangeMeta, entry: DiffEntry): boolean {
   if (!appliesToRoute(change, entry.endpoint)) return false;
   if (declaresEntry(change, entry)) return true;
 
@@ -161,7 +162,7 @@ function declarationAtoms(declaration: ModelDeclaration): DeclarationAtom[] {
 
 export function matchCoverage(
   entries: DiffEntry[],
-  chain: ChangeLike[],
+  chain: ChangeMeta[],
   snapshotVersion: string,
   opts: { strictLossy?: boolean } = {},
 ): CoverageReport {

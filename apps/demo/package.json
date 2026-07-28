@@ -2,13 +2,9 @@
   "name": "demo",
   "type": "module",
   "private": true,
-  "exports": {
-    "./releases": "./src/releases.ts",
-    "./seed-fixtures": "./src/seed-fixtures.ts"
-  },
   "scripts": {
     "dev": "vite dev --port 3003",
-    "build": "vite build",
+    "build": "versionless snapshot --check-idempotent && vite build",
     "check-types": "tsc --noEmit",
     "test": "bun test",
     "versionless:check": "versionless check",

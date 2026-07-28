@@ -71,28 +71,6 @@ type Broken = ClientTypes<typeof api, "floor">["POST /users"];
 Surface these in a type-test file so CI catches incompatible chains at `tsc`
 time — see the test-d setup below.
 
-## The escape hatch: `wire`
-
-When annotation is impractical (heavily generic transforms, gradual adoption),
-declare the wire types directly and the type layer prefers them over
-inference:
-
-```ts
-v.change("2026-05-14", {
-  describe: "user.name split",
-  routes: ["GET /users/:id"],
-  request:  { up:   (body: any) => splitName(body) },
-  response: { down: (body: any) => mergeName(body) },
-  wire: {} as {
-    request:  { old: { name: string; email: string } };
-    response: { old: { id: string; name: string; email: string } };
-  },
-});
-```
-
-`wire` is a phantom — it never exists at runtime; the `{} as ...` cast is the
-intended usage.
-
 ## Supplying current shapes
 
 Core only knows the deltas. For routes with no applicable change (or to give

@@ -134,6 +134,55 @@ function unixNano(ms: number): string {
   return (BigInt(Math.round(ms)) * 1_000_000n).toString();
 }
 
+export function safeTelemetryErrorBodyForStatus(
+  status: number,
+): NonNullable<TelemetryEvent["errorBody"]> {
+  if (status === 400) {
+    return {
+      code: "invalid_request",
+      message: "The request did not match the expected API shape.",
+    };
+  }
+  if (status === 404) {
+    return {
+      code: "not_found",
+      message: "The requested resource was not found.",
+    };
+  }
+  if (status === 409) {
+    return {
+      code: "conflict",
+      message: "The request conflicts with the current resource state.",
+    };
+  }
+  if (status === 429) {
+    return {
+      code: "rate_limited",
+      message: "Too many requests. Please try again later.",
+    };
+  }
+  return status >= 500
+    ? {
+        code: "internal_error",
+        message: "The request could not be completed.",
+      }
+    : {
+        code: "request_failed",
+        message: "The request could not be completed.",
+      };
+}
+
+function requestLogBody(event: TelemetryEvent): OtlpAnyValue {
+  if (event.status < 400) {
+    return { stringValue: "versionless request exchange" };
+  }
+  return {
+    stringValue: JSON.stringify(
+      event.errorBody ?? safeTelemetryErrorBodyForStatus(event.status),
+    ),
+  };
+}
+
 export function telemetryEventsToOtlp(
   project: string,
   events: TelemetryEvent[],
@@ -148,16 +197,18 @@ export function telemetryEventsToOtlp(
             logRecords: events.map((event) => ({
               timeUnixNano: unixNano(event.ts),
               observedTimeUnixNano: unixNano(event.ts),
-              severityNumber: 9,
-              severityText: "INFO",
+              severityNumber: event.status >= 400 ? 17 : 9,
+              severityText: event.status >= 400 ? "ERROR" : "INFO",
               eventName: "versionless.request",
-              body: { stringValue: "versionless request exchange" },
+              body: requestLogBody(event),
               attributes: otlpAttributes({
                 "versionless.method": event.method,
                 "versionless.route": event.route,
                 "versionless.adapter": event.adapter,
                 "versionless.version": event.version,
                 "versionless.version.requested": event.requestedVersion,
+                "versionless.version.source": event.versionSource,
+                ...(event.clamped ? { "versionless.clamped": true } : {}),
                 "versionless.consumer.key": event.consumerKey,
                 "versionless.latency_ms": event.latencyMs,
                 "versionless.transform_count": event.transformCount,
@@ -185,7 +236,9 @@ export function capturedTracesToOtlp(
             spans: traces.flatMap((trace) =>
               trace.spans.map((span) => {
                 const startTimeUnixNano = unixNano(span.startMs);
-                const endTimeUnixNano = unixNano(span.startMs + span.durationMs);
+                const endTimeUnixNano = unixNano(
+                  span.startMs + span.durationMs,
+                );
                 return {
                   traceId: trace.traceId,
                   spanId: span.spanId,
@@ -197,18 +250,9 @@ export function capturedTracesToOtlp(
                   startTimeUnixNano,
                   endTimeUnixNano,
                   attributes: otlpAttributes(span.attrs),
-                  ...(span.error
+                  ...(span.failed
                     ? {
-                        status: { code: 2, message: span.error },
-                        events: [
-                          {
-                            timeUnixNano: endTimeUnixNano,
-                            name: "exception",
-                            attributes: otlpAttributes({
-                              "exception.message": span.error,
-                            }),
-                          },
-                        ],
+                        status: { code: 2 },
                       }
                     : {}),
                 };

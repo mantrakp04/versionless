@@ -7,6 +7,7 @@ import {
   type CapturedTrace,
   type TraceSink,
 } from "../src/trace-capture";
+import { capturedTracesToOtlp } from "../src/otlp";
 import type { Exchange, ExchangeInput, Tracing } from "../src/types";
 
 const CURRENT = "2026-07-21";
@@ -106,6 +107,27 @@ describe("createCaptureTracing", () => {
     }
   });
 
+  test("always captures a failed exchange even when head sampling drops it", async () => {
+    const { sink, traces } = memorySink();
+    const v = makeApi(
+      createCaptureTracing({ sample: 0, sink, rand: () => 0.99 }),
+    );
+    const ex = (await v.openExchange(
+      input({ "x-api-version": "2025-01-01" }),
+    )) as Exchange;
+    await ex.down({ firstName: "Ada", lastName: "L", email: "a@b.c" });
+    ex.finish({ latencyMs: 2, status: 422 });
+
+    expect(traces).toHaveLength(1);
+    const spans = traces[0]!.spans;
+    const root = spans.find((s) => s.name === "versionless.exchange")!;
+    expect(root.attrs["versionless.status"]).toBe(422);
+    expect(root.failed).toBe(true);
+    expect(spans.filter((s) => s.name === "versionless.transform.down")).toHaveLength(
+      2,
+    );
+  });
+
   test("filter vetoes exchanges before sampling (e.g. self-ingest routes)", async () => {
     const { sink, traces } = memorySink();
     const v = makeApi(
@@ -129,14 +151,14 @@ describe("createCaptureTracing", () => {
     ).toBe("GET /users/:*");
   });
 
-  test("sample: 0 records nothing and exchanges still work", async () => {
+  test("sample: 0 records no successful exchanges and they still work", async () => {
     const { sink, traces } = memorySink();
     const v = makeApi(createCaptureTracing({ sample: 0, sink }));
     await runExchange(v);
     expect(traces).toHaveLength(0);
   });
 
-  test("a failing transform records the error on its span", async () => {
+  test("a failing transform records only a safe error flag", async () => {
     const { sink, traces } = memorySink();
     const v = createVersionless({
       scheme: "date",
@@ -149,7 +171,7 @@ describe("createCaptureTracing", () => {
       routes: ["GET /users/:id"],
       response: {
         down: () => {
-          throw new Error("boom");
+          throw new Error("postgresql://user:secret@private-db/versionless");
         },
       },
     });
@@ -161,7 +183,10 @@ describe("createCaptureTracing", () => {
 
     const spans = traces[0]!.spans;
     const failed = spans.find((s) => s.name === "versionless.transform.down")!;
-    expect(failed.error).toContain("boom");
+    expect(failed.failed).toBe(true);
+    const exported = capturedTracesToOtlp("demo", traces);
+    expect(JSON.stringify(exported)).not.toContain("private-db");
+    expect(JSON.stringify(exported)).not.toContain("secret");
   });
 });
 
@@ -241,6 +266,39 @@ describe("cloud wiring via createVersionless", () => {
       traceId: "t1",
       name: "versionless.exchange",
     });
+  });
+
+  test("exports a failed response with error status but no fake exception", async () => {
+    const posts: { body: any }[] = [];
+    const sink = httpOtlpTraceSink({
+      url: "https://ingest.example.com/v1/traces",
+      apiKey: "vl_k1_secret",
+      project: "demo",
+      immediate: true,
+      fetchImpl: (async (_url: unknown, init: RequestInit) => {
+        posts.push({ body: JSON.parse(String(init.body)) });
+        return new Response("{}", { status: 200 });
+      }) as typeof fetch,
+    });
+    sink.record({
+      traceId: "failed-trace",
+      spans: [
+        {
+          spanId: "failed-root",
+          name: "versionless.exchange",
+          attrs: { "versionless.status": 422 },
+          startMs: 1700000000000,
+          durationMs: 3,
+          failed: true,
+        },
+      ],
+    });
+    await sink.flush?.();
+
+    const span =
+      posts[0]!.body.resourceSpans[0].scopeSpans[0].spans[0];
+    expect(span.status).toEqual({ code: 2 });
+    expect(span.events).toBeUndefined();
   });
 
   test("traces: false disables capture but keeps telemetry", async () => {

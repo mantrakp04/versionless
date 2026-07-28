@@ -29,6 +29,7 @@ export const v = createVersionless({
   // Opt-in cloud telemetry: the server's own key points at its own Collector
   // gateway. Without a key, zero network calls.
   apiKey: env.VERSIONLESS_API_KEY,
+  apiUrl: env.VERSIONLESS_API_URL,
   // The production cloud server runs as Vercel Functions. Set this explicitly
   // because multi-service bundles do not reliably expose VERCEL at module init.
   serverless: env.NODE_ENV === "production",

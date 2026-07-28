@@ -7,6 +7,10 @@ import {
   ProjectQueryUnavailableError,
 } from "./lib/clickhouse-query";
 import { isDevelopment } from "./lib/env-mode";
+import {
+  ProjectPgQueryError,
+  ProjectPgQueryUnavailableError,
+} from "./lib/postgres-query";
 
 const internalShape: TRPCDefaultErrorShape = {
   code: -32603,
@@ -70,7 +74,7 @@ describe("HTTP query boundary error policy", () => {
 
   test("hides infrastructure diagnostics in production but keeps them in development", () => {
     const unavailable = new ProjectQueryUnavailableError(
-      "ClickHouse unavailable — set CLICKHOUSE_URL and run `bun db:start`",
+      "ClickHouse unavailable — set CLICKHOUSE_URL and run `bun start-deps`",
     );
     const production = publicQueryHttpError(unavailable, false);
     expect(production.status).toBe(503);
@@ -95,6 +99,34 @@ describe("HTTP query boundary error policy", () => {
       status: 400,
       message: "Syntax error near SELECT",
     });
+  });
+
+  test("applies the same policy to the Postgres query plane", () => {
+    const unavailable = new ProjectPgQueryUnavailableError(
+      'relation "telemetry_ingest_keys" does not exist',
+    );
+    const production = publicQueryHttpError(unavailable, false);
+    expect(production.status).toBe(503);
+    expect(production.message).not.toContain("telemetry_ingest_keys");
+    expect(production.message).toBe(
+      "This service is temporarily unavailable. Please try again shortly.",
+    );
+    expect(publicQueryHttpError(unavailable, true)).toEqual({
+      status: 503,
+      message: unavailable.message,
+    });
+
+    // safePostgresError already decided what this string may contain, so it
+    // passes through unchanged in both modes — same contract as ClickHouse.
+    const queryError = new ProjectPgQueryError(
+      "Only SELECT and WITH queries are allowed on this endpoint.",
+    );
+    for (const development of [false, true]) {
+      expect(publicQueryHttpError(queryError, development)).toEqual({
+        status: 400,
+        message: "Only SELECT and WITH queries are allowed on this endpoint.",
+      });
+    }
   });
 
   test("scrubs unknown errors in production", () => {

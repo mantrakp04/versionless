@@ -11,6 +11,7 @@ export const env = createEnv({
     // under VERSIONLESS_API_KEY.
     DEMO_VERSIONLESS_API_KEY: z.string().optional(),
     VERSIONLESS_API_KEY: z.string().optional(),
+    VERSIONLESS_API_URL: z.url().optional(),
     VERSIONLESS_OTLP_LOGS_URL: z.url().optional(),
     TELEMETRY_SAMPLE_RATE: z.coerce.number().min(0).max(1).default(1),
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),

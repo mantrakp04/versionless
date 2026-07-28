@@ -17,6 +17,7 @@ import {
 } from "@versionless/ui/components/chart";
 import { TableCell } from "@versionless/ui/components/table";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { useMemo } from "react";
 
 import { DashboardTable } from "@/components/dashboard-table";
 import { InsightsPage } from "@/components/insights/insights-page";
@@ -33,6 +34,7 @@ import Loader from "@/components/loader";
 import { useInsightsContext } from "@/hooks/use-insights-context";
 import {
   transformDepthQueryOptions,
+  selectTransformDepthChartRows,
   type TransformDepthSort,
 } from "@/queries/insights";
 
@@ -45,9 +47,12 @@ const chartConfig = {
   p95Depth: { label: "p95 depth", color: "var(--chart-3)" },
 } satisfies ChartConfig;
 
+const DRIFT_GRID_COLUMNS = "minmax(14rem, 2fr) repeat(4, minmax(5rem, .7fr))";
+
 function DriftPage() {
   const { project, days } = useInsightsContext();
-  const { sort, direction, toggleSort } = useTableSort<TransformDepthSort>("avg");
+  const { sort, direction, toggleSort } =
+    useTableSort<TransformDepthSort>("avg");
   const selectedRange =
     INSIGHTS_TIME_RANGES.find((range) => range.days === days) ??
     INSIGHTS_TIME_RANGES[2];
@@ -62,29 +67,30 @@ function DriftPage() {
   );
 
   const rows = drift.data ?? [];
+  const chartRows = useMemo(
+    () => selectTransformDepthChartRows(rows),
+    [rows],
+  );
   const offline = isTelemetryOffline(drift.error);
 
   return (
-    <InsightsPage
-      title="Transform depth"
-      description="How many transforms deep old clients run per endpoint — high depth = migration nudge candidates."
-    >
+    <InsightsPage title="Transform depth">
       {offline ? (
         <OfflineCard error={drift.error} />
-      ) : drift.isLoading ? (
-        <Loader />
       ) : (
         <>
           <Card>
             <CardHeader>
               <CardTitle>Depth by route</CardTitle>
               <CardDescription>
-                Average and p95 transform chain length per endpoint,{" "}
+                Average and p95 depth for the 16 busiest routes,{" "}
                 {selectedRange.description}.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {rows.length === 0 ? (
+              {drift.isLoading ? (
+                <Loader />
+              ) : rows.length === 0 ? (
                 <p className="py-8 text-center text-xs text-muted-foreground">
                   No request data in the selected window.
                 </p>
@@ -92,10 +98,10 @@ function DriftPage() {
                 <ChartContainer
                   config={chartConfig}
                   className="aspect-auto w-full"
-                  style={{ height: Math.max(160, rows.length * 44 + 60) }}
+                  style={{ height: Math.max(160, chartRows.length * 36 + 60) }}
                 >
                   <BarChart
-                    data={rows}
+                    data={chartRows}
                     layout="vertical"
                     margin={{ left: 8, right: 12 }}
                   >
@@ -135,7 +141,11 @@ function DriftPage() {
             <CardContent>
               <DashboardTable
                 items={rows}
+                isLoading={drift.isLoading}
+                isError={drift.isError}
+                errorState="Transform depth is temporarily unavailable."
                 getItemKey={(row) => row.route}
+                gridTemplateColumns={DRIFT_GRID_COLUMNS}
                 renderHeader={() => (
                   <>
                     <SortableTableHead

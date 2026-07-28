@@ -36,7 +36,7 @@ export default defineSurface({
     },
     {
       method: DEMO_HTTP_ROUTES.userById.method,
-      path: "/users/:id",
+      path: DEMO_HTTP_ROUTES.userById.path,
       params: idParams,
       response: userSchema,
     },
@@ -53,7 +53,7 @@ export default defineSurface({
     },
     {
       method: DEMO_HTTP_ROUTES.teamById.method,
-      path: "/teams/:id",
+      path: DEMO_HTTP_ROUTES.teamById.path,
       params: idParams,
       response: teamSchema,
     },

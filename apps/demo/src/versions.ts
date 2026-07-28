@@ -5,7 +5,6 @@ import orgsToTeams from "./changes/2025-06-01-orgs-to-teams";
 import splitUserName, { type UserV1 } from "./changes/2026-05-14-split-user-name";
 
 export { CURRENT_VERSION, v } from "./versionless";
-export { KNOWN_VERSIONS, SUNSETS } from "./releases";
 
 /**
  * Direct jump for the oldest cohort: clients pinned exactly at 2025-01-01 get

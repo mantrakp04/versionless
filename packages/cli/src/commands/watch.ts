@@ -42,9 +42,69 @@ const IGNORED_SEGMENTS = new Set([
   "build",
 ]);
 
-function isRelevant(filename: string): boolean {
+/**
+ * A file event is worth a re-check only when it names a source-ish file that
+ * does not live under a build/vendor directory.
+ */
+export function isRelevant(filename: string): boolean {
   if (!WATCHED_EXTENSIONS.has(extname(filename))) return false;
   return !filename.split(/[\\/]/).some((seg) => IGNORED_SEGMENTS.has(seg));
+}
+
+export interface RunQueue {
+  /** Run now, serialized against any in-flight run. Resolves when idle. */
+  run: (reason: string) => Promise<void>;
+  /** Debounce an event; the quiet period restarts on every call. */
+  schedule: (reason: string) => void;
+  /** Drop a pending debounced run (does not abort an in-flight one). */
+  cancel: () => void;
+}
+
+/**
+ * Debounce file events and serialize the runs they trigger. Events arriving
+ * within the quiet period collapse into one run, and any number of events
+ * landing while a run is in flight queue exactly one re-run (last reason wins).
+ * Extracted from `runWatch` so it is testable without OS filesystem events.
+ */
+export function createRunQueue(
+  runOnce: (reason: string) => Promise<void>,
+  debounceMs: number,
+): RunQueue {
+  let running = false;
+  let queued: string | null = null;
+  let timer: ReturnType<typeof setTimeout> | null = null;
+
+  const run = async (reason: string): Promise<void> => {
+    if (running) {
+      queued = reason;
+      return;
+    }
+    running = true;
+    let next: string | null = reason;
+    while (next !== null) {
+      const current = next;
+      next = null;
+      await runOnce(current);
+      next = queued;
+      queued = null;
+    }
+    running = false;
+  };
+
+  const schedule = (reason: string): void => {
+    if (timer !== null) clearTimeout(timer);
+    timer = setTimeout(() => {
+      timer = null;
+      void run(reason);
+    }, debounceMs);
+  };
+
+  const cancel = (): void => {
+    if (timer !== null) clearTimeout(timer);
+    timer = null;
+  };
+
+  return { run, schedule, cancel };
 }
 
 function timestamp(): string {
@@ -105,34 +165,7 @@ export async function runWatch(
   };
 
   // Serialize runs; a change that lands mid-run queues exactly one re-run.
-  let running = false;
-  let queued: string | null = null;
-  let timer: ReturnType<typeof setTimeout> | null = null;
-
-  const kick = async (reason: string): Promise<void> => {
-    if (running) {
-      queued = reason;
-      return;
-    }
-    running = true;
-    let next: string | null = reason;
-    while (next !== null) {
-      const current = next;
-      next = null;
-      await runCheck(current);
-      next = queued;
-      queued = null;
-    }
-    running = false;
-  };
-
-  const schedule = (reason: string): void => {
-    if (timer !== null) clearTimeout(timer);
-    timer = setTimeout(() => {
-      timer = null;
-      void kick(reason);
-    }, debounceMs);
-  };
+  const queue = createRunQueue(runCheck, debounceMs);
 
   // The config's rootDir covers the entry, change files, and snapshots in the
   // common layout; also watch any of them configured to live outside it.
@@ -148,17 +181,19 @@ export async function runWatch(
     watchers.push(
       watch(root, { recursive: true }, (_event, filename) => {
         if (filename !== null && !isRelevant(filename)) return;
-        schedule(filename === null ? "change detected" : `${filename} changed`);
+        queue.schedule(
+          filename === null ? "change detected" : `${filename} changed`,
+        );
       }),
     );
   }
 
-  await kick(`watching ${config.rootDir}`);
+  await queue.run(`watching ${config.rootDir}`);
 
   return await new Promise<number>((resolveExit) => {
     const stop = (): void => {
       for (const watcher of watchers) watcher.close();
-      if (timer !== null) clearTimeout(timer);
+      queue.cancel();
       resolveExit(0);
     };
     process.once("SIGINT", stop);

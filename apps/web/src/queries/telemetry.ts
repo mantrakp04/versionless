@@ -26,25 +26,39 @@ export function telemetryQueryOptions(input: {
 }) {
   const branches: string[] = [];
   if (input.signal !== "span") {
-    branches.push(`SELECT 'log' AS signal, Timestamp AS ts,
+    branches.push(`SELECT 'log' AS signal, ts,
+  name, service_name, scope_name, level_text, level_number, trace_id, span_id,
+  toFloat64(0) AS duration_ms, body,
+  toJSONString(attributes_map) AS attributes, '' AS error
+FROM (
+  SELECT Timestamp AS ts,
   if(EventName != '', EventName, 'log') AS name, ServiceName AS service_name,
   ScopeName AS scope_name, SeverityText AS level_text,
   SeverityNumber AS level_number, TraceId AS trace_id, SpanId AS span_id,
-  toFloat64(0) AS duration_ms, Body AS body,
-  toJSONString(LogAttributes) AS attributes, '' AS error
+  Body AS body, LogAttributes AS attributes_map
 FROM otel_logs
-WHERE Timestamp >= now() - INTERVAL {hours: UInt16} HOUR`);
+WHERE Timestamp >= now() - INTERVAL {hours: UInt16} HOUR
+ORDER BY Timestamp DESC
+LIMIT {limit: UInt16}
+)`);
   }
   if (input.signal !== "log") {
-    branches.push(`SELECT 'span' AS signal, Timestamp AS ts, SpanName AS name,
+    branches.push(`SELECT 'span' AS signal, ts, name,
+  service_name, scope_name, level_text, level_number, trace_id, span_id,
+  duration_ms, '' AS body, toJSONString(attributes_map) AS attributes, error
+FROM (
+  SELECT Timestamp AS ts, SpanName AS name,
   ServiceName AS service_name, ScopeName AS scope_name,
   if(StatusCode = 'Error', 'ERROR', '') AS level_text,
   if(StatusCode = 'Error', 2, if(StatusCode = 'Ok', 1, 0)) AS level_number,
   TraceId AS trace_id, SpanId AS span_id, Duration / 1000000 AS duration_ms,
-  '' AS body, toJSONString(SpanAttributes) AS attributes,
+  SpanAttributes AS attributes_map,
   if(StatusCode = 'Error', StatusMessage, '') AS error
 FROM otel_traces
-WHERE Timestamp >= now() - INTERVAL {hours: UInt16} HOUR`);
+WHERE Timestamp >= now() - INTERVAL {hours: UInt16} HOUR
+ORDER BY Timestamp DESC
+LIMIT {limit: UInt16}
+)`);
   }
 
   return projectQueryOptions<

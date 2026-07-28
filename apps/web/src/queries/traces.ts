@@ -1,15 +1,20 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { compareNullable } from "@/queries/insights";
+import {
+  parseTelemetryAttributes,
+  SAFE_SPAN_ATTRIBUTES_SQL,
+} from "@/queries/safe-telemetry-metadata";
+import {
+  correlatedRequestLogSql,
+  requestLogCorrelationParams,
+  requestLogErrorBody,
+  type RequestLogErrorBody,
+} from "@/queries/request-log-correlation";
 import { projectQueryOptions } from "@/utils/project-query";
 
 export type TraceSort =
-  | "time"
-  | "route"
-  | "version"
-  | "status"
-  | "duration"
-  | "spans";
+  "time" | "route" | "version" | "status" | "duration" | "spans";
 export type SortDirection = "asc" | "desc";
 
 export interface TraceSummary {
@@ -32,6 +37,16 @@ export interface TraceSpan {
   durationMs: number;
   hasError: boolean;
   error: string | null;
+  attrs: Record<string, string | number | boolean>;
+}
+
+export interface TraceEvent {
+  id: string;
+  name: string;
+  ts: string;
+  startMs: number;
+  severity: string;
+  errorBody: RequestLogErrorBody | null;
   attrs: Record<string, string | number | boolean>;
 }
 
@@ -64,6 +79,7 @@ export function traceListQueryOptions(input: {
   projectId: string;
   hours: number;
   errorsOnly: boolean;
+  version?: string;
   sort: TraceSort;
   direction: SortDirection;
   limit?: number;
@@ -99,9 +115,14 @@ WHERE Timestamp >= now() - INTERVAL {hours: UInt16} HOUR
 GROUP BY TraceId
 HAVING countIf(SpanName = 'versionless.exchange') > 0
   ${input.errorsOnly ? "AND error_count > 0" : ""}
+  ${input.version ? "AND root_version = {version: String}" : ""}
 ORDER BY started_at DESC, trace_id ASC
 LIMIT {limit: UInt16}`,
-        params: { hours: input.hours, limit: input.limit ?? 50 },
+        params: {
+          hours: input.hours,
+          limit: input.limit ?? 50,
+          ...(input.version ? { version: input.version } : {}),
+        },
       },
       (rows) =>
         rows.map((row) => ({
@@ -119,17 +140,6 @@ LIMIT {limit: UInt16}`,
   });
 }
 
-function parseAttrs(raw: string): Record<string, string | number | boolean> {
-  try {
-    const parsed: unknown = JSON.parse(raw);
-    return parsed && typeof parsed === "object"
-      ? (parsed as Record<string, string | number | boolean>)
-      : {};
-  } catch {
-    return {};
-  }
-}
-
 export function traceSpansQueryOptions(projectId: string, traceId: string) {
   return projectQueryOptions<
     {
@@ -139,7 +149,7 @@ export function traceSpansQueryOptions(projectId: string, traceId: string) {
       ts: string;
       start_ms: string;
       duration_ms: string;
-      error: string;
+      has_error: string;
       attrs: string;
     },
     TraceSpan[]
@@ -147,21 +157,22 @@ export function traceSpansQueryOptions(projectId: string, traceId: string) {
     "trace-spans",
     {
       projectId,
-      query: `SELECT *
+      query: `SELECT span_id, parent_span_id, name, ts, start_ms, duration_ms,
+       has_error, toJSONString(attrs_map) AS attrs
 FROM (
   SELECT SpanId AS span_id, ParentSpanId AS parent_span_id,
          SpanName AS name, Timestamp AS ts,
          toUnixTimestamp64Milli(Timestamp) AS start_ms,
          Duration / 1000000 AS duration_ms,
-         if(StatusCode = 'Error', StatusMessage, '') AS error,
-         toJSONString(SpanAttributes) AS attrs
+         StatusCode = 'Error' AS has_error,
+         ${SAFE_SPAN_ATTRIBUTES_SQL} AS attrs_map
   FROM otel_traces
   WHERE TraceId = {trace: String}
   ORDER BY Timestamp DESC
   LIMIT 1 BY SpanId
+  LIMIT 256
 )
-ORDER BY ts ASC, span_id ASC
-LIMIT 256`,
+ORDER BY ts ASC, span_id ASC`,
       params: { trace: traceId },
     },
     (rows) =>
@@ -172,9 +183,44 @@ LIMIT 256`,
         ts: row.ts,
         startMs: Number(row.start_ms),
         durationMs: Number(row.duration_ms),
-        hasError: row.error !== "",
-        error: row.error || null,
-        attrs: parseAttrs(row.attrs),
+        hasError: row.has_error === "1" || row.has_error === "true",
+        error: null,
+        attrs: parseTelemetryAttributes(row.attrs),
+      })),
+  );
+}
+
+export function traceEventsQueryOptions(
+  projectId: string,
+  trace: TraceSummary | null,
+) {
+  return projectQueryOptions<
+    {
+      ts: string;
+      start_ms: string;
+      event_name: string;
+      severity: string;
+      error_code: string;
+      error_message: string;
+      attrs: string;
+    },
+    TraceEvent[]
+  >(
+    "trace-events",
+    {
+      projectId,
+      query: correlatedRequestLogSql({ includeErrorSummary: true }),
+      params: requestLogCorrelationParams(trace),
+    },
+    (rows) =>
+      rows.map((row, index) => ({
+        id: `${row.start_ms}:${row.event_name}:${index}`,
+        name: row.event_name,
+        ts: row.ts,
+        startMs: Number(row.start_ms),
+        severity: row.severity || "INFO",
+        errorBody: requestLogErrorBody(row),
+        attrs: parseTelemetryAttributes(row.attrs),
       })),
   );
 }

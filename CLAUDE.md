@@ -1,5 +1,18 @@
 # AGENTS.md
 
+## Purpose
+
+Versionless exists so APIs — and preferably the rest of the codebase — do
+**not** accumulate fallbacky or hacky compatibility behavior. Handlers,
+schemas, and domain code speak **one current shape**. Old clients stay
+compatible through registered `up`/`down` transforms at the edge, not through
+dual-field payloads, forever-optional migration fields, versioned route forks,
+`if (oldShape)` branches, or tolerant parsing that papers over breakages.
+
+When changing a wire surface: register a change, cover it with
+`versionless check`, and keep the current handler honest. Do not "just make
+it work" by leaving both shapes in the API or the app.
+
 ## Task Completion Requirements
 
 - Keep local verification focused on the files and packages changed. Run the smallest relevant test set; do not run the full workspace test suite as a routine completion step.
@@ -8,11 +21,11 @@
   - Run the affected package's type check when available: `bun run check-types` inside the package (or `turbo run check-types -F <package>` from the root; `apps/docs` uses `types:check`).
 - Do not run repo-wide `bun run test`, `bun run check-types`, `bun run build`, or equivalent full-suite Turbo commands locally unless the user explicitly requests them. CI is responsible for the full verification suite (see `.github/workflows/ci.yml`).
 - After frontend feature development or any user-visible change to `apps/web` or `apps/docs`, the primary agent must run one integrated verification pass after integrating the work:
-  - Start the databases (`bun db:start`) and the needed apps (`bun dev:server` on :3000, `bun dev:web` on :3001, `apps/docs` on :3002, `apps/demo` on :3003 under `/demo`); seed telemetry with `bun run --cwd apps/server seed` if the insights views need data. (`bun restart-deps && bun dev` gives a fresh-DB integrated run.)
+  - Start the local stack (`bun start-deps` — Postgres, ClickHouse, OTel Collector/gateway) and the needed apps (`bun dev:server` on :3000, `bun dev:web` on :3001, `apps/docs` on :3002, `apps/demo` on :3003 under `/demo`); seed telemetry with `bun run --cwd apps/server seed` if the insights views need data. (`bun restart-deps && bun dev` gives a fresh-DB integrated run.)
   - Use the `agent-browser` skill to verify the affected flow in a controlled browser (e.g. <http://localhost:3001/insights>). But if u have inbuild browser prefer that.
   - For versioning-behavior changes, also verify the wire behavior directly, e.g. `curl -H 'x-api-version: 2025-01-01' :3003/demo/users/u_1` against the current shape.
   - Subagents must not independently launch dev servers or repeat integrated client verification unless their delegated task explicitly requires it.
-  - Stop dev servers, watchers, and containers started for verification when the focused verification is complete (`bun db:stop`).
+  - Stop dev servers, watchers, and containers started for verification when the focused verification is complete (`bun stop-deps`).
 
 ## Client Error Safety
 
@@ -33,6 +46,24 @@
   flags, but raw exception text and attributes must stay server-side unless
   each returned field is explicitly allowlisted as non-sensitive.
 
+## Dashboard Scale and Performance
+
+- Design every dashboard table, chart, sheet, and query for high-cardinality
+  production data, not only the small happy path. Seed heavy-tail distributions
+  with repeat offenders at 1,000+ occurrences, varied latencies, and enough
+  long-tail rows to expose rendering and query-shape regressions.
+- Aggregate in ClickHouse and return only the fields the current view renders.
+  Bound trace IDs or entity keys before joining wide span/log rows; filter both
+  sides of joins by the selected time window and signature; never fetch every
+  occurrence or serialize raw attribute maps for a detail view.
+- Keep initial UI work bounded: virtualize or paginate long tables, cap chart
+  series to a meaningful top-N, lazy-load drill-down detail, reuse React Query
+  cache entries, and show dimensionally stable skeletons while data loads.
+- Validate performance at the real boundary after material changes: run the
+  query as the restricted ClickHouse user, inspect rows/bytes/elapsed time, and
+  browser-check the seeded high-volume state for responsive scrolling, opening,
+  sorting, and sheet navigation.
+
 ## Package Roles
 
 - `packages/core`: The heart of versionless — version graph/registry, request/response transform pipelines, route matching, date-scheme resolver, sunsets, telemetry, `ClientTypes`. Zero runtime deps; keep it framework-agnostic.
@@ -45,7 +76,7 @@
 - `packages/env`: Typed environment schemas (`server.ts`, `web.ts`). `packages/config`: shared tsconfig. `packages/ui`: shared React components/hooks/styles. Keep env/config schema-and-config-only — no runtime logic.
 - `apps/demo`: TanStack Start + oRPC demo app, served under the `/demo` base path (client AND server routes). Owns the demo change chain (`src/versions.ts`, `src/changes/`), the in-memory demo data, the CLI surface entry (`src/surface.ts` — oRPC extractor + `manual` declarations), and an unauthenticated button page simulating versioned usage. Its telemetry key belongs to the Hexclave "demo" team.
 - `apps/server`: Elysia + tRPC cloud server (Collector authorization in `src/ingest.ts`, query plane, dashboard tRPC). Dogfoods versionless on its own service API via `@versionless/api/versionless`; its telemetry key belongs to the owner's team.
-- `apps/web`: Vite/React 19/TanStack Router insights dashboard (adoption, drift, blockers). Demo release metadata comes from `demo/releases`.
+- `apps/web`: Vite/React 19/TanStack Router insights dashboard (adoption, drift, blockers). Release metadata (versions, sunsets, current) comes from each project's uploaded `versionless snapshot` data via `src/hooks/use-project-releases.ts` — never from hardcoded app constants.
 - `apps/docs`: fumadocs (Next.js) documentation site.
 
 ## Database Changes

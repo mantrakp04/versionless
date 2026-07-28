@@ -4,8 +4,6 @@ import {
   type InfiniteData,
   type QueryClient,
 } from "@tanstack/react-query";
-import { KNOWN_VERSIONS, SUNSETS } from "demo/releases";
-
 import { projectQueryOptions } from "@/utils/project-query";
 
 export type InsightsSortDirection = "asc" | "desc";
@@ -59,8 +57,23 @@ export interface DriftRow {
   requests: number;
 }
 
+export interface VersionRouteAnalytics {
+  route: string;
+  clients: number;
+  requests: number;
+  avgDepth: number;
+  p95Depth: number;
+  lastSeen: string;
+}
+
+/**
+ * Consumer keys are opaque per-caller fingerprints (`c_` + 12 hex), so their
+ * cardinality is unbounded by construction — `uniqExact` would hold every
+ * distinct key in memory for the window. `uniq` is approximate within ~1% and
+ * bounded, which is the right trade for a "how many callers" figure.
+ */
 const VERSION_SQL = `SELECT LogAttributes['versionless.version'] AS version,
-       uniqExact(if(empty(LogAttributes['versionless.consumer.key']), 'anonymous', LogAttributes['versionless.consumer.key'])) AS clients,
+       uniq(if(empty(LogAttributes['versionless.consumer.key']), 'anonymous', LogAttributes['versionless.consumer.key'])) AS clients,
        count() AS requests,
        max(Timestamp) AS last_seen
 FROM otel_logs
@@ -82,54 +95,111 @@ export function compareNullable(
   return direction === "asc" ? compared : -compared;
 }
 
-function presentVersions(
+export interface ProjectRelease {
+  version: string;
+  after: string;
+  message: string | null;
+}
+
+/**
+ * The binding retirement date for a version: a sunset on X covers every
+ * version <= X, and when several apply the earliest cutoff wins — the same
+ * rule core's `SunsetGate` enforces on the wire (`packages/core/src/sunset.ts`).
+ */
+export function sunsetFor(
+  version: string,
+  sunsets: readonly ProjectRelease[],
+): string | null {
+  let binding: string | null = null;
+  for (const sunset of sunsets) {
+    if (version > sunset.version) continue;
+    if (binding === null || sunset.after < binding) binding = sunset.after;
+  }
+  return binding;
+}
+
+/**
+ * Versions with an uploaded contract are unioned in so a released-but-unused
+ * version still appears — a version with zero traffic is exactly the one a
+ * user wants to see before retiring it. Without an uploaded snapshot the list
+ * is traffic only, which is honest: we know what clients ask for, not what the
+ * API declares.
+ */
+export function presentVersions(
   rows: Array<{
     version: string;
     clients: string;
     requests: string;
     last_seen: string;
   }>,
+  releases: {
+    versions?: readonly string[];
+    sunsets?: readonly ProjectRelease[];
+  } = {},
 ): VersionSummary[] {
   const byVersion = new Map(rows.map((row) => [row.version, row]));
-  return [...new Set([...KNOWN_VERSIONS, ...rows.map((row) => row.version)])]
-    .map((version) => {
-      const row = byVersion.get(version);
-      const sunset = SUNSETS.find((candidate) => version <= candidate.version);
-      return {
-        version,
-        clients: row ? Number(row.clients) : 0,
-        requests: row ? Number(row.requests) : 0,
-        lastSeen: row?.last_seen ?? null,
-        sunsetAfter: sunset?.after ?? null,
-      };
-    });
+  const sunsets = releases.sunsets ?? [];
+  return [
+    ...new Set([...(releases.versions ?? []), ...rows.map((row) => row.version)]),
+  ].map((version) => {
+    const row = byVersion.get(version);
+    return {
+      version,
+      clients: row ? Number(row.clients) : 0,
+      requests: row ? Number(row.requests) : 0,
+      lastSeen: row?.last_seen ?? null,
+      sunsetAfter: sunsetFor(version, sunsets),
+    };
+  });
 }
 
-function sortVersions(
+export function sortVersions(
   versions: VersionSummary[],
   sort: VersionSort,
   direction: InsightsSortDirection,
 ): VersionSummary[] {
   return versions.toSorted((left, right) => {
+    if (sort === "sunsetAfter" && left.sunsetAfter !== right.sunsetAfter) {
+      if (left.sunsetAfter === null) return direction === "asc" ? 1 : -1;
+      if (right.sunsetAfter === null) return direction === "asc" ? -1 : 1;
+    }
     const compared = compareNullable(left[sort], right[sort], direction);
     return compared || right.version.localeCompare(left.version);
   });
 }
 
+/**
+ * Release metadata is uploaded by `versionless snapshot`, so it arrives from
+ * tRPC rather than ClickHouse and is folded in here. It is part of the query
+ * key: a snapshot upload that adds a sunset must invalidate the cached rows
+ * rather than leave a stale "no sunset" verdict on screen.
+ */
 export function versionAggregationQueryOptions(
   projectId: string,
   days = 30,
+  releases: {
+    versions?: readonly string[];
+    sunsets?: readonly ProjectRelease[];
+  } = {},
 ) {
   return {
     ...projectQueryOptions(
       "versions",
-      { projectId, query: VERSION_SQL, params: { days } },
+      {
+        projectId,
+        query: VERSION_SQL,
+        params: { days },
+        keyExtra: {
+          versions: releases.versions ?? [],
+          sunsets: releases.sunsets ?? [],
+        },
+      },
       (rows: Array<{
         version: string;
         clients: string;
         requests: string;
         last_seen: string;
-      }>) => presentVersions(rows),
+      }>) => presentVersions(rows, releases),
     ),
     staleTime: 30_000,
   };
@@ -148,7 +218,7 @@ export function adoptionQueryOptions(projectId: string, days: number) {
       projectId,
       query: `SELECT ${bucketExpression} AS bucket,
        LogAttributes['versionless.version'] AS version,
-       uniqExact(if(empty(LogAttributes['versionless.consumer.key']), 'anonymous', LogAttributes['versionless.consumer.key'])) AS clients,
+       uniq(if(empty(LogAttributes['versionless.consumer.key']), 'anonymous', LogAttributes['versionless.consumer.key'])) AS clients,
        count() AS requests
 FROM otel_logs
 WHERE EventName = 'versionless.request'
@@ -172,8 +242,12 @@ export function versionsQueryOptions(
   days = 30,
   sort: VersionSort = "version",
   direction: InsightsSortDirection = "desc",
+  releases: {
+    versions?: readonly string[];
+    sunsets?: readonly ProjectRelease[];
+  } = {},
 ) {
-  const aggregation = versionAggregationQueryOptions(projectId, days);
+  const aggregation = versionAggregationQueryOptions(projectId, days, releases);
   return queryOptions({
     ...aggregation,
     select: (versions) => sortVersions(versions, sort, direction),
@@ -188,6 +262,10 @@ export function versionPagesQueryOptions(
     sort: VersionSort;
     direction: InsightsSortDirection;
     limit: number;
+    releases?: {
+      versions?: readonly string[];
+      sunsets?: readonly ProjectRelease[];
+    };
   },
 ) {
   type Page = { items: VersionSummary[]; nextCursor: number | undefined };
@@ -201,6 +279,7 @@ export function versionPagesQueryOptions(
       const aggregation = versionAggregationQueryOptions(
         input.projectId,
         input.days,
+        input.releases ?? {},
       );
       const versions =
         pageParam === 0
@@ -340,14 +419,16 @@ export function transformDepthQueryOptions(input: {
       "transform-depth",
       {
         projectId: input.projectId,
-        query: `SELECT LogAttributes['versionless.route'] AS route,
-       avg(toUInt16OrZero(LogAttributes['versionless.transform_count'])) AS avg_depth,
-       max(toUInt16OrZero(LogAttributes['versionless.transform_count'])) AS max_depth,
-       quantile(0.95)(toUInt16OrZero(LogAttributes['versionless.transform_count'])) AS p95_depth,
+        query: `WITH LogAttributes['versionless.route'] AS route,
+     toUInt8OrZero(LogAttributes['versionless.transform_count']) AS depth
+SELECT route,
+       avg(depth) AS avg_depth,
+       max(depth) AS max_depth,
+       quantileTDigest(0.95)(depth) AS p95_depth,
        count() AS requests
 FROM otel_logs
-WHERE EventName = 'versionless.request'
-  AND Timestamp >= now() - INTERVAL {days: UInt16} DAY
+PREWHERE Timestamp >= now() - INTERVAL {days: UInt16} DAY
+WHERE EventName = 'versionless.request' AND notEmpty(route)
 GROUP BY route
 ORDER BY route ASC`,
         params: { days: input.days },
@@ -363,4 +444,64 @@ ORDER BY route ASC`,
     ),
     select: (rows) => sortDriftRows(rows, input.sort, input.direction),
   });
+}
+
+export function selectTransformDepthChartRows(
+  rows: DriftRow[],
+  limit = 16,
+): DriftRow[] {
+  return rows
+    .toSorted(
+      (left, right) =>
+        right.requests - left.requests ||
+        right.p95Depth - left.p95Depth ||
+        left.route.localeCompare(right.route),
+    )
+    .slice(0, limit);
+}
+
+export function versionRouteAnalyticsQueryOptions(input: {
+  projectId: string;
+  version: string;
+  days: number;
+}) {
+  return projectQueryOptions<
+    {
+      route: string;
+      clients: string;
+      requests: string;
+      avg_depth: number;
+      p95_depth: number;
+      last_seen: string;
+    },
+    VersionRouteAnalytics[]
+  >(
+    "version-route-analytics",
+    {
+      projectId: input.projectId,
+      query: `SELECT LogAttributes['versionless.route'] AS route,
+       uniq(if(empty(LogAttributes['versionless.consumer.key']), 'anonymous', LogAttributes['versionless.consumer.key'])) AS clients,
+       count() AS requests,
+       avg(toUInt16OrZero(LogAttributes['versionless.transform_count'])) AS avg_depth,
+       quantile(0.95)(toUInt16OrZero(LogAttributes['versionless.transform_count'])) AS p95_depth,
+       max(Timestamp) AS last_seen
+FROM otel_logs
+WHERE EventName = 'versionless.request'
+  AND LogAttributes['versionless.version'] = {version: String}
+  AND Timestamp >= now() - INTERVAL {days: UInt16} DAY
+GROUP BY route
+ORDER BY requests DESC, route ASC
+LIMIT 100`,
+      params: { version: input.version, days: input.days },
+    },
+    (rows) =>
+      rows.map((row) => ({
+        route: row.route,
+        clients: Number(row.clients),
+        requests: Number(row.requests),
+        avgDepth: Number(row.avg_depth),
+        p95Depth: Number(row.p95_depth),
+        lastSeen: row.last_seen,
+      })),
+  );
 }

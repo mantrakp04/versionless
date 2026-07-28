@@ -18,11 +18,23 @@ const BIN = join(CLI_DIR, "bin", "versionless.ts");
 function run(
   args: string[],
   cwd: string,
+  extraEnv: Record<string, string> = {},
 ): { code: number; out: string; err: string } {
+  // The repository CI has a real build upload key. End-to-end CLI fixtures
+  // must never inherit it and publish their temporary snapshots.
+  const env: Record<string, string | undefined> = {
+    ...process.env,
+    NO_COLOR: "1",
+  };
+  delete env.VERSIONLESS_API_KEY;
+  delete env.DEMO_VERSIONLESS_API_KEY;
+  delete env.VERSIONLESS_API_URL;
+  delete env.VERSIONLESS_SERVER_URL;
+  Object.assign(env, extraEnv);
   const proc = Bun.spawnSync({
     cmd: [process.execPath, BIN, ...args],
     cwd,
-    env: { ...process.env, NO_COLOR: "1" },
+    env,
     stdout: "pipe",
     stderr: "pipe",
   });
@@ -118,6 +130,17 @@ describe("versionless CLI end-to-end", () => {
     expect(result.out).toContain("2026-01-01.json");
     expect(result.out).toContain("1 endpoint(s), 1 model(s)");
     expect(existsSync(join(project, ".versionless", "2026-01-01.json"))).toBe(true);
+  });
+
+  test("snapshot upload without an instance `project` points at createVersionless", () => {
+    // VERSIONLESS_API_KEY remains the default key source, but the project name
+    // now comes only from the exported instance's cloud config.
+    const result = run(["snapshot"], project, {
+      VERSIONLESS_API_KEY: "vl_team_secret",
+    });
+    expect(result.code).toBe(2);
+    expect(result.err).toContain("no cloud `project` name is configured");
+    expect(result.err).toContain("createVersionless({ project:");
   });
 
   test("check passes when nothing changed", () => {
@@ -307,8 +330,12 @@ describe("versionless watch", () => {
     expect(result.err).toContain("--json");
   });
 
+  // Re-trigger-on-file-event is not covered here: it depends on the OS
+  // delivering `fs.watch` recursive events, which is not reliable in every
+  // sandbox/CI filesystem. The debounce/serialize/queue logic behind it is
+  // unit-tested against `createRunQueue` in watch.test.ts instead.
   test(
-    "runs check on start and again when a watched file changes",
+    "runs check once on start and then waits for changes",
     async () => {
       const proc = Bun.spawn({
         cmd: [process.execPath, BIN, "watch", "--debounce", "50"],
@@ -340,14 +367,8 @@ describe("versionless watch", () => {
       const runs = (): number => out.split("check passed").length - 1;
 
       try {
-        await waitFor(() => runs() >= 1);
-        // Touch the entry (same content) to trigger a re-run.
-        write(
-          "src/versionless.ts",
-          entryFile({ withName: false, importChange: true }),
-        );
-        await waitFor(() => runs() >= 2);
-        expect(out).toContain("watching for changes");
+        await waitFor(() => out.includes("watching for changes"));
+        expect(runs()).toBe(1);
       } finally {
         proc.kill();
         await proc.exited;

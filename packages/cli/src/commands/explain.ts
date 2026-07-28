@@ -97,7 +97,7 @@ export async function runExplain(
       2,
     );
   }
-  const registry = instance._registry as ChangeRegistry;
+  const registry = instance._registry;
   registry.seal(); // builds releaseVersions; idempotent
 
   const routeKey = routeArg.includes(" ")
@@ -107,7 +107,7 @@ export async function runExplain(
       : `trpc:${routeArg}`;
 
   const requested =
-    str(values["version"]) ?? registry.releaseVersions[0] ?? instance.current;
+    str(values["version"]) ?? instance.versions()[0] ?? instance.current;
   const effective = registry.effectiveVersion(requested);
 
   const matched = registry.routeChanges(routeKey) !== undefined;

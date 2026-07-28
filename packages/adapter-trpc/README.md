@@ -1,7 +1,7 @@
 # @versionless/adapter-trpc
 
 Procedure-keyed versioning: changes declare `procedures: ["user.get"]` with
-`input: { up }` / `output: { down }`.
+`request: { up }` / `response: { down }`.
 
 ```ts
 // createContext

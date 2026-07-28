@@ -1,7 +1,7 @@
-import type { Change, Jump } from "@versionless/core";
+import type { Change, ChangeMeta, Jump } from "@versionless/core";
 import { verifyChain, type IntegrityIssue } from "@versionless/core/integrity";
 
-import { loadChangeChain, type ChangeLike } from "../chain";
+import { loadChangeChain } from "../chain";
 import { bold, dim, green, red, yellow } from "../colors";
 import { GLOBAL_OPTIONS, loadProject, parseFlags, str } from "./shared";
 
@@ -26,7 +26,7 @@ Exit codes: 0 verified · 1 integrity issue (or missing examples with --strict) 
 2 config error
 `;
 
-function hasSpec(change: ChangeLike): change is ChangeLike & (Change | Jump) {
+function hasSpec(change: ChangeMeta): change is ChangeMeta & (Change | Jump) {
   return "spec" in change && typeof (change as { spec?: unknown }).spec === "object";
 }
 

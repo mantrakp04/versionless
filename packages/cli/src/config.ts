@@ -2,6 +2,8 @@ import { existsSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
+import type { ChangeMeta, ChangeRegistry, SunsetEntry } from "@versionless/core";
+
 import { CliError } from "./errors";
 import type { SurfaceDefinition } from "./surface/define";
 
@@ -109,7 +111,23 @@ export async function loadConfig(
 /** The slice of the core instance the CLI relies on. */
 export interface InstanceLike {
   current: string;
-  _registry: unknown;
+  /** Known release versions, ascending — correct before the registry seals. */
+  versions(): string[];
+  /** Registered sunsets, in registration order. */
+  sunsets(): readonly SunsetEntry[];
+  /** Registered changes (ascending) then jumps, as metadata. */
+  chain(): readonly ChangeMeta[];
+  _cloud?: {
+    project?: string;
+    apiKey?: string;
+    apiUrl?: string;
+  };
+  /**
+   * Resolver internals, used only by `explain` (walkPath / compilePipeline /
+   * effectiveVersion). Everything else goes through the introspection methods
+   * above.
+   */
+  _registry: ChangeRegistry;
 }
 
 export interface LoadedEntry {
@@ -119,6 +137,9 @@ export interface LoadedEntry {
   module: Record<string, unknown>;
 }
 
+const INTROSPECTION = ["versions", "sunsets", "chain"] as const;
+
+/** An object is the core instance if it carries a registry and a `current`. */
 function looksLikeInstance(value: unknown): value is InstanceLike {
   return (
     typeof value === "object" &&
@@ -126,6 +147,26 @@ function looksLikeInstance(value: unknown): value is InstanceLike {
     "_registry" in value &&
     typeof (value as { current?: unknown }).current === "string"
   );
+}
+
+/**
+ * The instance is read through its introspection methods, so a core too old to
+ * have them fails loudly here rather than silently reporting an empty chain
+ * and a vanished sunset schedule.
+ */
+function assertIntrospectable(instance: InstanceLike, entry: string): void {
+  const missing = INTROSPECTION.filter(
+    (name) => typeof (instance as unknown as Record<string, unknown>)[name] !== "function",
+  );
+  if (missing.length > 0) {
+    throw new CliError(
+      `The versionless instance exported from ${entry} is missing ${missing
+        .map((name) => `${name}()`)
+        .join(", ")}. Upgrade @versionless/core to a version that exposes ` +
+        `change-chain introspection.`,
+      3,
+    );
+  }
 }
 
 export async function loadEntry(config: LoadedConfig): Promise<LoadedEntry> {
@@ -159,11 +200,12 @@ export async function loadEntry(config: LoadedConfig): Promise<LoadedEntry> {
   }
 
   const candidate = module[config.instanceExport];
-  return {
-    surface: surface as SurfaceDefinition,
-    instance: looksLikeInstance(candidate) ? candidate : null,
-    module,
-  };
+  let instance: InstanceLike | null = null;
+  if (looksLikeInstance(candidate)) {
+    assertIntrospectable(candidate, config.entry);
+    instance = candidate;
+  }
+  return { surface: surface as SurfaceDefinition, instance, module };
 }
 
 export { importModule };

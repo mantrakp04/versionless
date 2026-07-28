@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type KeyboardEvent,
+  type Ref,
   type ReactNode,
 } from "react";
 import {
@@ -13,7 +14,7 @@ import {
   type QueryKey,
   type UseInfiniteQueryOptions,
 } from "@tanstack/react-query";
-import { useWindowVirtualizer } from "@tanstack/react-virtual";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   Table,
   TableBody,
@@ -24,18 +25,26 @@ import {
 import { Skeleton } from "@versionless/ui/components/skeleton";
 import { cn } from "@versionless/ui/lib/utils";
 
+import {
+  cacheCollectionNavigationState,
+  collectionStateAtIndex,
+  collectionStorageKey,
+  DashboardCollectionStatus,
+  getNextCollectionIndex,
+  isCollectionActivationKey,
+  readCollectionNavigationState,
+  rememberCollectionNavigationState,
+  resolveCollectionIndex,
+  useDashboardCollectionNavigation,
+  type CollectionNavigationState,
+} from "@/components/dashboard-collection";
+
 type PageWithItems<TItem> = {
   items: TItem[];
 };
 
-interface NavigationState {
-  index: number;
-  itemKey?: string;
-}
-
-const navigationMemory = new Map<string, NavigationState>();
-const STORAGE_PREFIX = "versionless:virtual-table:";
 const DEFAULT_SKELETON_WIDTHS = ["70%", "45%", "60%", "55%"] as const;
+const EVERY_ROW_INTERACTIVE = () => true;
 
 export interface VirtualTableSkeletonOptions {
   rows?: number;
@@ -49,6 +58,8 @@ interface DashboardTableSharedProps<TItem> {
   emptyState?: ReactNode;
   errorState?: ReactNode;
   className?: string;
+  gridTemplateColumns?: string;
+  stickyHeader?: boolean;
 }
 
 interface DashboardTableProps<TItem> extends DashboardTableSharedProps<TItem> {
@@ -57,6 +68,7 @@ interface DashboardTableProps<TItem> extends DashboardTableSharedProps<TItem> {
   isLoading?: boolean;
   isError?: boolean;
   skeleton?: VirtualTableSkeletonOptions;
+  navigationKey?: string;
   selectedKey?: string | null;
   onRowActivate?: (item: TItem, index: number) => void;
   isRowExpanded?: (item: TItem, index: number) => boolean;
@@ -70,72 +82,31 @@ export function getNextActiveIndex(
   currentIndex: number,
   itemCount: number,
 ): number | null {
-  if (itemCount === 0) return null;
-  if (key === "j" || key === "ArrowDown") {
-    return Math.min(currentIndex + 1, itemCount - 1);
-  }
-  if (key === "k" || key === "ArrowUp") {
-    return Math.max(currentIndex - 1, 0);
-  }
-  return null;
+  return getNextCollectionIndex(key, currentIndex, itemCount);
+}
+
+export function isRowActivationKey(key: string): boolean {
+  return isCollectionActivationKey(key);
 }
 
 export function virtualTableStorageKey(navigationKey: string): string {
-  return `${STORAGE_PREFIX}${navigationKey}`;
+  return collectionStorageKey(navigationKey);
 }
 
 export function resolveRestoredIndex<TItem>(
   items: TItem[],
-  state: NavigationState,
+  state: CollectionNavigationState,
   getItemKey: (item: TItem) => string,
 ): number {
-  if (items.length === 0) return 0;
-  const keyedIndex = state.itemKey
-    ? items.findIndex((item) => getItemKey(item) === state.itemKey)
-    : -1;
-  return keyedIndex >= 0 ? keyedIndex : Math.min(state.index, items.length - 1);
+  return resolveCollectionIndex(items, state, getItemKey);
 }
 
 export function navigationStateAtIndex<TItem>(
   items: TItem[],
   index: number,
   getItemKey: (item: TItem) => string,
-): NavigationState | null {
-  const item = items[index];
-  return item ? { index, itemKey: getItemKey(item) } : null;
-}
-
-function readNavigationState(navigationKey: string): NavigationState {
-  const remembered = navigationMemory.get(navigationKey);
-  if (remembered) return remembered;
-  if (typeof window === "undefined") return { index: 0 };
-
-  try {
-    const serialized = window.sessionStorage.getItem(
-      virtualTableStorageKey(navigationKey),
-    );
-    return serialized
-      ? (JSON.parse(serialized) as NavigationState)
-      : { index: 0 };
-  } catch {
-    return { index: 0 };
-  }
-}
-
-function rememberNavigationState(
-  navigationKey: string,
-  state: NavigationState,
-) {
-  navigationMemory.set(navigationKey, state);
-  if (typeof window === "undefined") return;
-  try {
-    window.sessionStorage.setItem(
-      virtualTableStorageKey(navigationKey),
-      JSON.stringify(state),
-    );
-  } catch {
-    // Session storage is an optional enhancement; in-memory preservation remains.
-  }
+): CollectionNavigationState | null {
+  return collectionStateAtIndex(items, index, getItemKey);
 }
 
 function SkeletonCells({ columnWidths }: { columnWidths: readonly string[] }) {
@@ -144,6 +115,81 @@ function SkeletonCells({ columnWidths }: { columnWidths: readonly string[] }) {
       <Skeleton className="h-3" style={{ width }} />
     </TableCell>
   ));
+}
+
+function DashboardTableShell({
+  containerRef,
+  renderHeader,
+  gridTemplateColumns,
+  stickyHeader = true,
+  interactive = false,
+  onKeyDown,
+  children,
+  className,
+  busy,
+  label,
+  role,
+}: {
+  containerRef?: Ref<HTMLDivElement>;
+  renderHeader: () => ReactNode;
+  gridTemplateColumns?: string;
+  stickyHeader?: boolean;
+  interactive?: boolean;
+  onKeyDown?: (event: KeyboardEvent<HTMLDivElement>) => void;
+  children: ReactNode;
+  className?: string;
+  busy?: boolean;
+  label?: string;
+  role?: "status";
+}) {
+  const grid = gridTemplateColumns !== undefined;
+  return (
+    <div
+      ref={containerRef}
+      aria-busy={busy}
+      data-dashboard-sticky-table={stickyHeader ? "" : undefined}
+      aria-label={
+        label ?? (interactive ? "Keyboard navigable data table" : undefined)
+      }
+      className={cn(
+        "rounded-md",
+        interactive &&
+          "outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+        stickyHeader && "[&_[data-slot=table-container]]:overflow-visible",
+        className,
+      )}
+      onKeyDown={interactive ? onKeyDown : undefined}
+      role={role}
+      tabIndex={interactive ? 0 : undefined}
+    >
+      <Table className={grid ? "grid" : undefined}>
+        <TableHeader
+          className={cn(
+            grid && "grid",
+            stickyHeader &&
+              "sticky top-0 z-10 bg-card shadow-[0_1px_0_0_var(--border)]",
+          )}
+        >
+          <TableRow
+            className={
+              grid
+                ? "grid [&_[data-slot=table-head]]:flex [&_[data-slot=table-head]]:items-center"
+                : undefined
+            }
+            style={grid ? { gridTemplateColumns } : undefined}
+          >
+            {renderHeader()}
+          </TableRow>
+        </TableHeader>
+        {children}
+      </Table>
+      {interactive ? (
+        <p className="sr-only">
+          Focus the table and use J, K, or the arrow keys to move between rows.
+        </p>
+      ) : null}
+    </div>
+  );
 }
 
 export function DashboardTableSkeleton({
@@ -163,45 +209,32 @@ export function DashboardTableSkeleton({
 }) {
   const grid = gridTemplateColumns !== undefined;
   return (
-    <div
-      aria-busy="true"
-      aria-label="Loading table"
-      className={cn("rounded-md", className)}
+    <DashboardTableShell
+      renderHeader={renderHeader}
+      gridTemplateColumns={gridTemplateColumns}
+      className={className}
+      busy
+      label="Loading table"
       role="status"
     >
-      <Table className={grid ? "grid" : undefined}>
-        <TableHeader className={grid ? "grid" : undefined}>
+      <TableBody className={grid ? "grid" : undefined}>
+        {Array.from({ length: rows }, (_, rowIndex) => (
           <TableRow
-            className={
+            aria-hidden="true"
+            className={cn(grid && "grid", "items-center")}
+            data-skeleton-row
+            key={rowIndex}
+            style={
               grid
-                ? "grid [&_[data-slot=table-head]]:flex [&_[data-slot=table-head]]:items-center"
-                : undefined
+                ? { gridTemplateColumns, minHeight: rowHeight }
+                : { minHeight: rowHeight }
             }
-            style={grid ? { gridTemplateColumns } : undefined}
           >
-            {renderHeader()}
+            <SkeletonCells columnWidths={columnWidths} />
           </TableRow>
-        </TableHeader>
-        <TableBody className={grid ? "grid" : undefined}>
-          {Array.from({ length: rows }, (_, rowIndex) => (
-            <TableRow
-              aria-hidden="true"
-              className={cn(grid && "grid", "items-center")}
-              data-skeleton-row
-              key={rowIndex}
-              style={
-                grid
-                  ? { gridTemplateColumns, minHeight: rowHeight }
-                  : { minHeight: rowHeight }
-              }
-            >
-              <SkeletonCells columnWidths={columnWidths} />
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <span className="sr-only">Loading table rows</span>
-    </div>
+        ))}
+      </TableBody>
+    </DashboardTableShell>
   );
 }
 
@@ -213,6 +246,7 @@ export function DashboardTable<TItem>({
   isLoading = false,
   isError = false,
   skeleton,
+  navigationKey,
   selectedKey,
   onRowActivate,
   isRowExpanded,
@@ -222,44 +256,22 @@ export function DashboardTable<TItem>({
   emptyState = "No results in this window.",
   errorState = "Unable to load results.",
   className,
+  gridTemplateColumns,
+  stickyHeader = true,
 }: DashboardTableProps<TItem>) {
   const containerRef = useRef<HTMLDivElement>(null);
-  // Selection styling is driven by selectedKey; the active index only feeds
-  // the keyboard handler, so a ref keeps hover tracking render-free.
-  const activeIndexRef = useRef(0);
   const interactive = onRowActivate !== undefined;
-
-  const selectIndex = (index: number) => {
-    const item = items[index];
-    if (!item || !onRowActivate) return;
-    activeIndexRef.current = index;
-    onRowActivate(item, index);
-  };
-
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (
-      !interactive ||
-      event.target !== event.currentTarget ||
-      event.metaKey ||
-      event.ctrlKey ||
-      event.altKey
-    ) {
-      return;
-    }
-    const nextIndex = getNextActiveIndex(
-      event.key,
-      activeIndexRef.current,
-      items.length,
-    );
-    if (nextIndex === null) return;
-    event.preventDefault();
-    if (nextIndex === activeIndexRef.current) return;
-    selectIndex(nextIndex);
-  };
+  const navigation = useDashboardCollectionNavigation({
+    items,
+    getItemKey,
+    navigationKey,
+    onItemActivate: onRowActivate,
+  });
 
   if (isLoading) {
     return (
       <DashboardTableSkeleton
+        gridTemplateColumns={gridTemplateColumns}
         renderHeader={renderHeader}
         rows={skeleton?.rows}
         rowHeight={skeleton?.rowHeight}
@@ -270,89 +282,91 @@ export function DashboardTable<TItem>({
   }
   if (isError) {
     return (
-      <div className="py-8 text-center text-xs text-destructive">
+      <DashboardCollectionStatus tone="destructive">
         {errorState}
-      </div>
+      </DashboardCollectionStatus>
     );
   }
   if (items.length === 0) {
     return (
-      <div className="py-8 text-center text-xs text-muted-foreground">
-        {emptyState}
-      </div>
+      <DashboardCollectionStatus>{emptyState}</DashboardCollectionStatus>
     );
   }
 
   return (
-    <div
-      ref={containerRef}
-      aria-label={interactive ? "Keyboard navigable data table" : undefined}
-      className={cn(
-        "rounded-md",
-        interactive &&
-          "outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
-        className,
-      )}
-      onKeyDown={interactive ? handleKeyDown : undefined}
-      tabIndex={interactive ? 0 : undefined}
+    <DashboardTableShell
+      containerRef={containerRef}
+      renderHeader={renderHeader}
+      gridTemplateColumns={gridTemplateColumns}
+      stickyHeader={stickyHeader}
+      interactive={interactive}
+      onKeyDown={navigation.handleKeyDown}
+      className={className}
     >
-      <Table>
-        <TableHeader>
-          <TableRow>{renderHeader()}</TableRow>
-        </TableHeader>
-        <TableBody>
-          {items.map((item, index) => {
-            const key = getItemKey(item, index);
-            const expanded = isRowExpanded?.(item, index) ?? false;
-            return (
-              <Fragment key={key}>
+      <TableBody className={gridTemplateColumns ? "grid" : undefined}>
+        {items.map((item, index) => {
+          const key = getItemKey(item, index);
+          const expanded = isRowExpanded?.(item, index) ?? false;
+          return (
+            <Fragment key={key}>
+              <TableRow
+                aria-expanded={renderExpandedRow ? expanded : undefined}
+                aria-selected={interactive ? key === selectedKey : undefined}
+                className={cn(
+                  gridTemplateColumns && "grid items-center",
+                  interactive && "cursor-pointer",
+                )}
+                data-row-key={key}
+                data-state={key === selectedKey ? "selected" : undefined}
+                onClick={
+                  interactive
+                    ? () => {
+                        navigation.activateIndex(index);
+                        containerRef.current?.focus({
+                          preventScroll: true,
+                        });
+                      }
+                    : undefined
+                }
+                onPointerEnter={
+                  interactive
+                    ? () => {
+                        navigation.trackIndex(index);
+                      }
+                    : undefined
+                }
+                style={
+                  gridTemplateColumns ? { gridTemplateColumns } : undefined
+                }
+              >
+                {renderRow(item, index)}
+              </TableRow>
+              {expanded && renderExpandedRow ? (
                 <TableRow
-                  aria-expanded={renderExpandedRow ? expanded : undefined}
-                  aria-selected={interactive ? key === selectedKey : undefined}
-                  className={cn(interactive && "cursor-pointer")}
-                  data-row-key={key}
-                  data-state={key === selectedKey ? "selected" : undefined}
-                  onClick={
-                    interactive
-                      ? () => {
-                          selectIndex(index);
-                          containerRef.current?.focus({
-                            preventScroll: true,
-                          });
-                        }
-                      : undefined
-                  }
-                  onPointerEnter={
-                    interactive
-                      ? () => {
-                          activeIndexRef.current = index;
-                        }
-                      : undefined
+                  className={cn(
+                    gridTemplateColumns && "grid",
+                    "hover:bg-transparent",
+                  )}
+                  style={
+                    gridTemplateColumns ? { gridTemplateColumns } : undefined
                   }
                 >
-                  {renderRow(item, index)}
+                  <TableCell
+                    className={expandedCellClassName}
+                    colSpan={columnCount}
+                    style={
+                      gridTemplateColumns ? { gridColumn: "1 / -1" } : undefined
+                    }
+                  >
+                    {renderExpandedRow(item, index)}
+                  </TableCell>
                 </TableRow>
-                {expanded && renderExpandedRow ? (
-                  <TableRow className="hover:bg-transparent">
-                    <TableCell
-                      className={expandedCellClassName}
-                      colSpan={columnCount}
-                    >
-                      {renderExpandedRow(item, index)}
-                    </TableCell>
-                  </TableRow>
-                ) : null}
-              </Fragment>
-            );
-          })}
-        </TableBody>
-      </Table>
-      {interactive ? (
-        <p className="sr-only">
-          Focus the table and use J, K, or the arrow keys to move between rows.
-        </p>
-      ) : null}
-    </div>
+              ) : null}
+            </Fragment>
+          );
+        })}
+      </TableBody>
+    </DashboardTableShell>
   );
 }
 
@@ -371,6 +385,10 @@ export function InfiniteDashboardTable<
   renderRow,
   estimateRowHeight = 36,
   skeleton,
+  onRowActivate,
+  isRowInteractive = EVERY_ROW_INTERACTIVE,
+  getRowAriaLabel,
+  stickyHeader = true,
   emptyState = "No results in this window.",
   errorState = "Unable to load results.",
   className,
@@ -389,6 +407,10 @@ export function InfiniteDashboardTable<
   renderRow: (item: TItem, index: number) => ReactNode;
   estimateRowHeight?: number;
   skeleton?: VirtualTableSkeletonOptions;
+  onRowActivate?: (item: TItem, index: number) => void;
+  isRowInteractive?: (item: TItem, index: number) => boolean;
+  getRowAriaLabel?: (item: TItem, index: number) => string;
+  stickyHeader?: boolean;
   emptyState?: ReactNode;
   errorState?: ReactNode;
   className?: string;
@@ -396,10 +418,11 @@ export function InfiniteDashboardTable<
   const query = useInfiniteQuery(queryOptions);
   const tableBodyRef = useRef<HTMLTableSectionElement>(null);
   const navigationContainerRef = useRef<HTMLDivElement>(null);
+  const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
   const [scrollMargin, setScrollMargin] = useState<number | null>(null);
   const navigationStateRef = useRef<{
     key: string;
-    state: NavigationState;
+    state: CollectionNavigationState;
   } | null>(null);
   if (
     navigationStateRef.current === null ||
@@ -407,7 +430,7 @@ export function InfiniteDashboardTable<
   ) {
     navigationStateRef.current = {
       key: navigationKey,
-      state: readNavigationState(navigationKey),
+      state: readCollectionNavigationState(navigationKey),
     };
   }
   const [activeIndex, setActiveIndex] = useState(
@@ -418,8 +441,9 @@ export function InfiniteDashboardTable<
     [query.data],
   );
   const rowCount = items.length + (query.hasNextPage ? 1 : 0);
-  const virtualizer = useWindowVirtualizer({
+  const virtualizer = useVirtualizer({
     count: rowCount,
+    getScrollElement: () => scrollElement,
     estimateSize: () => estimateRowHeight,
     overscan: 6,
     scrollMargin: scrollMargin ?? 0,
@@ -432,10 +456,17 @@ export function InfiniteDashboardTable<
   useEffect(() => {
     const tableBody = tableBodyRef.current;
     if (!tableBody) return;
+    const appScroller = tableBody.closest<HTMLElement>(
+      '[data-slot="app-scroll-container"]',
+    );
+    if (!appScroller) return;
+    setScrollElement(appScroller);
 
     const measureScrollMargin = () => {
       const nextScrollMargin =
-        tableBody.getBoundingClientRect().top + window.scrollY;
+        tableBody.getBoundingClientRect().top -
+        appScroller.getBoundingClientRect().top +
+        appScroller.scrollTop;
       setScrollMargin((current) =>
         current === nextScrollMargin ? current : nextScrollMargin,
       );
@@ -502,20 +533,20 @@ export function InfiniteDashboardTable<
 
   // Hover tracking stays in memory only; the sessionStorage write (JSON
   // serialization + synchronous I/O) is reserved for click/keyboard activation.
-  const trackIndex = (index: number): NavigationState | null => {
+  const trackIndex = (index: number): CollectionNavigationState | null => {
     const state = navigationStateAtIndex(items, index, getItemKey);
     if (!state) return null;
     setActiveIndex(index);
     if (navigationStateRef.current) {
       navigationStateRef.current.state = state;
     }
-    navigationMemory.set(navigationKey, state);
+    cacheCollectionNavigationState(navigationKey, state);
     return state;
   };
 
   const selectIndex = (index: number) => {
     const state = trackIndex(index);
-    if (state) rememberNavigationState(navigationKey, state);
+    if (state) rememberCollectionNavigationState(navigationKey, state);
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -525,6 +556,19 @@ export function InfiniteDashboardTable<
       event.ctrlKey ||
       event.altKey
     ) {
+      return;
+    }
+    if (isRowActivationKey(event.key)) {
+      const item = items[activeIndex];
+      if (
+        item !== undefined &&
+        onRowActivate &&
+        isRowInteractive(item, activeIndex)
+      ) {
+        event.preventDefault();
+        selectIndex(activeIndex);
+        onRowActivate(item, activeIndex);
+      }
       return;
     }
     const nextIndex = getNextActiveIndex(event.key, activeIndex, items.length);
@@ -548,102 +592,102 @@ export function InfiniteDashboardTable<
   }
   if (query.isError) {
     return (
-      <div className="py-8 text-center text-xs text-destructive">
+      <DashboardCollectionStatus tone="destructive">
         {errorState}
-      </div>
+      </DashboardCollectionStatus>
     );
   }
   if (items.length === 0) {
     return (
-      <div className="py-8 text-center text-xs text-muted-foreground">
-        {emptyState}
-      </div>
+      <DashboardCollectionStatus>{emptyState}</DashboardCollectionStatus>
     );
   }
 
   return (
-    <div
-      ref={navigationContainerRef}
-      aria-label="Keyboard navigable data table"
-      className={cn(
-        "rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
-        className,
-      )}
+    <DashboardTableShell
+      containerRef={navigationContainerRef}
+      renderHeader={renderHeader}
+      gridTemplateColumns={gridTemplateColumns}
+      stickyHeader={stickyHeader}
+      interactive
       onKeyDown={handleKeyDown}
-      tabIndex={0}
+      className={className}
     >
-      <Table className="grid">
-        <TableHeader className="grid">
-          <TableRow
-            className="grid [&_[data-slot=table-head]]:flex [&_[data-slot=table-head]]:items-center"
-            style={{ gridTemplateColumns }}
-          >
-            {renderHeader()}
-          </TableRow>
-        </TableHeader>
-        <TableBody
-          ref={tableBodyRef}
-          className="relative grid"
-          style={{ height: virtualizer.getTotalSize() }}
-        >
-          {virtualRows.map((virtualRow) => {
-            if (virtualRow.index >= items.length) {
-              return (
-                <TableRow
-                  aria-hidden
-                  className="absolute left-0 top-0 grid w-full items-center"
-                  key="loader"
-                  style={{
-                    gridTemplateColumns,
-                    height: virtualRow.size,
-                    transform: `translateY(${
-                      virtualRow.start - (scrollMargin ?? 0)
-                    }px)`,
-                  }}
-                >
-                  <SkeletonCells
-                    columnWidths={
-                      skeleton?.columnWidths ?? DEFAULT_SKELETON_WIDTHS
-                    }
-                  />
-                </TableRow>
-              );
-            }
-
-            const item = items[virtualRow.index] as TItem;
-            const selected = virtualRow.index === activeIndex;
+      <TableBody
+        ref={tableBodyRef}
+        className="relative grid"
+        style={{ height: virtualizer.getTotalSize() }}
+      >
+        {virtualRows.map((virtualRow) => {
+          if (virtualRow.index >= items.length) {
             return (
               <TableRow
-                aria-selected={selected}
-                className="absolute left-0 top-0 grid w-full cursor-default items-center data-[state=selected]:bg-muted/70"
-                data-index={virtualRow.index}
-                data-state={selected ? "selected" : undefined}
-                key={getItemKey(item)}
-                onClick={() => {
-                  selectIndex(virtualRow.index);
-                  navigationContainerRef.current?.focus({
-                    preventScroll: true,
-                  });
-                }}
-                onPointerEnter={() => trackIndex(virtualRow.index)}
-                ref={virtualizer.measureElement}
+                aria-hidden
+                className="absolute left-0 top-0 grid w-full items-center"
+                key="loader"
                 style={{
                   gridTemplateColumns,
-                  minHeight: estimateRowHeight,
+                  height: virtualRow.size,
                   transform: `translateY(${
                     virtualRow.start - (scrollMargin ?? 0)
                   }px)`,
                 }}
               >
-                {renderRow(item, virtualRow.index)}
+                <SkeletonCells
+                  columnWidths={
+                    skeleton?.columnWidths ?? DEFAULT_SKELETON_WIDTHS
+                  }
+                />
               </TableRow>
             );
-          })}
-        </TableBody>
-      </Table>
-      <p className="sr-only">
-        Focus the table and use J, K, or the arrow keys to move between rows.
-      </p>
-    </div>
+          }
+
+          const item = items[virtualRow.index] as TItem;
+          const selected = virtualRow.index === activeIndex;
+          const rowInteractive =
+            onRowActivate !== undefined &&
+            isRowInteractive(item, virtualRow.index);
+          return (
+            <TableRow
+              aria-label={
+                rowInteractive
+                  ? getRowAriaLabel?.(item, virtualRow.index)
+                  : undefined
+              }
+              aria-selected={selected}
+              className={cn(
+                "absolute left-0 top-0 grid w-full items-center data-[state=selected]:bg-muted/70",
+                rowInteractive
+                  ? "cursor-pointer hover:bg-muted/50"
+                  : "cursor-default",
+              )}
+              data-index={virtualRow.index}
+              data-state={selected ? "selected" : undefined}
+              key={getItemKey(item)}
+              onClick={() => {
+                selectIndex(virtualRow.index);
+                navigationContainerRef.current?.focus({
+                  preventScroll: true,
+                });
+                if (rowInteractive) {
+                  onRowActivate(item, virtualRow.index);
+                }
+              }}
+              onPointerEnter={() => trackIndex(virtualRow.index)}
+              ref={virtualizer.measureElement}
+              style={{
+                gridTemplateColumns,
+                minHeight: estimateRowHeight,
+                transform: `translateY(${
+                  virtualRow.start - (scrollMargin ?? 0)
+                }px)`,
+              }}
+            >
+              {renderRow(item, virtualRow.index)}
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </DashboardTableShell>
   );
 }

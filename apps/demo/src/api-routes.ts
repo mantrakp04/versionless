@@ -1,62 +1,49 @@
+/**
+ * The demo's route catalog. Each route declares only its method and path
+ * pattern; the core route key (`"GET /users/:id"`) and the TanStack Start
+ * adapter spelling (`"/users/$id"`) are derived, so the spellings of one route
+ * can never drift apart. Literal types are preserved end-to-end, which is what
+ * lets `v.change({ routes: [...] })` keep checking route keys against the
+ * registered surface.
+ */
+
+/** `/users/:id` -> `/users/$id`, at the type level. */
+type AdapterRoute<S extends string> = S extends `${infer Head}:${infer Tail}`
+  ? `${Head}$${AdapterRoute<Tail>}`
+  : S;
+
+interface DemoRoute<M extends string, P extends string> {
+  readonly method: M;
+  /** Route pattern, e.g. `/users/:id`. */
+  readonly path: P;
+  /** TanStack Start file-route spelling, e.g. `/users/$id`. */
+  readonly adapterRoute: AdapterRoute<P>;
+  /** Core route key, e.g. `GET /users/:id`. */
+  readonly key: `${M} ${P}`;
+}
+
+function route<const M extends string, const P extends string>(
+  method: M,
+  path: P,
+): DemoRoute<M, P> {
+  return {
+    method,
+    path,
+    adapterRoute: path.split(":").join("$") as AdapterRoute<P>,
+    key: `${method} ${path}`,
+  };
+}
+
 export const DEMO_HTTP_ROUTES = {
-  users: {
-    method: "GET",
-    path: "/users",
-    matchedRoute: "/users",
-    adapterRoute: "/users",
-    key: "GET /users",
-  },
-  userById: {
-    method: "GET",
-    path: "/users/u_1",
-    matchedRoute: "/users/:id",
-    adapterRoute: "/users/$id",
-    key: "GET /users/:id",
-  },
-  createUser: {
-    method: "POST",
-    path: "/users",
-    matchedRoute: "/users",
-    adapterRoute: "/users",
-    key: "POST /users",
-  },
-  teams: {
-    method: "GET",
-    path: "/teams",
-    matchedRoute: "/teams",
-    adapterRoute: "/teams",
-    key: "GET /teams",
-  },
-  teamById: {
-    method: "GET",
-    path: "/teams/t_1",
-    matchedRoute: "/teams/:id",
-    adapterRoute: "/teams/$id",
-    key: "GET /teams/:id",
-  },
-  legacyOrgById: {
-    method: "GET",
-    path: "/orgs/t_1",
-    matchedRoute: "/orgs/:id",
-    adapterRoute: "/orgs/$id",
-    key: "GET /orgs/:id",
-  },
+  users: route("GET", "/users"),
+  userById: route("GET", "/users/:id"),
+  createUser: route("POST", "/users"),
+  teams: route("GET", "/teams"),
+  teamById: route("GET", "/teams/:id"),
+  legacyOrgById: route("GET", "/orgs/:id"),
 } as const;
 
 export const DEMO_PROCEDURES = {
   userList: "demo.userList",
   userCreate: "demo.userCreate",
 } as const;
-
-export const DEMO_TELEMETRY_ROUTES = [
-  DEMO_HTTP_ROUTES.users,
-  DEMO_HTTP_ROUTES.userById,
-  DEMO_HTTP_ROUTES.createUser,
-  DEMO_HTTP_ROUTES.teams,
-  DEMO_HTTP_ROUTES.teamById,
-  ...Object.values(DEMO_PROCEDURES).map((procedure) => ({
-    method: "TRPC" as const,
-    procedure,
-    key: `trpc:${procedure}`,
-  })),
-] as const;

@@ -20,8 +20,11 @@ import {
   createOtlpAuthorizer,
   resolveTelemetryProject,
 } from "./ingest";
+import { chatApp } from "./chat";
 import { evlogPlugin } from "./logger";
+import { projectPgQueryApp } from "./pg-query";
 import { projectQueryApp } from "./query";
+import { createVersionUploadApp, saveProjectVersion } from "./versions";
 
 const ingestKeys = configuredIngestKeys(
   env.VERSIONLESS_INGEST_KEYS,
@@ -81,6 +84,17 @@ export const app = new Elysia()
   // HTTP or gRPC to the Collector. Mounted BEFORE the versionless plugin on
   // purpose: versioning the ingest path would loop telemetry into itself.
   .use(createOtlpAuthApp(otlpAuthorizer))
+  // Build artifact upload uses the same account/project authorization as
+  // telemetry ingest, but stores only the canonical generated surface.
+  .use(
+    createVersionUploadApp({
+      authorize: otlpAuthorizer,
+      save: saveProjectVersion,
+      reportError(error, projectName) {
+        console.error("[version-upload] failed", { projectName, error });
+      },
+    }),
+  )
   .use(versionless(v, { waitUntil }))
   // Root-app fallback for Elysia's mounted-plugin lifecycle scoping. The
   // adapter finalizer is idempotent, so direct routes still emit exactly once.
@@ -91,6 +105,13 @@ export const app = new Elysia()
   // (Elysia hooks only apply to routes registered after them) so it gets
   // version resolution and shows up in the server's own telemetry.
   .use(projectQueryApp)
+  // Release metadata (projects, contracts, sunsets) read under Postgres
+  // row-level security — the ClickHouse plane's sibling, same mount rules.
+  .use(projectPgQueryApp)
+  // The dashboard assistant streams over both query planes. Same mount rules;
+  // the adapter skips finalizing responses with no content-length, so a
+  // streamed body passes through versionless untouched.
+  .use(chatApp)
   .all(
     "/trpc/*",
     async (context) => {

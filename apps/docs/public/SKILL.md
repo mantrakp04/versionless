@@ -1,20 +1,36 @@
 ---
 name: versionless
 description: >-
-  Versionless is the API compatibility layer for evolving HTTP APIs without
-  breaking pinned clients — a change registry + versioned transform pipeline
-  that upgrades old-shaped requests to the current handler shape and
-  downgrades responses back, plus a CLI that proves in CI that every breaking
-  surface change has a covering transform. Use this skill whenever a task
-  touches API versioning, compatibility transforms, up/down changes,
-  x-api-version, versionless snapshot/check, adapter middleware, or setting up
-  versionless in a repo.
+  Versionless exists so APIs — and preferably the codebase — do not need
+  fallbacky or hacky compatibility behavior. One current handler/schema shape;
+  old clients stay pinned via registered up/down transforms at the edge, not
+  dual-field payloads, forever-optional migration fields, versioned route
+  forks, or if (oldShape) branches. It is the API compatibility layer for
+  evolving HTTP APIs without breaking pinned clients — a change registry +
+  versioned transform pipeline that upgrades old-shaped requests to the
+  current handler shape and downgrades responses back, plus a CLI that proves
+  in CI that every breaking surface change has a covering transform. Use this
+  skill whenever a task touches API versioning, compatibility transforms,
+  up/down changes, x-api-version, versionless snapshot/check, adapter
+  middleware, or setting up versionless in a repo.
 version: 1.0.0
 author: versionless
 tags: [versionless, api-versioning, compatibility, transforms, zod, ci, typescript]
 ---
 
 # Versionless
+
+## Purpose
+
+Versionless exists so APIs — and preferably the rest of the codebase — do
+**not** accumulate fallbacky or hacky compatibility behavior. Handlers,
+schemas, and domain code speak **one current shape**. Old clients stay
+compatible through registered `up`/`down` transforms at the edge, not through
+dual-field payloads, forever-optional migration fields, versioned route forks,
+`if (oldShape)` branches, or tolerant parsing that papers over breakages.
+When the wire surface changes, register a covering change and keep the
+current handler honest — do not "just make it work" by leaving both shapes in
+the API or the app.
 
 ## Overview
 

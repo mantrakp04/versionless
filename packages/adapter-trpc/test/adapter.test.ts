@@ -35,13 +35,13 @@ const v = makeInstance(() => new Date("2026-01-01T00:00:00Z"));
 v.change("2026-03-01", {
   describe: "user.create: name -> firstName/lastName",
   procedures: ["user.create"],
-  input: {
+  request: {
     up: ({ name, ...rest }: any) => {
       const [firstName, ...restName] = String(name).split(" ");
       return { ...rest, firstName, lastName: restName.join(" ") };
     },
   },
-  output: {
+  response: {
     down: ({ firstName, lastName, ...rest }: any) => ({
       ...rest,
       name: `${firstName} ${lastName}`,
@@ -52,8 +52,8 @@ v.change("2026-03-01", {
 v.change("2026-05-14", {
   describe: "split",
   procedures: ["user.get"],
-  input: { up: (b: any) => b },
-  output: {
+  request: { up: (b: any) => b },
+  response: {
     down: ({ firstName, lastName, ...rest }: any) => ({
       ...rest,
       name: `${firstName} ${lastName}`,
@@ -150,7 +150,7 @@ describe("@versionless/adapter-trpc", () => {
     expect(res.headers.get("sunset")).toBeNull();
   });
 
-  test("pinned old client gets the joined name (output.down ran)", async () => {
+  test("pinned old client gets the joined name (response.down ran)", async () => {
     const res = await handle(
       getReq("user.get", { id: "1" }, { "x-api-version": "2025-01-01" }),
     );
@@ -201,8 +201,8 @@ describe("@versionless/adapter-trpc", () => {
     );
     expect(res.status).toBe(200);
     const json: any = await res.json();
-    // input.up ran before zod validation ({name} -> {firstName,lastName}),
-    // and output.down ran after ({firstName,lastName} -> {name}).
+    // request.up ran before zod validation ({name} -> {firstName,lastName}),
+    // and response.down ran after ({firstName,lastName} -> {name}).
     expect(json.result.data).toEqual({ name: "Ada Lovelace" });
   });
 

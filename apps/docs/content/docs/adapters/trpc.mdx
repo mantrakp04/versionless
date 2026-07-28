@@ -5,7 +5,7 @@ description: Procedure-keyed changes with four touch points — context, middlew
 
 tRPC is procedure-keyed instead of route-keyed: changes target
 `procedures: ["demo.userList"]` and are indexed as `trpc:demo.userList`. The
-`input`/`output` aliases read naturally next to tRPC's own vocabulary:
+same `request`/`response` transforms cover both transports:
 
 ```ts
 v.change("2026-05-14", {
@@ -17,8 +17,7 @@ v.change("2026-05-14", {
 });
 ```
 
-`input: { up }` / `output: { down }` are exact aliases for
-`request.up` / `response.down` — use whichever reads better.
+`request.up` applies to the procedure input, `response.down` to its output.
 
 ## Full wiring
 

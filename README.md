@@ -37,7 +37,7 @@ loop against itself), `apps/web` (insights dashboard), `apps/docs` (fumadocs).
 
 ```bash
 bun install
-bun db:start        # postgres + clickhouse + OTel Collector/gateway
+bun start-deps      # postgres + clickhouse + OTel Collector/gateway
 bun run --cwd apps/server seed    # 30 days of synthetic telemetry
 bun dev             # server :3000, web :3001, docs :3002
 ```
@@ -66,7 +66,8 @@ Bun workspaces + Turborepo · Elysia + tRPC server · Vite/React 19/TanStack
 Router web · Drizzle + PostgreSQL · ClickHouse (telemetry) · fumadocs ·
 deployed via Vercel (`vercel.json`; see `bun run deploy:*`).
 
-Database scripts: `bun db:push` / `db:studio` / `db:start` / `db:stop`.
+Local stack: `bun start-deps` / `stop-deps` / `restart-deps`. Schema scripts:
+`bun db:push` / `db:studio` / `db:generate` / `db:migrate` / `db:check`.
 Schema changes ship as committed drizzle migrations: `bun db:generate` (SQL +
 journal), `bun run db:check` (expand/contract compat lint), `db:migrate`
 (idempotent). CI's `db-compat` job applies migrations twice against fresh

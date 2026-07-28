@@ -1,3 +1,4 @@
+import type { ChangeRegistry } from "./registry";
 import type { VersionScheme } from "./scheme";
 
 // ---------------------------------------------------------------------------
@@ -61,9 +62,6 @@ export interface ChangeSpec {
   response?: { down: TransformFn };
   /** Error-body variant of response.down. */
   error?: { down: TransformFn };
-  /** tRPC-flavored aliases; normalized onto request/response internally. */
-  input?: { up: TransformFn };
-  output?: { down: TransformFn };
   /** Route rewrite, e.g. { from: "GET /orgs/:id", to: "GET /teams/:id" }. */
   rewrite?: { from: string; to: string };
   /** The down-conversion loses data; `check` warns instead of failing. */
@@ -78,11 +76,6 @@ export interface ChangeSpec {
    * must preserve fields they don't know about (tolerant-reader probe).
    */
   examples?: readonly ChangeExample[];
-  /**
-   * Optional phantom wire types, preferred by the type layer over up/down
-   * inference. Assign with casts: `wire: {} as { request: { old: OldShape } }`.
-   */
-  wire?: { request?: { old?: unknown }; response?: { old?: unknown } };
 }
 
 export interface Change<
@@ -132,6 +125,32 @@ export interface Jump {
   readonly declarations: readonly ModelDeclaration[];
 }
 
+/**
+ * The transform-free metadata every registered `Change` and `Jump` carries —
+ * the shape coverage matching and changelog rendering read. Both `Change` and
+ * `Jump` are assignable to it (asserted in core's registry tests); it is the
+ * type to accept when a caller merges instance-registered steps with
+ * standalone step objects it could only validate structurally.
+ *
+ * Deliberately NOT extended by `Change`/`Jump`: those stay a discriminated
+ * union on `kind`, so `version` and `from`/`to` do not leak onto each other.
+ */
+export interface ChangeMeta {
+  readonly kind: "change" | "jump";
+  /** Present on changes. */
+  readonly version?: string;
+  /** Present on jumps. */
+  readonly from?: string;
+  /** Present on jumps. */
+  readonly to?: string;
+  readonly describe: string;
+  readonly routes: readonly string[];
+  readonly lossy: boolean;
+  readonly hasUp: boolean;
+  readonly hasDown: boolean;
+  readonly declarations: readonly ModelDeclaration[];
+}
+
 // ---------------------------------------------------------------------------
 // Resolution
 
@@ -157,7 +176,11 @@ export interface Resolved {
   source: "header" | "query" | "apiKey" | "default";
   /** Raw value the client sent, before normalization to a release version. */
   requestedVersion?: string;
-  /** The API consumer's key, surfaced for telemetry. */
+  /**
+   * The API consumer's key, surfaced for telemetry. Whatever a resolver puts
+   * here is fingerprinted by the exchange before it reaches an event, so a
+   * resolver may return the raw key it already had in hand.
+   */
   consumerKey?: string;
 }
 
@@ -205,6 +228,11 @@ export interface Tracing {
 // ---------------------------------------------------------------------------
 // Telemetry
 
+export interface TelemetryErrorBody {
+  code: string;
+  message: string;
+}
+
 export interface TelemetryEvent {
   ts: number;
   method: string;
@@ -214,11 +242,31 @@ export interface TelemetryEvent {
   version: string;
   /** Raw version the client requested, when it differed or was absent. */
   requestedVersion?: string;
-  /** The API consumer's key id (from x-api-key etc.) — never a secret. */
+  /**
+   * Where the version came from. `"default"` means the client sent no pin and
+   * silently moves the day `current` changes — the risk this field exists to
+   * measure. Recorded on the event, not only the span, because spans are
+   * head-sampled and a sampled denominator cannot produce a share.
+   */
+  versionSource?: Resolved["source"];
+  /**
+   * The client pinned a version newer than this server's `current` and was
+   * clamped back to it — an SDK/server rollback skew.
+   */
+  clamped?: boolean;
+  /**
+   * One-way fingerprint of the API consumer's key (`c_` + 12 hex), produced by
+   * `fingerprintConsumerKey`. Never the raw key — that value is a credential.
+   */
   consumerKey?: string;
   latencyMs: number;
   transformCount: number;
   status: number;
+  /**
+   * A deliberately client-safe error response summary. Never put raw
+   * exceptions, stacks, arbitrary response payloads, or secrets here.
+   */
+  errorBody?: TelemetryErrorBody;
 }
 
 export interface TelemetrySink {
@@ -247,6 +295,11 @@ export interface VersionlessConfig {
    * SDK makes zero network calls.
    */
   apiKey?: string;
+  /**
+   * Versionless control-plane API used by build snapshot uploads. This is
+   * independent of `otlpLogsUrl`, which is only for runtime telemetry.
+   */
+  apiUrl?: string;
   /** OTLP/HTTP JSON logs endpoint. Defaults to the hosted cloud `/v1/logs`. */
   otlpLogsUrl?: string;
   /**
@@ -268,13 +321,14 @@ export interface VersionlessConfig {
   tracing?: Tracing;
   /**
    * Cloud trace capture, separate from (and sampled independently of) event
-   * telemetry. When `apiKey` is set, a sampled subset of exchanges ship their
-   * versionless spans — only spans core creates; never user spans, headers,
-   * or bodies — to the platform's trace view. Head-sampled at the SDK:
-   * `sample` (default 0.1) keeps or drops whole exchanges. Set `traces:
-   * false` to turn capture off entirely; `url` overrides the traces ingest
-   * endpoint for self-hosting. `filter` runs before sampling on the exchange
-   * root's attributes (`versionless.method` / `versionless.path` /
+   * telemetry. When `apiKey` is set, every failed exchange and a sampled subset
+   * of successful exchanges ship their versionless spans — only spans core
+   * creates; never user spans, headers, or bodies — to the platform's trace
+   * view. `sample` (default 0.1) controls successful exchanges; failures are
+   * promoted after their final status is known. Set `traces: false` to turn
+   * capture off entirely; `url` overrides the traces ingest endpoint for
+   * self-hosting. `filter` runs before sampling on the exchange root's
+   * attributes (`versionless.method` / `versionless.path` /
    * `versionless.procedure` / `versionless.adapter`) — return false to never
    * capture that exchange (e.g. health checks, self-ingest routes).
    */
@@ -343,6 +397,7 @@ export interface ExchangeInput {
 export interface Exchange {
   version: string;
   requestedVersion?: string;
+  /** Fingerprinted consumer key — see `TelemetryEvent.consumerKey`. */
   consumerKey?: string;
   /** Canonical route key, or null when no changes touch this route (identity). */
   routeKey: string | null;
@@ -407,13 +462,44 @@ export interface Versionless<C extends VersionlessConfig = VersionlessConfig> {
    * for these so old-pinned clients keep resolving.
    */
   rewrites(): { method: string; path: string }[];
+  /**
+   * The known release versions — every registered change/jump endpoint plus
+   * `current` — ascending. Answers correctly before the first request seals
+   * the registry, so build tooling can read it straight after importing the
+   * entry module.
+   */
+  versions(): string[];
+  /** The registered sunsets, in registration order. */
+  sunsets(): readonly SunsetEntry[];
+  /**
+   * The registered change chain: changes (ascending) followed by jumps. The
+   * array is freshly built, so pushing to it does not reach the registry; the
+   * elements are the registered `Change`/`Jump` objects themselves, narrowed
+   * to the metadata contract that stays stable across core versions.
+   */
+  chain(): readonly ChangeMeta[];
   telemetry: {
     use(sink: TelemetrySink): void;
     emit(event: TelemetryEvent): void;
     flush(): Promise<void>;
   };
-  /** Internal — stable within the workspace, not public API. */
-  readonly _registry: unknown;
+  /**
+   * Internal build metadata consumed by the Versionless CLI when it imports
+   * the configured SDK instance.
+   */
+  readonly _cloud: {
+    project?: string;
+    apiKey?: string;
+    apiUrl?: string;
+  };
+  /**
+   * Internal — stable within the workspace, not public API. Reach for
+   * `versions()` / `sunsets()` / `chain()` instead; this stays typed only so
+   * in-workspace tooling that needs the resolver internals (`walkPath`,
+   * `compilePipeline`, `effectiveVersion`) does not have to cast through
+   * `unknown` to get them.
+   */
+  readonly _registry: ChangeRegistry;
 }
 
 export interface VersionedApi<

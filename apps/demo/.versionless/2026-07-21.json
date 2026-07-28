@@ -221,6 +221,13 @@
       "kind": "object"
     }
   },
+  "sunsets": [
+    {
+      "after": "2026-12-31",
+      "message": "API versions from 2025-01-01 and earlier sunset on 2026-12-31.",
+      "version": "2025-01-01"
+    }
+  ],
   "tool": "@versionless/cli@0.0.1",
   "version": "2026-07-21"
 }

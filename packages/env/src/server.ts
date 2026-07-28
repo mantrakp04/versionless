@@ -24,9 +24,23 @@ export const env = createEnv({
       .string()
       .min(16)
       .default("versionless-local-query-password"),
+    // Login for the RLS-constrained Postgres role the query plane connects as.
+    // Same posture as CLICKHOUSE_QUERY_PASSWORD: required in production, local
+    // default in development.
+    POSTGRES_QUERY_PASSWORD: z
+      .string()
+      .min(16)
+      .default("versionless-local-pg-query-password"),
+    // OpenAI-compatible endpoint backing the dashboard assistant: a local
+    // server in development, OpenRouter in production.
+    AI_BASE_URL: z.url().default("http://localhost:8317/v1"),
+    AI_API_KEY: z.string().optional(),
+    /** Model used when the client does not pick one from `/v1/chat/models`. */
+    AI_MODEL: z.string().optional(),
     TELEMETRY_SAMPLE_RATE: z.coerce.number().min(0).max(1).default(1),
     VERSIONLESS_INGEST_KEYS: z.string().optional(),
     VERSIONLESS_API_KEY: z.string().optional(),
+    VERSIONLESS_API_URL: z.url().optional(),
     VERSIONLESS_OTLP_LOGS_URL: z.url().optional(),
     RUN_MIGRATIONS: z.string().optional(),
     PORT: z.coerce.number().int().positive().default(3000),

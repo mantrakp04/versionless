@@ -1,3 +1,4 @@
+import { cn } from "@versionless/ui/lib/utils";
 import type { ReactNode } from "react";
 
 import { ProjectSwitcher } from "@/components/insights/project-switcher";
@@ -6,18 +7,18 @@ import { useInsightsContext } from "@/hooks/use-insights-context";
 
 interface InsightsPageProps {
   title: string;
-  description: ReactNode;
   children: ReactNode;
   controls?: ReactNode;
+  className?: string;
   maxWidth?: "5xl" | "6xl";
   showTimeRange?: boolean;
 }
 
 export function InsightsPage({
   title,
-  description,
   children,
   controls,
+  className,
   maxWidth = "5xl",
   showTimeRange = true,
 }: InsightsPageProps) {
@@ -26,20 +27,21 @@ export function InsightsPage({
 
   return (
     <div
-      className={`container mx-auto ${widthClass} space-y-6 overflow-y-auto px-4 py-6`}
+      className={cn(
+        "container mx-auto space-y-6 px-4 py-4",
+        widthClass,
+        className,
+      )}
     >
-      <div className="space-y-1">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="font-heading text-xl font-medium">{title}</h1>
-          <div className="flex flex-wrap items-center gap-3">
-            {showTimeRange ? (
-              <TimeRangeControl value={days} onValueChange={setDays} />
-            ) : null}
-            {controls}
-            <ProjectSwitcher />
-          </div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-heading text-xl font-medium">{title}</h1>
+        <div className="flex flex-wrap items-center gap-3">
+          {showTimeRange ? (
+            <TimeRangeControl value={days} onValueChange={setDays} />
+          ) : null}
+          {controls}
+          <ProjectSwitcher />
         </div>
-        <p className="text-sm text-muted-foreground">{description}</p>
       </div>
       {children}
     </div>

@@ -1,5 +1,6 @@
 import type { SunsetBlocker, SunsetBlockerSort } from "@/queries/insights";
 import { TableCell } from "@versionless/ui/components/table";
+import type { ReactNode } from "react";
 
 import { DashboardTable } from "@/components/dashboard-table";
 import { relativeTime } from "./format";
@@ -8,20 +9,34 @@ import {
   type TableSortDirection,
 } from "./sortable-table-head";
 
+const BLOCKERS_GRID_COLUMNS =
+  "minmax(9rem, 1fr) minmax(12rem, 1.5fr) minmax(7rem, .75fr) .65fr minmax(7rem, .8fr)";
+
 export function BlockersTable({
   blockers,
   sort,
   direction,
   onSort,
+  isLoading = false,
+  isError = false,
+  emptyState = "No blocking consumers in this window.",
 }: {
   blockers: SunsetBlocker[];
   sort: SunsetBlockerSort;
   direction: TableSortDirection;
   onSort: (sort: SunsetBlockerSort) => void;
+  isLoading?: boolean;
+  isError?: boolean;
+  emptyState?: ReactNode;
 }) {
   return (
     <DashboardTable
       items={blockers}
+      isLoading={isLoading}
+      isError={isError}
+      errorState="Sunset blockers are temporarily unavailable."
+      gridTemplateColumns={BLOCKERS_GRID_COLUMNS}
+      stickyHeader
       getItemKey={(blocker) =>
         `${blocker.consumerKey}-${blocker.route}-${blocker.version}`
       }
@@ -78,7 +93,7 @@ export function BlockersTable({
           </TableCell>
         </>
       )}
-      emptyState="No blocking consumers in this window."
+      emptyState={emptyState}
     />
   );
 }

@@ -70,13 +70,11 @@ exactly these annotations.
 | `request.up` | Old wire shape → current shape, applied to request bodies (and tRPC inputs). |
 | `response.down` | Current shape → old wire shape, applied to success responses (and tRPC outputs). |
 | `error.down` | Error bodies change shape too — same pipeline, applied to responses with status ≥ 400. |
-| `input.up` / `output.down` | tRPC-flavored aliases for `request.up` / `response.down`; normalized internally, use whichever reads better. |
 | `rewrite` | Route move: `{ from: "GET /orgs/:id", to: "GET /teams/:id" }` — see [Rewrites & sunsets](/docs/concepts/rewrites-and-sunsets). |
 | `lossy` | The down-conversion loses data; `check` warns instead of failing. |
 | `stream: "passthrough"` | Streaming/SSE routes skip body transforms entirely. |
 | `schema` | Coverage declaration for the [CI checker](/docs/cli). |
 | `examples` | Wire-shape fixtures for [`versionless verify`](/docs/cli#verifying-transforms-with-fixtures): `up(old)` must equal `current`, `down(current)` must equal `old`, and (unless `lossy`) transforms must preserve unknown fields. |
-| `wire` | Phantom wire types the type layer prefers over inference — an [escape hatch](/docs/client/client-types#the-escape-hatch-wire) when annotations are impractical. |
 
 Either transform side is optional — a response-only change declares just
 `response.down`; a declaration-only change (like a pure rewrite) declares

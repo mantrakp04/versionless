@@ -24,7 +24,6 @@ import {
   isTelemetryOffline,
   OfflineCard,
 } from "@/components/insights/offline-card";
-import Loader from "@/components/loader";
 import { useInsightsContext } from "@/hooks/use-insights-context";
 import {
   telemetryQueryOptions,
@@ -35,6 +34,9 @@ import {
 export const Route = createFileRoute("/insights/$projectId/telemetry")({
   component: TelemetryPage,
 });
+
+const TELEMETRY_GRID_COLUMNS =
+  "minmax(6.5rem, .8fr) .45fr minmax(8rem, 1fr) minmax(11rem, 1.5fr) minmax(9rem, 1.2fr) minmax(7rem, .8fr) .55fr";
 
 export function displayOtlpBody(body: string): string {
   if (body === "") return "";
@@ -58,10 +60,7 @@ function shortId(value: string): string {
   return value === "" ? "—" : value.slice(0, 8);
 }
 
-function telemetryRecordKey(
-  record: TelemetryRecord,
-  index: number,
-): string {
+function telemetryRecordKey(record: TelemetryRecord, index: number): string {
   const logicalKey = [
     record.signal,
     record.ts,
@@ -118,7 +117,6 @@ function TelemetryPage() {
   return (
     <InsightsPage
       title="Telemetry"
-      description="Every OTLP log and span received for this project, including records that are not emitted by Versionless."
       maxWidth="6xl"
       controls={
         <NativeSelect
@@ -137,86 +135,88 @@ function TelemetryPage() {
     >
       {isTelemetryOffline(records.error) ? (
         <OfflineCard error={records.error} />
-      ) : records.isLoading ? (
-        <Loader />
       ) : (
         <Card>
           <CardContent>
-            {rows.length === 0 ? (
-              <Empty className="border border-dashed">
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <RadioTower />
-                  </EmptyMedia>
-                  <EmptyTitle>No telemetry yet</EmptyTitle>
-                  <EmptyDescription>
-                    Export OTLP logs or traces to this project and they will
-                    appear here.
-                  </EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-            ) : (
-              <DashboardTable
-                items={rows}
-                getItemKey={telemetryRecordKey}
-                selectedKey={selectedRecord}
-                onRowActivate={(record, index) => {
-                  const key = telemetryRecordKey(record, index);
-                  setSelectedRecord((current) =>
-                    current === key ? null : key,
-                  );
-                }}
-                isRowExpanded={(record, index) =>
-                  selectedRecord === telemetryRecordKey(record, index)
-                }
-                columnCount={7}
-                renderHeader={() => (
-                  <>
-                    <TableHead>Time</TableHead>
-                    <TableHead>Signal</TableHead>
-                    <TableHead>Service</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Scope</TableHead>
-                    <TableHead>Level / duration</TableHead>
-                    <TableHead>Trace</TableHead>
-                  </>
-                )}
-                renderRow={(record) => (
-                  <>
-                    <TableCell className="whitespace-nowrap">
-                      {relativeTime(record.ts)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          record.signal === "span" ? "default" : "secondary"
-                        }
-                      >
-                        {record.signal}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{record.serviceName || "—"}</TableCell>
-                    <TableCell className="max-w-64 truncate font-mono text-xs">
-                      {record.name}
-                    </TableCell>
-                    <TableCell>{record.scopeName || "—"}</TableCell>
-                    <TableCell>
-                      {record.signal === "span"
-                        ? formatDuration(record.durationMs)
-                        : record.levelText || record.levelNumber || "—"}
-                    </TableCell>
-                    <TableCell className="font-mono text-xs">
-                      {shortId(record.traceId)}
-                    </TableCell>
-                  </>
-                )}
-                renderExpandedRow={(record) => (
-                  <pre className="max-h-96 overflow-auto whitespace-pre-wrap rounded-md bg-muted p-4 font-mono text-xs">
-                    {recordDetail(record) || "No record details"}
-                  </pre>
-                )}
-              />
-            )}
+            <DashboardTable
+              items={rows}
+              isLoading={records.isLoading}
+              isError={records.isError}
+              errorState="Telemetry is temporarily unavailable."
+              emptyState={
+                <Empty className="border border-dashed">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <RadioTower />
+                    </EmptyMedia>
+                    <EmptyTitle>No telemetry yet</EmptyTitle>
+                    <EmptyDescription>
+                      Export OTLP logs or traces to this project and they will
+                      appear here.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
+              }
+              getItemKey={telemetryRecordKey}
+              gridTemplateColumns={TELEMETRY_GRID_COLUMNS}
+              navigationKey={`telemetry:${project.id}:${hours}:${signal}`}
+              selectedKey={selectedRecord}
+              onRowActivate={(record, index) => {
+                const key = telemetryRecordKey(record, index);
+                setSelectedRecord((current) =>
+                  current === key ? null : key,
+                );
+              }}
+              isRowExpanded={(record, index) =>
+                selectedRecord === telemetryRecordKey(record, index)
+              }
+              columnCount={7}
+              renderHeader={() => (
+                <>
+                  <TableHead>Time</TableHead>
+                  <TableHead>Signal</TableHead>
+                  <TableHead>Service</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Scope</TableHead>
+                  <TableHead>Level / duration</TableHead>
+                  <TableHead>Trace</TableHead>
+                </>
+              )}
+              renderRow={(record) => (
+                <>
+                  <TableCell className="whitespace-nowrap">
+                    {relativeTime(record.ts)}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        record.signal === "span" ? "default" : "secondary"
+                      }
+                    >
+                      {record.signal}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{record.serviceName || "—"}</TableCell>
+                  <TableCell className="max-w-64 truncate font-mono text-xs">
+                    {record.name}
+                  </TableCell>
+                  <TableCell>{record.scopeName || "—"}</TableCell>
+                  <TableCell>
+                    {record.signal === "span"
+                      ? formatDuration(record.durationMs)
+                      : record.levelText || record.levelNumber || "—"}
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {shortId(record.traceId)}
+                  </TableCell>
+                </>
+              )}
+              renderExpandedRow={(record) => (
+                <pre className="max-h-96 overflow-auto whitespace-pre-wrap rounded-md bg-muted p-4 font-mono text-xs">
+                  {recordDetail(record) || "No record details"}
+                </pre>
+              )}
+            />
           </CardContent>
         </Card>
       )}

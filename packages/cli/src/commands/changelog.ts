@@ -1,6 +1,8 @@
 import { writeFileSync } from "node:fs";
 
-import { loadChangeChain, changeVersion, type ChangeLike } from "../chain";
+import type { ChangeMeta } from "@versionless/core";
+
+import { loadChangeChain, changeVersion } from "../chain";
 import { green, bold } from "../colors";
 import { renderField } from "../diff/render";
 import {
@@ -89,7 +91,7 @@ function typeOf(surface: Surface | null, model: string, path: string): string | 
 }
 
 export function renderChangelog(
-  chain: ChangeLike[],
+  chain: ChangeMeta[],
   snapshotDir: string,
 ): string {
   const versions = [...new Set(chain.map(changeVersion))].sort().reverse();

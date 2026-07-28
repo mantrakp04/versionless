@@ -11,12 +11,14 @@ export function snapshotPath(dir: string, version: string): string {
 }
 
 /**
- * Content hash of a surface, excluding `integrity` (self-reference) and
+ * Content hash of a surface, excluding `integrity` (self-reference),
  * `provenance` (metadata — a CI re-snapshot and a local one of the same
- * surface must hash identically).
+ * surface must hash identically) and `sunsets` (a retirement date is edited
+ * long after a version ships; moving it must not make the published contract
+ * look rewritten, nor trip `snapshot`'s overwrite guard).
  */
 export function surfaceHash(surface: Surface): string {
-  const { integrity: _i, provenance: _p, ...content } = surface;
+  const { integrity: _i, provenance: _p, sunsets: _s, ...content } = surface;
   return fnv1a(stableStringify(content));
 }
 

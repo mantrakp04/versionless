@@ -5,6 +5,7 @@ import {
   DashboardTable,
   DashboardTableSkeleton,
   getNextActiveIndex,
+  isRowActivationKey,
   navigationStateAtIndex,
   resolveRestoredIndex,
   virtualTableStorageKey,
@@ -16,7 +17,15 @@ describe("infinite virtual table keyboard navigation", () => {
     expect(getNextActiveIndex("ArrowDown", 3, 4)).toBe(3);
     expect(getNextActiveIndex("k", 1, 4)).toBe(0);
     expect(getNextActiveIndex("ArrowUp", 0, 4)).toBe(0);
+    expect(getNextActiveIndex("Home", 3, 4)).toBe(0);
+    expect(getNextActiveIndex("End", 0, 4)).toBe(3);
     expect(getNextActiveIndex("Enter", 1, 4)).toBeNull();
+  });
+
+  test("recognizes keyboard row activation without treating navigation as activation", () => {
+    expect(isRowActivationKey("Enter")).toBeTrue();
+    expect(isRowActivationKey(" ")).toBeTrue();
+    expect(isRowActivationKey("ArrowDown")).toBeFalse();
   });
 
   test("scopes persisted indexes to each component instance", () => {
@@ -91,6 +100,7 @@ test("renders finite rows, expansion, and shared empty state through one API", (
     <DashboardTable
       items={[{ id: "trace-1", route: "/users" }]}
       getItemKey={(row) => row.id}
+      gridTemplateColumns="2fr 1fr"
       renderHeader={() => <th>Route</th>}
       renderRow={(row) => <td>{row.route}</td>}
       selectedKey="trace-1"
@@ -111,7 +121,11 @@ test("renders finite rows, expansion, and shared empty state through one API", (
   );
 
   expect(table).toContain("Keyboard navigable data table");
+  expect(table).toContain('data-dashboard-sticky-table=""');
   expect(table).toContain('aria-selected="true"');
+  expect(table).toContain("grid-template-columns:2fr 1fr");
+  expect(table).toContain("sticky top-0");
+  expect(table).toContain("grid-column:1 / -1");
   expect(table).toContain("Span detail");
   expect(empty).toContain("No traces yet.");
   expect(empty).not.toContain("<table");

@@ -1,56 +1,7 @@
 import type { Field, TypeNode } from "./types";
+import { fnv1a, stableStringify } from "@versionless/core";
 
-/**
- * JSON stringify with all object keys sorted recursively, 2-space indent,
- * trailing newline. Deterministic byte output for logically-equal values.
- */
-export function stableStringify(value: unknown): string {
-  return `${stringify(value, "")}\n`;
-}
-
-function stringify(value: unknown, indent: string): string {
-  if (value === null) return "null";
-  switch (typeof value) {
-    case "string":
-    case "number":
-    case "boolean":
-      return JSON.stringify(value);
-    case "object":
-      break;
-    default:
-      // undefined / function / symbol at the top level — mirror JSON.stringify
-      // by serializing as null (inside objects they are skipped below).
-      return "null";
-  }
-  const childIndent = `${indent}  `;
-  if (Array.isArray(value)) {
-    if (value.length === 0) return "[]";
-    const items = value.map(
-      (item) => `${childIndent}${stringify(item, childIndent)}`,
-    );
-    return `[\n${items.join(",\n")}\n${indent}]`;
-  }
-  const obj = value as Record<string, unknown>;
-  const keys = Object.keys(obj)
-    .filter((key) => obj[key] !== undefined)
-    .sort();
-  if (keys.length === 0) return "{}";
-  const entries = keys.map(
-    (key) =>
-      `${childIndent}${JSON.stringify(key)}: ${stringify(obj[key], childIndent)}`,
-  );
-  return `{\n${entries.join(",\n")}\n${indent}}`;
-}
-
-/** FNV-1a 32-bit hash, hex-encoded. No dependencies. */
-export function fnv1a(input: string): string {
-  let hash = 0x811c9dc5;
-  for (let i = 0; i < input.length; i++) {
-    hash ^= input.charCodeAt(i);
-    hash = Math.imul(hash, 0x01000193);
-  }
-  return (hash >>> 0).toString(16).padStart(8, "0");
-}
+export { fnv1a, stableStringify };
 
 /** Hash of a node that is already in canonical form. */
 function hashCanonical(node: TypeNode): string {

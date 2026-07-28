@@ -36,6 +36,15 @@
       "responses": {},
       "transport": "http"
     },
+    "GET /v1/chat/models": {
+      "body": null,
+      "method": "GET",
+      "params": null,
+      "path": "/v1/chat/models",
+      "query": null,
+      "responses": {},
+      "transport": "http"
+    },
     "OPTIONS /": {
       "body": null,
       "method": "OPTIONS",
@@ -50,6 +59,157 @@
       "method": "OPTIONS",
       "params": null,
       "path": "/*",
+      "query": null,
+      "responses": {},
+      "transport": "http"
+    },
+    "POST /v1/chat": {
+      "body": {
+        "fields": {
+          "messages": {
+            "constraints": {
+              "maxItems": 40,
+              "minItems": 1
+            },
+            "type": {
+              "items": {
+                "fields": {
+                  "id": {
+                    "constraints": {
+                      "maxLength": 128
+                    },
+                    "optional": true,
+                    "type": {
+                      "kind": "string"
+                    }
+                  },
+                  "parts": {
+                    "constraints": {
+                      "maxItems": 64,
+                      "minItems": 1
+                    },
+                    "type": {
+                      "items": {
+                        "fields": {
+                          "type": {
+                            "type": {
+                              "kind": "string"
+                            }
+                          }
+                        },
+                        "kind": "object"
+                      },
+                      "kind": "array"
+                    }
+                  },
+                  "role": {
+                    "type": {
+                      "enum": [
+                        "assistant",
+                        "system",
+                        "user"
+                      ],
+                      "kind": "string"
+                    }
+                  }
+                },
+                "kind": "object",
+                "open": true
+              },
+              "kind": "array"
+            }
+          },
+          "model": {
+            "constraints": {
+              "maxLength": 200,
+              "minLength": 1
+            },
+            "optional": true,
+            "type": {
+              "kind": "string"
+            }
+          },
+          "projectId": {
+            "constraints": {
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "type": {
+              "format": "uuid",
+              "kind": "string"
+            }
+          }
+        },
+        "kind": "object",
+        "open": true
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/v1/chat",
+      "query": null,
+      "responses": {},
+      "transport": "http"
+    },
+    "POST /v1/pg-query": {
+      "body": {
+        "fields": {
+          "params": {
+            "constraints": {
+              "maxItems": 64
+            },
+            "optional": true,
+            "type": {
+              "items": {
+                "kind": "union",
+                "options": [
+                  {
+                    "kind": "string"
+                  },
+                  {
+                    "kind": "number"
+                  },
+                  {
+                    "kind": "boolean"
+                  }
+                ]
+              },
+              "kind": "array"
+            }
+          },
+          "projectId": {
+            "constraints": {
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "type": {
+              "format": "uuid",
+              "kind": "string"
+            }
+          },
+          "query": {
+            "constraints": {
+              "maxLength": 100000,
+              "minLength": 1
+            },
+            "type": {
+              "kind": "string"
+            }
+          },
+          "timeoutMs": {
+            "constraints": {
+              "maximum": 60000,
+              "minimum": 1000
+            },
+            "optional": true,
+            "type": {
+              "kind": "integer"
+            }
+          }
+        },
+        "kind": "object",
+        "open": true
+      },
+      "method": "POST",
+      "params": null,
+      "path": "/v1/pg-query",
       "query": null,
       "responses": {},
       "transport": "http"
@@ -116,11 +276,41 @@
       "responses": {},
       "transport": "http"
     },
+    "POST /v1/versions": {
+      "body": null,
+      "method": "POST",
+      "params": null,
+      "path": "/v1/versions",
+      "query": null,
+      "responses": {},
+      "transport": "http"
+    },
     "trpc:healthCheck": {
       "input": null,
       "mount": "/trpc",
       "output": null,
       "procedure": "healthCheck",
+      "procedureType": "query",
+      "transport": "trpc"
+    },
+    "trpc:projects.byId": {
+      "input": {
+        "fields": {
+          "projectId": {
+            "constraints": {
+              "minLength": 1
+            },
+            "type": {
+              "kind": "string"
+            }
+          }
+        },
+        "kind": "object",
+        "open": true
+      },
+      "mount": "/trpc",
+      "output": null,
+      "procedure": "projects.byId",
       "procedureType": "query",
       "transport": "trpc"
     },
@@ -144,14 +334,57 @@
       "procedure": "projects.list",
       "procedureType": "query",
       "transport": "trpc"
+    },
+    "trpc:projects.releases": {
+      "input": {
+        "fields": {
+          "projectId": {
+            "constraints": {
+              "minLength": 1
+            },
+            "type": {
+              "kind": "string"
+            }
+          }
+        },
+        "kind": "object",
+        "open": true
+      },
+      "mount": "/trpc",
+      "output": null,
+      "procedure": "projects.releases",
+      "procedureType": "query",
+      "transport": "trpc"
+    },
+    "trpc:projects.versions": {
+      "input": {
+        "fields": {
+          "projectId": {
+            "constraints": {
+              "minLength": 1
+            },
+            "type": {
+              "kind": "string"
+            }
+          }
+        },
+        "kind": "object",
+        "open": true
+      },
+      "mount": "/trpc",
+      "output": null,
+      "procedure": "projects.versions",
+      "procedureType": "query",
+      "transport": "trpc"
     }
   },
   "formatVersion": 1,
   "integrity": {
     "algo": "fnv1a-32",
-    "hash": "4c032ee7"
+    "hash": "1fef2605"
   },
   "models": {},
+  "sunsets": [],
   "tool": "@versionless/cli@0.0.1",
   "version": "2026-07-24"
 }

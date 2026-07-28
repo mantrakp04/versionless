@@ -72,6 +72,21 @@ export interface SurfaceProvenance {
   sha?: string;
 }
 
+/**
+ * A registered `v.sunset(...)` entry, carried up from the instance's registry.
+ * Applies to every version <= `version`.
+ *
+ * Deliberately excluded from the integrity hash (see `surfaceHash`): a
+ * retirement date is edited after a version ships, and moving it must not make
+ * the published contract look rewritten.
+ */
+export interface SurfaceSunset {
+  version: string;
+  /** Last day the cohort is served, `YYYY-MM-DD` UTC. */
+  after: string;
+  message?: string;
+}
+
 export interface Surface {
   formatVersion: 1;
   version: string;
@@ -81,4 +96,6 @@ export interface Surface {
   /** Optional (absent in pre-integrity snapshots — those still load). */
   integrity?: SurfaceIntegrity;
   provenance?: SurfaceProvenance;
+  /** Absent when the entry exports no instance, or declares no sunsets. */
+  sunsets?: SurfaceSunset[];
 }

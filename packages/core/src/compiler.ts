@@ -88,15 +88,11 @@ export function walkPath(
 }
 
 function upOf(step: Change | Jump): TransformFn | undefined {
-  return step.kind === "change"
-    ? (step.spec.request ?? step.spec.input)?.up
-    : step.spec.request?.up;
+  return step.spec.request?.up;
 }
 
 function downOf(step: Change | Jump): TransformFn | undefined {
-  return step.kind === "change"
-    ? (step.spec.response ?? step.spec.output)?.down
-    : step.spec.response?.down;
+  return step.spec.response?.down;
 }
 
 export function compilePipeline(

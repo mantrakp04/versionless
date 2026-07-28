@@ -1,5 +1,6 @@
 import { applyChain, type CompiledPipeline, type PipelineCache } from "./compiler";
 import { FutureVersionError } from "./errors";
+import { fingerprintConsumerKey } from "./fingerprint";
 import { HEADERS } from "./http";
 import { expandPath, normalizeRouteKey } from "./matcher";
 import type { ChangeRegistry } from "./registry";
@@ -123,8 +124,11 @@ function buildExchange(
       : {}),
     ...sunset.headers,
   };
-  const consumerKey =
-    resolved.consumerKey ?? input.getHeader(HEADERS.apiKey) ?? undefined;
+  // The raw key is a secret and must not reach telemetry storage — only its
+  // one-way fingerprint does. See fingerprint.ts.
+  const consumerKey = fingerprintConsumerKey(
+    resolved.consumerKey ?? input.getHeader(HEADERS.apiKey),
+  );
 
   // Rewrites apply before route matching: a client calling the old path gets
   // re-dispatched to the new one by the adapter, and the re-dispatched
@@ -223,6 +227,8 @@ function buildExchange(
         ...(resolved.requestedVersion && resolved.requestedVersion !== effective
           ? { requestedVersion: resolved.requestedVersion }
           : {}),
+        versionSource: resolved.source,
+        ...(ahead ? { clamped: true } : {}),
         ...(consumerKey ? { consumerKey } : {}),
         latencyMs: latencyMs ?? Math.round(performance.now() - startedAt),
         transformCount: pipeline.transformCount,

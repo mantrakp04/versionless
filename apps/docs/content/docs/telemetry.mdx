@@ -205,9 +205,10 @@ attributes.
 ### Projects, sign-in, and API keys
 
 Every insights view requires signing in; signed-out visitors are redirected to
-the hosted sign-in page. Telemetry is scoped to a named **project** under a
-team/account you're a member of. The project switcher groups projects by
-account, and each query verifies account membership before reading traffic.
+the dashboard's SDK-rendered sign-in handler. Telemetry is scoped to a named
+**project** under a team/account you're a member of. The project switcher groups
+projects by account, and each query verifies account membership before reading
+traffic.
 
 The **API keys** page mints account keys (the description/expiry are yours to
 choose; the full key is shown exactly once, on creation). Pass one as `apiKey`

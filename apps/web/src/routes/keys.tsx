@@ -46,6 +46,9 @@ const EXPIRY_OPTIONS = [
   { value: "365", label: "1 year", days: 365 },
 ] as const;
 
+const KEY_GRID_COLUMNS =
+  "minmax(10rem, 1.2fr) minmax(6rem, .7fr) minmax(7rem, .75fr) minmax(7rem, .75fr) .6fr minmax(4rem, .5fr)";
+
 function copy(text: string, what: string) {
   void navigator.clipboard.writeText(text).then(
     () => toast.success(`${what} copied`),
@@ -57,7 +60,7 @@ function KeysPage() {
   const { user, selectedTeam } = useSelectedTeam();
 
   return (
-    <div className="container mx-auto max-w-5xl space-y-6 overflow-y-auto px-4 py-6">
+    <div className="container mx-auto max-w-5xl space-y-6 px-4 py-4">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1">
           <h1 className="font-heading text-xl font-medium">API keys</h1>
@@ -194,6 +197,7 @@ function TeamKeys({
           <DashboardTable
             items={keys}
             getItemKey={(key) => key.id}
+            gridTemplateColumns={canManage ? KEY_GRID_COLUMNS : undefined}
             emptyState="No keys yet."
             renderHeader={() => (
               <>

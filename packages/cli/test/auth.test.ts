@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -21,19 +21,15 @@ import { runWhoami } from "../src/commands/whoami";
 import { CliError } from "../src/errors";
 
 /**
- * Live tests talk to the real Hexclave API using the same project the seed
- * script uses, resolved from the environment or apps/server/.env. Without a
- * project id (e.g. a bare CI checkout) they skip. Only the unauthenticated
- * half of the flow is exercised — completing a login needs a browser.
+ * Live tests talk to the real Hexclave API. They are explicit opt-in: they run
+ * only when `HEXCLAVE_PROJECT_ID` is exported in the environment, and skip
+ * otherwise. Nothing is read from dotenv files — whether a local `.env` happens
+ * to be populated must never change what the unit suite does. Only the
+ * unauthenticated half of the flow is exercised — a login needs a browser.
  */
 function realProjectId(): string | undefined {
   const fromEnv = process.env.HEXCLAVE_PROJECT_ID;
-  if (fromEnv !== undefined && fromEnv.length > 0) return fromEnv;
-  const envPath = join(import.meta.dir, "../../../apps/server/.env");
-  if (!existsSync(envPath)) return undefined;
-  const match = readFileSync(envPath, "utf8").match(/^HEXCLAVE_PROJECT_ID=(.+)$/m);
-  const value = match?.[1]?.trim();
-  return value !== undefined && value.length > 0 ? value : undefined;
+  return fromEnv !== undefined && fromEnv.length > 0 ? fromEnv : undefined;
 }
 const PROJECT_ID = realProjectId();
 

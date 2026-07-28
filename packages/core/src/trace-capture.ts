@@ -5,9 +5,10 @@ import type { SpanAttributes, Tracing, TracingSpan } from "./types";
 // ---------------------------------------------------------------------------
 // Cloud trace capture. A `Tracing` backend that records ONLY the spans core
 // itself creates (exchange, resolve, transforms) — never user spans, headers,
-// or bodies — head-samples whole exchanges at the SDK, and ships completed
-// traces to the platform. Independent of both the user's `tracing` backend
-// (composed via fanoutTracing) and the telemetry `sample` hook.
+// or bodies. Successful exchanges are head-sampled; failed exchanges are
+// always promoted after their final status is known. Independent of both the
+// user's `tracing` backend (composed via fanoutTracing) and the telemetry
+// `sample` hook.
 
 export interface CapturedSpan {
   spanId: string;
@@ -17,8 +18,8 @@ export interface CapturedSpan {
   /** Unix millis at span start. */
   startMs: number;
   durationMs: number;
-  /** Message of a recorded exception, when the step failed. */
-  error?: string;
+  /** Whether this span completed with an error status. */
+  failed?: boolean;
 }
 
 export interface CapturedTrace {
@@ -48,6 +49,8 @@ interface TraceState {
   traceId: string;
   spans: CapturedSpan[];
   nextSpanId: bigint;
+  sampled: boolean;
+  hasError: boolean;
   done: boolean;
 }
 
@@ -82,9 +85,13 @@ class CaptureSpan implements TracingSpan {
     if (this.record) Object.assign(this.record.attrs, attrs);
   }
 
-  recordException(err: unknown): void {
+  recordException(_err: unknown): void {
     if (this.record) {
-      this.record.error = err instanceof Error ? err.message : String(err);
+      // Exception messages may contain payload, database, service, or secret
+      // details. Capture only the safe status flag; diagnostics stay in the
+      // application's own tracing/logging backend.
+      this.record.failed = true;
+      this.state.hasError = true;
     }
   }
 
@@ -94,12 +101,16 @@ class CaptureSpan implements TracingSpan {
     }
     if (this.isRoot && !this.state.done) {
       this.state.done = true;
-      this.sink.record({ traceId: this.state.traceId, spans: this.state.spans });
+      const status = Number(this.record?.attrs["versionless.status"]);
+      if (this.record && status >= 400) this.record.failed = true;
+      if (this.state.sampled || this.state.hasError || status >= 400) {
+        this.sink.record({ traceId: this.state.traceId, spans: this.state.spans });
+      }
     }
   }
 }
 
-/** Inert handle for unsampled exchanges: satisfies the interface, records nothing. */
+/** Inert handle for filtered exchanges: satisfies the interface, records nothing. */
 const INERT_SPAN: TracingSpan = {
   setAttributes() {},
   recordException() {},
@@ -107,7 +118,7 @@ const INERT_SPAN: TracingSpan = {
 };
 
 export interface CaptureTracingOptions {
-  /** Head-sampling rate in [0, 1]; the whole exchange is kept or dropped. */
+  /** Successful-exchange sampling rate in [0, 1]. Failures are always kept. */
   sample: number;
   sink: TraceSink;
   /** Pre-sampling veto on the exchange root's attributes. */
@@ -121,15 +132,17 @@ export function createCaptureTracing(options: CaptureTracingOptions): Tracing {
 
   return {
     startSpan(name, attrs) {
-      // Head sampling happens once, at the exchange root; every child span
-      // follows the root's decision so traces are always complete.
+      // Buffer every eligible exchange so a failed response can be promoted
+      // after its final status is known. Successful exchanges still obey the
+      // root head-sampling decision, and every kept trace remains complete.
       if (name !== ROOT_SPAN) return INERT_SPAN;
       if (filter && !filter(attrs ?? {})) return INERT_SPAN;
-      if (rand() >= sample) return INERT_SPAN;
       const state: TraceState = {
         traceId: randomTraceId(),
         spans: [],
         nextSpanId: 1n,
+        sampled: rand() < sample,
+        hasError: false,
         done: false,
       };
       return new CaptureSpan(state, sink, now, true, name, attrs);

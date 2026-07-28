@@ -5,6 +5,10 @@ import {
   ProjectQueryUnavailableError,
 } from "./lib/clickhouse-query";
 import { isDevelopment as isDevelopmentEnv } from "./lib/env-mode";
+import {
+  ProjectPgQueryError,
+  ProjectPgQueryUnavailableError,
+} from "./lib/postgres-query";
 
 const PUBLIC_ERROR_MESSAGES: Partial<
   Record<TRPCDefaultErrorShape["data"]["code"], string>
@@ -57,9 +61,9 @@ export interface PublicHttpError {
  * Maps errors escaping a non-tRPC HTTP boundary (the raw query plane) onto
  * the same public-message policy as the tRPC error formatter. Production
  * clients get the policy copy; development keeps the actual diagnostic.
- * ProjectQueryError messages pass through in both modes because
- * safeClickHouseError already decided at construction what a raw-query
- * client may see.
+ * ProjectQueryError and ProjectPgQueryError messages pass through in both
+ * modes because safeClickHouseError / safePostgresError already decided at
+ * construction what a raw-query client may see.
  */
 export function publicQueryHttpError(
   error: unknown,
@@ -73,7 +77,12 @@ export function publicQueryHttpError(
         : publicErrorMessage(error.code),
     };
   }
-  if (error instanceof ProjectQueryUnavailableError) {
+  // The Unavailable subclasses must be tested before their bases: an
+  // unavailable store is an operator problem (503), not a bad query (400).
+  if (
+    error instanceof ProjectQueryUnavailableError ||
+    error instanceof ProjectPgQueryUnavailableError
+  ) {
     return {
       status: 503,
       message: isDevelopment
@@ -81,7 +90,10 @@ export function publicQueryHttpError(
         : publicErrorMessage("PRECONDITION_FAILED"),
     };
   }
-  if (error instanceof ProjectQueryError) {
+  if (
+    error instanceof ProjectQueryError ||
+    error instanceof ProjectPgQueryError
+  ) {
     return { status: 400, message: error.message };
   }
   return {

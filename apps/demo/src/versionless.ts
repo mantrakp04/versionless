@@ -16,6 +16,7 @@ export const v = createVersionless({
   resolve: [{ header: "x-api-version" }, { default: "current" }],
   // Opt-in cloud telemetry. Without a key, zero network calls.
   apiKey: env.DEMO_VERSIONLESS_API_KEY ?? env.VERSIONLESS_API_KEY,
+  apiUrl: env.VERSIONLESS_API_URL,
   otlpLogsUrl: env.VERSIONLESS_OTLP_LOGS_URL,
   // Cheap deterministic sampling on the event timestamp.
   sample: rateSample(env.TELEMETRY_SAMPLE_RATE),

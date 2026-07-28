@@ -5,8 +5,6 @@ export const hexclaveClientApp = new HexclaveClientApp({
   projectId: env.VITE_HEXCLAVE_PROJECT_ID,
   tokenStore: "cookie",
   urls: {
-    default: {
-      type: "hosted",
-    },
+    handler: "/handler",
   },
 });

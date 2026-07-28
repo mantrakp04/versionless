@@ -3,7 +3,7 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
-    "build": "tsdown",
+    "build": "versionless snapshot --check-idempotent && tsdown",
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
     "dev": "bun run --hot src/index.ts",
@@ -14,6 +14,8 @@
     "versionless:watch": "versionless watch"
   },
   "dependencies": {
+    "@ai-sdk/provider": "^3.0.14",
+    "@ai-sdk/provider-utils": "^4.0.40",
     "@elysiajs/cors": "^1.4.2",
     "@elysiajs/trpc": "^1.1.0",
     "@hexclave/js": "^1.0.52",
@@ -25,7 +27,7 @@
     "@versionless/core": "workspace:*",
     "@versionless/db": "workspace:*",
     "@versionless/env": "workspace:*",
-    "demo": "workspace:*",
+    "ai": "^6.0.230",
     "drizzle-orm": "^0.45.2",
     "elysia": "catalog:",
     "evlog": "^2.22.0",

@@ -34,7 +34,7 @@ import {
   GitBranch,
   House,
   KeyRound,
-  LogIn,
+  Layers3,
   LogOut,
   Monitor,
   Moon,
@@ -60,6 +60,11 @@ const projectLinks = [
     to: "/insights/$projectId",
     label: "Overview",
     icon: ChartBar,
+  },
+  {
+    to: "/insights/$projectId/versions",
+    label: "Versions",
+    icon: Layers3,
   },
   {
     to: "/insights/$projectId/sunset",
@@ -98,21 +103,19 @@ function TeamMenu({ user }: { user: CurrentUser }) {
 }
 
 function HeaderTeamSwitcher() {
-  const user = useUser();
-  if (!user) return null;
+  // The sidebar only renders inside the authenticated shell (see __root.tsx).
+  const user = useUser({ or: "redirect" });
 
   return <TeamMenu user={user} />;
 }
 
 function SettingsMenu() {
-  const user = useUser();
+  const user = useUser({ or: "redirect" });
   const { setTheme } = useTheme();
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        render={<SidebarMenuButton tooltip="Settings" />}
-      >
+      <DropdownMenuTrigger render={<SidebarMenuButton tooltip="Settings" />}>
         <Settings />
         <span>Settings</span>
       </DropdownMenuTrigger>
@@ -122,21 +125,12 @@ function SettingsMenu() {
         sideOffset={8}
         className="min-w-48"
       >
-        {user ? (
-          <DropdownMenuItem
-            onClick={() => void hexclaveClientApp.redirectToAccountSettings()}
-          >
-            <UserRound />
-            Account settings
-          </DropdownMenuItem>
-        ) : (
-          <DropdownMenuItem
-            onClick={() => void hexclaveClientApp.redirectToSignIn()}
-          >
-            <LogIn />
-            Sign in
-          </DropdownMenuItem>
-        )}
+        <DropdownMenuItem
+          onClick={() => void hexclaveClientApp.redirectToAccountSettings()}
+        >
+          <UserRound />
+          Account settings
+        </DropdownMenuItem>
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
             <SunMoon />
@@ -157,18 +151,14 @@ function SettingsMenu() {
             </DropdownMenuItem>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
-        {user ? (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              variant="destructive"
-              onClick={() => void user.signOut()}
-            >
-              <LogOut />
-              Log out
-            </DropdownMenuItem>
-          </>
-        ) : null}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          variant="destructive"
+          onClick={() => void user.signOut()}
+        >
+          <LogOut />
+          Log out
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -231,6 +221,10 @@ export default function Header() {
               <SidebarMenu>
                 {projectLinks.map(({ to, label, icon: Icon }) => {
                   const href = to.replace("$projectId", projectId);
+                  const isActive =
+                    pathname === href ||
+                    (to.endsWith("/versions") &&
+                      pathname.startsWith(`${href}/`));
 
                   return (
                     <SidebarMenuItem key={to}>
@@ -242,7 +236,7 @@ export default function Header() {
                             search={preserveInsightsSearch}
                           />
                         }
-                        isActive={pathname === href}
+                        isActive={isActive}
                         tooltip={label}
                       >
                         <Icon />

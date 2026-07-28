@@ -84,7 +84,7 @@ export function resolveClickHouseDatabase(
 function connection(): ClickHouseConnection {
   if (!env.CLICKHOUSE_URL) {
     throw new ProjectQueryUnavailableError(
-      "ClickHouse unavailable — set CLICKHOUSE_URL and run `bun db:start`",
+      "ClickHouse unavailable — set CLICKHOUSE_URL and run `bun start-deps`",
     );
   }
   const parsed = new URL(env.CLICKHOUSE_URL);
@@ -107,24 +107,149 @@ function identifier(value: string): string {
   return `\`${value.replaceAll("`", "``")}\``;
 }
 
+/** Pre-aggregated daily table the overview reads instead of raw log rows. */
+export const ROLLUP_TABLE = "versionless_rollup_daily";
+/**
+ * The MV name carries a generation suffix. `CREATE MATERIALIZED VIEW IF NOT
+ * EXISTS` will not update an existing view's SELECT, so widening the rollup
+ * means retiring the previous generation and creating the next one. Both
+ * statements are no-ops on a second run, unlike an unconditional drop-recreate
+ * which would open an ingestion gap at every restart.
+ */
+const ROLLUP_MV = "versionless_rollup_daily_mv_v2";
+const RETIRED_ROLLUP_MVS = ["versionless_rollup_daily_mv"];
+/** Columns added after the rollup's first generation; see the ALTERs below. */
+const ROLLUP_ADDED_COLUMNS = ["sourced", "unpinned", "clamped"];
+/** Retention of the raw rows the rollup is backfilled from. */
+const ROLLUP_BACKFILL_DAYS = 180;
+
+/**
+ * The rollup's aggregate expressions, shared verbatim by the materialized view
+ * and the backfill so the two can never drift apart. Keyed on the dimensions
+ * the overview groups by; anything finer (consumer, status, trace) stays a raw
+ * drill-down.
+ *
+ * Tenancy is projected into real columns: row policies on the raw tables filter
+ * `ResourceAttributes`, which a rollup row does not carry.
+ */
+const ROLLUP_SELECT = `SELECT
+  ResourceAttributes['versionless.team.id'] AS team_id,
+  ResourceAttributes['versionless.project.id'] AS project_id,
+  toDate(Timestamp) AS day,
+  LogAttributes['versionless.version'] AS version,
+  LogAttributes['versionless.route'] AS route,
+  LogAttributes['versionless.method'] AS method,
+  count() AS requests,
+  countIf(toUInt16OrZero(LogAttributes['http.response.status_code']) >= 400) AS errors,
+  quantilesTDigestState(0.5, 0.95, 0.99)(
+    toFloat64OrZero(LogAttributes['versionless.latency_ms'])
+  ) AS latency,
+  sum(toUInt8OrZero(LogAttributes['versionless.transform_count'])) AS depth_sum,
+  max(toUInt8OrZero(LogAttributes['versionless.transform_count'])) AS depth_max,
+  uniqState(if(
+    empty(LogAttributes['versionless.consumer.key']),
+    'anonymous',
+    LogAttributes['versionless.consumer.key']
+  )) AS consumers,
+  countIf(notEmpty(LogAttributes['versionless.version.requested'])) AS negotiated,
+  countIf(notEmpty(LogAttributes['versionless.version.source'])) AS sourced,
+  countIf(LogAttributes['versionless.version.source'] = 'default') AS unpinned,
+  countIf(LogAttributes['versionless.clamped'] = 'true') AS clamped`;
+
+const ROLLUP_GROUP_BY = `GROUP BY team_id, project_id, day, version, route, method`;
+
 export function queryAccessStatements(database: string): string[] {
   const db = identifier(database);
   const project =
     "ResourceAttributes['versionless.project.id'] = getSetting('SQL_project_id')";
   const team =
     "ResourceAttributes['versionless.team.id'] = getSetting('SQL_team_id')";
-  const policy = (table: "otel_logs" | "otel_traces") =>
-    `${table}_versionless_project_isolation`;
+  // The rollup carries tenancy as ordinary columns, so its policy must filter
+  // on those instead — using the raw-table predicate here would reference
+  // columns that do not exist and leave the table readable across tenants.
+  const rollupProject = "project_id = getSetting('SQL_project_id')";
+  const rollupTeam = "team_id = getSetting('SQL_team_id')";
+  const policy = (table: string) => `${table}_versionless_project_isolation`;
+  const isolate = (table: string, using: string) => [
+    `CREATE ROW POLICY IF NOT EXISTS ${policy(table)} ON ${db}.${table} FOR SELECT USING ${using} TO ${QUERY_USER}`,
+    // ALTER after CREATE so an existing policy from an older deploy is brought
+    // up to the current predicate rather than silently left behind.
+    `ALTER ROW POLICY ${policy(table)} ON ${db}.${table} FOR SELECT USING ${using} TO ${QUERY_USER}`,
+  ];
+
   return [
     `CREATE USER IF NOT EXISTS ${QUERY_USER} IDENTIFIED WITH sha256_password BY {queryPassword:String}`,
     `ALTER USER ${QUERY_USER} IDENTIFIED WITH sha256_password BY {queryPassword:String}`,
-    `CREATE ROW POLICY IF NOT EXISTS ${policy("otel_logs")} ON ${db}.otel_logs FOR SELECT USING ${project} AND ${team} TO ${QUERY_USER}`,
-    `ALTER ROW POLICY ${policy("otel_logs")} ON ${db}.otel_logs FOR SELECT USING ${project} AND ${team} TO ${QUERY_USER}`,
-    `CREATE ROW POLICY IF NOT EXISTS ${policy("otel_traces")} ON ${db}.otel_traces FOR SELECT USING ${project} AND ${team} TO ${QUERY_USER}`,
-    `ALTER ROW POLICY ${policy("otel_traces")} ON ${db}.otel_traces FOR SELECT USING ${project} AND ${team} TO ${QUERY_USER}`,
+
+    // Rollup storage. AggregatingMergeTree merges same-key rows, so the MV can
+    // insert a partial row per batch and the table converges on one row per
+    // (tenant, day, version, route, method).
+    `CREATE TABLE IF NOT EXISTS ${db}.${ROLLUP_TABLE} (
+  team_id String,
+  project_id String,
+  day Date,
+  version String,
+  route String,
+  method String,
+  requests SimpleAggregateFunction(sum, UInt64),
+  errors SimpleAggregateFunction(sum, UInt64),
+  latency AggregateFunction(quantilesTDigest(0.5, 0.95, 0.99), Float64),
+  depth_sum SimpleAggregateFunction(sum, UInt64),
+  depth_max SimpleAggregateFunction(max, UInt8),
+  consumers AggregateFunction(uniq, String),
+  negotiated SimpleAggregateFunction(sum, UInt64),
+  sourced SimpleAggregateFunction(sum, UInt64),
+  unpinned SimpleAggregateFunction(sum, UInt64),
+  clamped SimpleAggregateFunction(sum, UInt64)
+) ENGINE = AggregatingMergeTree()
+PARTITION BY toYYYYMM(day)
+ORDER BY (team_id, project_id, day, version, route, method)
+TTL day + INTERVAL ${ROLLUP_BACKFILL_DAYS} DAY`,
+
+    // Widen a rollup created by an earlier deploy. CREATE TABLE IF NOT EXISTS
+    // is a no-op on an existing table, so a new aggregate needs its own ADD
+    // COLUMN or the MV insert fails on an unknown column. Every added column
+    // defaults to 0 for days already rolled up — which is why `sourced` exists:
+    // a window with `sourced = 0` reports "not recorded" rather than "0%".
+    ...ROLLUP_ADDED_COLUMNS.map(
+      (column) =>
+        `ALTER TABLE ${db}.${ROLLUP_TABLE} ADD COLUMN IF NOT EXISTS ${column} SimpleAggregateFunction(sum, UInt64)`,
+    ),
+
+    // A materialized view's SELECT is fixed at creation, so widening the rollup
+    // retires the previous generation instead of trying to update it in place.
+    ...RETIRED_ROLLUP_MVS.map(
+      (view) => `DROP VIEW IF EXISTS ${db}.${view}`,
+    ),
+
+    `CREATE MATERIALIZED VIEW IF NOT EXISTS ${db}.${ROLLUP_MV}
+TO ${db}.${ROLLUP_TABLE} AS
+${ROLLUP_SELECT}
+FROM ${db}.otel_logs
+WHERE EventName = 'versionless.request'
+${ROLLUP_GROUP_BY}`,
+
+    // Backfill the history the MV never saw. Bounded to days before today and
+    // guarded on those same days being absent, which makes it idempotent
+    // without racing the MV: traffic arriving between the two statements lands
+    // on today() and so cannot trip the guard and skip the backfill.
+    `INSERT INTO ${db}.${ROLLUP_TABLE}
+${ROLLUP_SELECT}
+FROM ${db}.otel_logs
+WHERE EventName = 'versionless.request'
+  AND Timestamp >= now() - INTERVAL ${ROLLUP_BACKFILL_DAYS} DAY
+  AND Timestamp < toDateTime(today())
+  AND (SELECT count() FROM ${db}.${ROLLUP_TABLE} WHERE day < today()) = 0
+${ROLLUP_GROUP_BY}`,
+
+    ...isolate("otel_logs", `${project} AND ${team}`),
+    ...isolate("otel_traces", `${project} AND ${team}`),
+    ...isolate(ROLLUP_TABLE, `${rollupProject} AND ${rollupTeam}`),
+
     `REVOKE ALL PRIVILEGES ON *.* FROM ${QUERY_USER}`,
     `GRANT SELECT ON ${db}.otel_logs TO ${QUERY_USER}`,
     `GRANT SELECT ON ${db}.otel_traces TO ${QUERY_USER}`,
+    `GRANT SELECT ON ${db}.${ROLLUP_TABLE} TO ${QUERY_USER}`,
   ];
 }
 

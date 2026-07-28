@@ -138,7 +138,7 @@ describe("POST /v1/query", () => {
       }),
       executeQuery: async () => {
         throw new ProjectQueryUnavailableError(
-          "ClickHouse unavailable — set CLICKHOUSE_URL and run `bun db:start`",
+          "ClickHouse unavailable — set CLICKHOUSE_URL and run `bun start-deps`",
         );
       },
       reportError: (error, projectId) => {

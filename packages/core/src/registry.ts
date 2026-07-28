@@ -65,7 +65,11 @@ export class ChangeRegistry {
   readonly jumps: Jump[] = [];
   readonly sunsets: SunsetEntry[] = [];
   readonly rewrites: CompiledRewrite[] = [];
-  /** Distinct change/jump versions + current, ascending. Built on seal. */
+  /**
+   * Distinct change/jump versions + current, ascending. Populated on seal;
+   * empty before then — read `computeReleaseVersions()` when the registry may
+   * still be open (tooling imports an entry without ever serving a request).
+   */
   releaseVersions: string[] = [];
   private routeIndex = new Map<string, RouteChanges>();
   /** Precompiled patterns for the HTTP route keys that have changes. */
@@ -121,10 +125,6 @@ export class ChangeRegistry {
     );
     if (existing) return existing as Change<V, S>;
 
-    // Normalize tRPC-flavored aliases onto request/response.
-    const request = spec.request ?? spec.input;
-    const response = spec.response ?? spec.output;
-
     const change: Change<V, S> = {
       kind: "change",
       version,
@@ -132,8 +132,8 @@ export class ChangeRegistry {
       describe: spec.describe,
       routes: canonicalRouteKeys(spec),
       lossy: spec.lossy ?? false,
-      hasUp: !!request,
-      hasDown: !!response,
+      hasUp: !!spec.request,
+      hasDown: !!spec.response,
       declarations: compileDeclarations(spec.schema),
     };
 
@@ -196,16 +196,27 @@ export class ChangeRegistry {
     this.sunsets.push({ version, after: opts.after, message: opts.message });
   }
 
-  seal(): void {
-    if (this.sealed) return;
-    this.sealed = true;
+  /**
+   * The distinct release versions implied by what is registered right now,
+   * ascending. Computed from `changes`/`jumps` rather than read off
+   * `releaseVersions` so it answers correctly on an OPEN registry — the CLI
+   * imports an entry and introspects it without ever serving a request, which
+   * is what seals it.
+   */
+  computeReleaseVersions(): string[] {
     const versions = new Set<string>([this.current]);
     for (const c of this.changes) versions.add(c.version);
     for (const j of this.jumps) {
       versions.add(j.from);
       versions.add(j.to);
     }
-    this.releaseVersions = [...versions].sort(this.scheme.compare);
+    return [...versions].sort(this.scheme.compare);
+  }
+
+  seal(): void {
+    if (this.sealed) return;
+    this.sealed = true;
+    this.releaseVersions = this.computeReleaseVersions();
     // Hot path: matchChangedRoute runs per request, so the changed-route
     // patterns compile once here (matchRewrite already uses precompiled ones).
     this.changedRoutePatterns = this.compileChangedRoutes();

@@ -42,7 +42,7 @@ export {
   type CoverageReport,
   type CoverageItem,
 } from "./coverage/match";
-export { loadChangeChain, type ChangeLike } from "./chain";
+export { loadChangeChain } from "./chain";
 export {
   latestSnapshot,
   listSnapshotVersions,

@@ -84,6 +84,19 @@ describe("snapshot integrity", () => {
     };
     expect(surfaceHash(stamped)).toBe(surfaceHash(bare));
   });
+
+  test("hash ignores the sunset schedule", () => {
+    // A retirement date is set and pushed back long after a version ships.
+    // If it fed the hash, scheduling a sunset would make an already-published
+    // contract read as rewritten and trip the overwrite guard below.
+    const bare = surface();
+    expect(
+      surfaceHash({
+        ...bare,
+        sunsets: [{ version: "2026-07-21", after: "2027-01-31" }],
+      }),
+    ).toBe(surfaceHash(bare));
+  });
 });
 
 describe("snapshot overwrite protection", () => {

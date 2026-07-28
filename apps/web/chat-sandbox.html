@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'unsafe-eval' http: https:; style-src 'unsafe-inline' http: https:; img-src data:; font-src data: http: https:; connect-src 'none'; frame-src 'none'; worker-src 'none'; media-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <title>Versionless chat sandbox</title>
+    <style>
+      html, body, #sandbox-root {
+        margin: 0;
+        min-height: 0;
+        width: 100%;
+        overflow-x: hidden;
+        overflow-y: hidden;
+        background: transparent;
+      }
+      #sandbox-root {
+        display: flow-root;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="sandbox-root"></div>
+    <script
+      type="module"
+      crossorigin
+      src="/src/components/chat/chat-sandbox-entry.tsx"
+    ></script>
+  </body>
+</html>

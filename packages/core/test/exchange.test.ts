@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { fingerprintConsumerKey } from "../src/fingerprint";
 import { createVersionless } from "../src/index";
 import type { Exchange, ExchangeInput, TelemetryEvent } from "../src/types";
 
@@ -280,11 +281,68 @@ describe("GATE A: end-to-end exchange round-trip", () => {
       route: "GET /users/:*",
       version: "2025-09-01",
       requestedVersion: "2026-01-15",
-      consumerKey: "key_1",
+      consumerKey: fingerprintConsumerKey("key_1"),
       status: 200,
       adapter: "test",
     });
     expect(events[0]!.transformCount).toBeGreaterThan(0);
+  });
+
+  test("telemetry: the raw API key never reaches the event", async () => {
+    // x-api-key is a live credential. Telemetry identifies consumers by a
+    // one-way fingerprint so storage and dashboards never hold the secret.
+    const v = makeApi();
+    const events: TelemetryEvent[] = [];
+    v.telemetry.use({ record: (e) => events.push(e) });
+    const secret = "sk_live_51H8xQ2eZvKYlo2C";
+    const ex = await open(
+      v,
+      input({ matchedRoute: "/users/:id", headers: { "x-api-key": secret } }),
+    );
+    ex.finish({ latencyMs: 3, status: 200 });
+    await new Promise((r) => setTimeout(r, 0));
+
+    const key = events[0]!.consumerKey!;
+    expect(key).not.toBe(secret);
+    expect(key).not.toContain("sk_live");
+    expect(JSON.stringify(events)).not.toContain(secret);
+    expect(key).toMatch(/^c_[0-9a-f]{12}$/);
+    // The exchange exposes the same fingerprint it emits.
+    expect(ex.consumerKey).toBe(key);
+  });
+
+  test("telemetry: a fingerprint-shaped raw API key is still hashed", async () => {
+    const v = makeApi();
+    const events: TelemetryEvent[] = [];
+    v.telemetry.use({ record: (event) => events.push(event) });
+    const secret = "c_deadbeefcafe";
+    const ex = await open(
+      v,
+      input({ matchedRoute: "/users/:id", headers: { "x-api-key": secret } }),
+    );
+    ex.finish({ latencyMs: 3, status: 200 });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(events[0]!.consumerKey).not.toBe(secret);
+    expect(JSON.stringify(events)).not.toContain(secret);
+  });
+
+  test("telemetry: distinct consumers stay distinguishable", async () => {
+    const v = makeApi();
+    const events: TelemetryEvent[] = [];
+    v.telemetry.use({ record: (e) => events.push(e) });
+    for (const key of ["key_a", "key_b", "key_a"]) {
+      const ex = await open(
+        v,
+        input({ matchedRoute: "/users/:id", headers: { "x-api-key": key } }),
+      );
+      ex.finish({ latencyMs: 1, status: 200 });
+    }
+    await new Promise((r) => setTimeout(r, 0));
+
+    const keys = events.map((event) => event.consumerKey);
+    expect(new Set(keys).size).toBe(2);
+    expect(keys[0]).toBe(keys[2]!);
   });
 
   test("tRPC procedures route through trpc: keys", async () => {
@@ -292,7 +350,7 @@ describe("GATE A: end-to-end exchange round-trip", () => {
     v.change("2026-05-14", {
       describe: "user.get output split",
       procedures: ["user.get"],
-      output: {
+      response: {
         down: ({ firstName, lastName, ...rest }: any) => ({
           ...rest,
           name: `${firstName} ${lastName}`,

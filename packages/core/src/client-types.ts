@@ -17,8 +17,7 @@
  *   - P must be a KNOWN version (a registered change version or `current`) —
  *     there is no type-level date arithmetic; the sorted tuple order is used.
  *   - Transform authors must annotate up/down parameter and return types, or
- *     derivation degrades to `unknown`. The `wire` phantom on ChangeSpec
- *     overrides inference when present.
+ *     derivation degrades to `unknown`.
  *   - Chain order in `register([...])` must be ascending (runtime warns).
  */
 import type { Change, ChangeSpec, VersionedApi } from "./types";
@@ -91,47 +90,25 @@ type ForRoute<
   : [];
 
 // ---------------------------------------------------------------------------
-// 3. Endpoint extraction. `wire` phantom types win over function inference.
+// 3. Endpoint extraction, inferred from the up/down signatures.
 
-type WireReqOld<S extends ChangeSpec> = S["wire"] extends {
-  request: { old?: infer T };
+type UpIn<C extends AnyChange> = C["spec"] extends {
+  request: { up: (body: infer I, ...args: any) => any };
 }
-  ? unknown extends T
-    ? never
-    : T
+  ? I
   : never;
-
-type WireResOld<S extends ChangeSpec> = S["wire"] extends {
-  response: { old?: infer T };
-}
-  ? unknown extends T
-    ? never
-    : T
-  : never;
-
-type UpIn<C extends AnyChange> = [WireReqOld<C["spec"]>] extends [never]
-  ? C["spec"] extends { request: { up: (body: infer I, ...args: any) => any } }
-    ? I
-    : C["spec"] extends { input: { up: (body: infer I, ...args: any) => any } }
-      ? I
-      : never
-  : WireReqOld<C["spec"]>;
 
 type UpOut<C extends AnyChange> = C["spec"] extends {
   request: { up: (...args: any) => infer O };
 }
   ? Awaited<O>
-  : C["spec"] extends { input: { up: (...args: any) => infer O } }
-    ? Awaited<O>
-    : never;
+  : never;
 
-type DownOut<C extends AnyChange> = [WireResOld<C["spec"]>] extends [never]
-  ? C["spec"] extends { response: { down: (...args: any) => infer O } }
-    ? Awaited<O>
-    : C["spec"] extends { output: { down: (...args: any) => infer O } }
-      ? Awaited<O>
-      : never
-  : WireResOld<C["spec"]>;
+type DownOut<C extends AnyChange> = C["spec"] extends {
+  response: { down: (...args: any) => infer O };
+}
+  ? Awaited<O>
+  : never;
 
 // ---------------------------------------------------------------------------
 // 4. Chain validity: each up's output must be assignable to the next up's

@@ -1,31 +1,13 @@
-import type { ChangeRegistry } from "@versionless/core";
-import type { ModelDeclaration } from "@versionless/core";
+import type { ChangeMeta } from "@versionless/core";
 
 import { importModule, type LoadedConfig, type LoadedEntry } from "./config";
 
-/**
- * The stable metadata contract of a registered core Change or Jump, as
- * consumed by coverage matching / changelog rendering.
- */
-export interface ChangeLike {
-  kind: "change" | "jump";
-  version?: string;
-  from?: string;
-  to?: string;
-  describe: string;
-  routes: readonly string[];
-  lossy: boolean;
-  hasUp: boolean;
-  hasDown: boolean;
-  declarations: readonly ModelDeclaration[];
-}
-
 /** The version a change (or jump) is introduced at. */
-export function changeVersion(change: ChangeLike): string {
+export function changeVersion(change: ChangeMeta): string {
   return change.kind === "jump" ? (change.to ?? "") : (change.version ?? "");
 }
 
-function looksLikeChange(value: unknown): value is ChangeLike {
+function looksLikeChange(value: unknown): value is ChangeMeta {
   if (typeof value !== "object" || value === null) return false;
   const v = value as Record<string, unknown>;
   return (
@@ -41,17 +23,17 @@ function looksLikeChange(value: unknown): value is ChangeLike {
  *
  * The change-file glob is ALWAYS imported first: files there that import the
  * entry's instance (the shape `versionless generate` scaffolds) register into
- * its `_registry` as a side effect, so a freshly generated change is visible
- * to `check` without any extra wiring. Then the entry's exported instance is
- * the preferred source — its registry already holds every registered change
+ * it as a side effect, so a freshly generated change is visible to `check`
+ * without any extra wiring. Then the entry's exported instance is the
+ * preferred source — `instance.chain()` already holds every registered change
  * and jump — with any standalone exported Change/Jump objects from the glob
  * merged in. Without an instance, the glob exports are the whole chain.
  */
 export async function loadChangeChain(
   config: LoadedConfig,
   entry: LoadedEntry,
-): Promise<ChangeLike[]> {
-  const exported: ChangeLike[] = [];
+): Promise<ChangeMeta[]> {
+  const exported: ChangeMeta[] = [];
   const glob = new Bun.Glob(config.changesGlob);
   const files = [...glob.scanSync({ cwd: config.rootDir, absolute: true })].sort();
   for (const file of files) {
@@ -74,8 +56,7 @@ export async function loadChangeChain(
   }
 
   if (entry.instance) {
-    const registry = entry.instance._registry as ChangeRegistry;
-    const chain: ChangeLike[] = [...registry.changes, ...registry.jumps];
+    const chain: ChangeMeta[] = [...entry.instance.chain()];
     const seen = new Set<unknown>(chain);
     for (const change of exported) {
       if (!seen.has(change)) {

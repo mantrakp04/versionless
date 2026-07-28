@@ -61,7 +61,7 @@ const splitName = v.change("2026-05-14", {
 const trpcSplit = v.change("2026-05-14", {
   describe: "trpc split",
   procedures: ["user.get"],
-  output: {
+  response: {
     down: (body: UserV3): UserV2 => ({
       id: body.id,
       name: `${body.firstName} ${body.lastName}`,
@@ -125,19 +125,17 @@ describe("ClientTypes (compile-time)", () => {
     expectTypeOf<R>().toMatchTypeOf<ChainError<{ b: string }, { c: boolean }>>();
   });
 
-  test("wire phantom overrides inference", () => {
-    const wired = v.change("2025-06-01", {
-      describe: "wire override",
+  test("explicitly annotated transforms derive the declared shapes", () => {
+    const annotated = v.change("2025-06-01", {
+      describe: "annotated transforms",
       routes: ["GET /wired"],
-      request: { up: (body: any) => body },
-      response: { down: (body: any) => body },
-      wire: {} as {
-        request: { old: { legacy: true } };
-        response: { old: { legacyResponse: true } };
+      request: { up: (body: { legacy: true }): { legacy: true } => body },
+      response: {
+        down: (body: { legacyResponse: true }): { legacyResponse: true } => body,
       },
     });
-    const wiredApi = v.register([wired] as const);
-    type R = RouteClientTypes<typeof wiredApi.changes, "GET /wired", "floor">;
+    const annotatedApi = v.register([annotated] as const);
+    type R = RouteClientTypes<typeof annotatedApi.changes, "GET /wired", "floor">;
     expectTypeOf<R>().toEqualTypeOf<{
       request: { legacy: true };
       response: { legacyResponse: true };

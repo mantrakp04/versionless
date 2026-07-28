@@ -32,6 +32,11 @@ export {
   type VersionlessContext,
   type VersionlessStash,
 } from "./context";
+export { fnv1a, stableStringify } from "./content-hash";
+export {
+  CONSUMER_KEY_PREFIX,
+  fingerprintConsumerKey,
+} from "./fingerprint";
 export {
   buildRewriteRequest,
   DEFAULT_MAX_TRANSFORM_BYTES,
@@ -71,6 +76,7 @@ export {
 } from "./telemetry";
 export {
   capturedTracesToOtlp,
+  safeTelemetryErrorBodyForStatus,
   telemetryEventsToOtlp,
 } from "./otlp";
 export type * from "./otlp";
@@ -95,7 +101,12 @@ export type {
 
 const DEFAULT_OTLP_LOGS_URL = "https://ingest.versionless.dev/v1/logs";
 const DEFAULT_OTLP_TRACES_URL = "https://ingest.versionless.dev/v1/traces";
-const DEFAULT_TRACE_SAMPLE = 0.1;
+/**
+ * Sampling rate for successful cloud traces. Failed exchanges are always
+ * captured. Request logs remain the authoritative source for aggregate counts
+ * and rates because trace capture can be disabled or filtered.
+ */
+export const DEFAULT_TRACE_SAMPLE = 0.1;
 
 export function createVersionless<const C extends VersionlessConfig>(
   config: C,
@@ -219,12 +230,36 @@ export function createVersionless<const C extends VersionlessConfig>(
       );
     },
 
+    versions() {
+      // Not `registry.releaseVersions`: that field is only populated on seal
+      // (first request), and build tooling introspects an instance it never
+      // sends a request to.
+      return registry.computeReleaseVersions();
+    },
+
+    sunsets() {
+      return registry.sunsets.map(({ version, after, message }) => ({
+        version,
+        after,
+        ...(message !== undefined ? { message } : {}),
+      }));
+    },
+
+    chain() {
+      return [...registry.changes, ...registry.jumps];
+    },
+
     telemetry: {
       use: (sink) => hub.use(sink),
       emit: (event) => hub.emit(event),
       flush: () => hub.flush(),
     },
 
+    _cloud: {
+      ...(config.project ? { project: config.project } : {}),
+      ...(config.apiKey ? { apiKey: config.apiKey } : {}),
+      ...(config.apiUrl ? { apiUrl: config.apiUrl } : {}),
+    },
     _registry: registry,
   };
 

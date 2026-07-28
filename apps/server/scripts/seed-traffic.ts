@@ -1,12 +1,12 @@
 /**
- * Seeds ~30 days of synthetic versionless telemetry through either the
- * authenticated cloud gateway or the trusted local Collector port
- * so the insights dashboard has a story to tell on first run: adoption of
- * 2026-05-14 visibly overtakes 2025-06-01, while two stubborn consumers stay
- * pinned on 2025-01-01 (the sunset blockers). Every dashboard range (24h, 7d,
- * and 30d) has traffic so the overview filters remain useful.
+ * Seeds a deterministic, multi-year API release ecosystem through either the
+ * authenticated cloud gateway or the trusted local Collector port. The
+ * scenario has 50+ dated releases, 100+ endpoints, a few intentionally missing
+ * uploaded contracts, long-tail SDK consumers, sticky LTS cohorts, and
+ * launch/stable releases with natural popularity spikes. Every dashboard range
+ * (24h, 7d, and 30d) has enough traffic to remain useful.
  *
- * Usage:  bun db:start          (ClickHouse container)
+ * Usage:  bun start-deps        (Postgres + ClickHouse + OTel stack)
  *         bun run seed          (from apps/server)
  *
  * The dashboard links projects to the team that owns the API key. Resolution:
@@ -20,6 +20,7 @@
 import { getHexclaveServerApp } from "@versionless/api/lib/hexclave";
 import {
   capturedTracesToOtlp,
+  DEFAULT_TRACE_SAMPLE,
   telemetryEventsToOtlp,
   type CapturedSpan,
   type CapturedTrace,
@@ -27,12 +28,17 @@ import {
   type TelemetryEvent,
 } from "@versionless/core";
 import { db } from "@versionless/db";
-import { projects } from "@versionless/db/schema/projects";
+import {
+  projects,
+  projectSunsets,
+  projectVersions,
+} from "@versionless/db/schema/projects";
 import { env } from "@versionless/env/server";
-import { KNOWN_VERSIONS } from "demo/releases";
-import { createDemoSeedRoutes } from "demo/seed-fixtures";
+import { and, eq, inArray } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
 import { resolveSeedTeam } from "../src/seed-team";
+import { createSeedScenario } from "./seed-scenario";
+import { postSeedBatch } from "./seed-transport";
 const LOCAL_COLLECTOR_URL = "http://127.0.0.1:14318";
 const GATEWAY_LOGS_URL = env.VERSIONLESS_OTLP_LOGS_URL;
 const DEMO_API_KEY = env.DEMO_VERSIONLESS_API_KEY;
@@ -42,6 +48,8 @@ const OTLP_BASE_URL = USE_AUTHENTICATED_GATEWAY
   : LOCAL_COLLECTOR_URL;
 const TEAM_ID = await resolveTeamId();
 const PROJECT_NAME = env.SEED_PROJECT_NAME ?? "versionless demo API";
+const now = Date.now();
+const scenario = createSeedScenario({ now });
 
 // "internal" is the cloud server's own live telemetry project
 // (@versionless/api/versionless) — synthetic preview data must never land
@@ -60,9 +68,7 @@ async function resolveTeamId(): Promise<string> {
     resolveApiKeyTeam: hexclave
       ? async (apiKey) => {
           const team = await hexclave.getTeam({ apiKey }).catch(() => null);
-          return team
-            ? { id: team.id, displayName: team.displayName }
-            : null;
+          return team ? { id: team.id, displayName: team.displayName } : null;
         }
       : undefined,
   });
@@ -86,87 +92,119 @@ if (!project) throw new Error("Failed to create seed project");
 const PROJECT_ID = project.id;
 
 const DAY = 24 * 60 * 60 * 1000;
-const now = Date.now();
 
-const ROUTES = createDemoSeedRoutes();
+console.log(
+  `Prepared ${scenario.versions.length} releases, ${scenario.contracts.length} contracts, and ${scenario.events.length.toLocaleString()} request events.`,
+);
 
-interface Consumer {
-  key: string;
-  /** version per day-offset: tells the migration story */
-  versionAt(daysAgo: number): string;
-  requestsPerDay: number;
+const uploadedVersions = new Set(
+  scenario.contracts.map((contract) => contract.version),
+);
+const missingContractVersions = scenario.versions
+  .map((plan) => plan.version)
+  .filter((version) => !uploadedVersions.has(version));
+
+// Remove artifacts that an earlier seed may have uploaded for the versions
+// intentionally kept traffic-only in the current preview story.
+if (missingContractVersions.length > 0) {
+  await db
+    .delete(projectVersions)
+    .where(
+      and(
+        eq(projectVersions.projectId, PROJECT_ID),
+        inArray(projectVersions.version, missingContractVersions),
+      ),
+    );
 }
 
-// Six consumers: two migrate mid-window, two were always current-ish, two are
-// stuck on the sunset-scheduled floor (the blockers).
-const consumers: Consumer[] = [
-  { key: "key_acme", requestsPerDay: 40, versionAt: (d) => (d > 12 ? "2025-06-01" : "2026-05-14") },
-  { key: "key_globex", requestsPerDay: 30, versionAt: (d) => (d > 6 ? "2025-06-01" : "2026-05-14") },
-  { key: "key_initech", requestsPerDay: 25, versionAt: () => "2026-05-14" },
-  { key: "key_hooli", requestsPerDay: 20, versionAt: (d) => (d > 20 ? "2026-05-14" : "2026-07-21") },
-  { key: "key_stuck_legacy", requestsPerDay: 8, versionAt: () => "2025-01-01" },
-  { key: "key_stuck_batch", requestsPerDay: 4, versionAt: () => "2025-01-01" },
-];
+// Re-seeding intentionally refreshes the generated artifacts. The scenario is
+// deterministic, so an existing version receives the same contract unless the
+// seed generator itself has evolved.
+for (const contract of scenario.contracts) {
+  await db
+    .insert(projectVersions)
+    .values({
+      projectId: PROJECT_ID,
+      version: contract.version,
+      integrityHash: contract.integrityHash,
+      snapshot: contract.snapshot,
+      createdAt: contract.releasedAt,
+    })
+    .onConflictDoUpdate({
+      target: [projectVersions.projectId, projectVersions.version],
+      set: {
+        integrityHash: contract.integrityHash,
+        snapshot: contract.snapshot,
+        createdAt: contract.releasedAt,
+      },
+    });
+}
 
-// Deterministic pseudo-random so re-seeding produces a similar shape.
-let seed = 42;
+// The sunset schedule a real project uploads via `versionless snapshot`.
+// Replaced wholesale so a re-seed after the shape changes leaves no orphans.
+await db.delete(projectSunsets).where(eq(projectSunsets.projectId, PROJECT_ID));
+if (scenario.sunsets.length > 0) {
+  await db.insert(projectSunsets).values(
+    scenario.sunsets.map((sunset) => ({
+      projectId: PROJECT_ID,
+      version: sunset.version,
+      after: sunset.after,
+      message: sunset.message,
+    })),
+  );
+}
+
+const events: TelemetryEvent[] = scenario.events;
+
+let traceSeed = 7_337;
 function rand(): number {
-  seed = (seed * 1103515245 + 12345) % 2 ** 31;
-  return seed / 2 ** 31;
+  traceSeed = (Math.imul(traceSeed, 1_664_525) + 1_013_904_223) >>> 0;
+  return traceSeed / 2 ** 32;
 }
 
-const events: TelemetryEvent[] = [];
-for (let daysAgo = 29; daysAgo >= 0; daysAgo--) {
-  for (const consumer of consumers) {
-    const version = consumer.versionAt(daysAgo);
-    const count = Math.max(1, Math.round(consumer.requestsPerDay * (0.7 + rand() * 0.6)));
-    for (let i = 0; i < count; i++) {
-      const routeInfo = ROUTES[Math.floor(rand() * ROUTES.length)]!;
-      const depth = routeInfo.depthByVersion[version as keyof typeof routeInfo.depthByVersion] ?? 0;
-      events.push({
-        // Keep every synthetic timestamp in the past. Adding the intra-day
-        // offset made day-zero rows land in the future and crowd out current
-        // arbitrary OTLP records from the Telemetry feed.
-        ts: now - daysAgo * DAY - Math.floor(rand() * DAY * 0.9),
-        method: routeInfo.method,
-        route: routeInfo.route,
-        adapter: routeInfo.adapter,
-        version,
-        consumerKey: consumer.key,
-        latencyMs: Math.round(3 + rand() * 40 + depth * 2),
-        transformCount: depth,
-        status: rand() < 0.97 ? 200 : 404,
-      });
-    }
-  }
-}
-
-// Sampled traces mirror the SDK's cloud trace capture (default 10% head
-// sampling): a subset of the last week's events also get a versionless span
-// tree — exchange root, resolve, and one transform.down span per drift step —
-// so the Traces insights view has data. The seed emits the same native OTLP
-// span attributes as the SDK and lets the Collector own ClickHouse mapping.
-const TRACE_SAMPLE = 0.1;
+// Sampled traces mirror the SDK's cloud trace capture: a subset of the last
+// week's events also get a versionless span tree — exchange root, resolve, and
+// one transform.down span per drift step — so the Traces insights view has
+// data. The seed emits the same native OTLP span attributes as the SDK and lets
+// the Collector own ClickHouse mapping.
+//
+// Current SDKs promote every failure after the final status is known while
+// sampling successful traces. Aggregate counts still read the unsampled logs
+// because tracing can be disabled or filtered.
+const TRACE_SAMPLE = DEFAULT_TRACE_SAMPLE;
 const traces: CapturedTrace[] = [];
 let traceCounter = 0;
 const traceRunPrefix = randomBytes(12).toString("hex");
 
 for (const event of events) {
   const daysOld = (now - event.ts) / DAY;
+  const failed = event.status >= 400;
   // Only past events within the last week: the traces list sorts by recency
   // and future-dated rows (day-0 events land anywhere in today) read wrong.
-  if (daysOld < 0 || daysOld > 7 || rand() >= TRACE_SAMPLE) continue;
+  if (
+    daysOld < 0 ||
+    daysOld > 7 ||
+    (!failed && rand() >= TRACE_SAMPLE)
+  ) {
+    continue;
+  }
   const traceId = `${traceRunPrefix}${(traceCounter++)
     .toString(16)
     .padStart(8, "0")}`;
   const traceSpans: CapturedSpan[] = [];
-  const failed = event.status >= 400 && rand() < 0.5;
+  // A captured trace of a failing request always records the failure — the
+  // sampling decision is made once, at the root, and applies to the whole tree.
+  // Request logs are emitted when finish() runs, while the root span begins at
+  // exchange open. Keep that production timing relationship in the seed so
+  // occurrence-detail correlation is exercised honestly.
+  const traceDurationMs = event.latencyMs + rand();
+  const traceStartedAt = event.ts - traceDurationMs;
 
   traceSpans.push({
     spanId: "0000000000000001",
     name: "versionless.exchange",
-    startMs: event.ts,
-    durationMs: event.latencyMs + rand(),
+    startMs: traceStartedAt,
+    durationMs: traceDurationMs,
     attrs: {
       "versionless.adapter": event.adapter,
       "versionless.method": event.method,
@@ -175,12 +213,13 @@ for (const event of events) {
       "versionless.status": event.status,
       "versionless.transform_count": event.transformCount,
     },
+    ...(failed ? { failed: true } : {}),
   });
   traceSpans.push({
     spanId: "0000000000000002",
     parentSpanId: "0000000000000001",
     name: "versionless.resolve",
-    startMs: event.ts,
+    startMs: traceStartedAt,
     durationMs: 0.05 + rand() * 0.2,
     attrs: {
       "versionless.version.source": "header",
@@ -188,7 +227,10 @@ for (const event of events) {
     },
   });
   // One down-transform span per drift step, newest change first.
-  const changes = KNOWN_VERSIONS.filter((v) => v > event.version).reverse();
+  const changes = scenario.versions
+    .map((plan) => plan.version)
+    .filter((version) => version > event.version)
+    .reverse();
   let offset = 1 + rand() * 2;
   for (let step = 0; step < event.transformCount; step++) {
     const change = changes[step % Math.max(1, changes.length)] ?? "2026-07-21";
@@ -197,12 +239,10 @@ for (const event of events) {
       spanId: (step + 3).toString(16).padStart(16, "0"),
       parentSpanId: "0000000000000001",
       name: "versionless.transform.down",
-      startMs: event.ts + Math.round(offset),
+      startMs: traceStartedAt + Math.round(offset),
       durationMs: 0.1 + rand() * 0.8,
       attrs: { "versionless.change": change, "versionless.route": event.route },
-      ...(failed && isLast
-        ? { error: `TransformError: down(${change}) on ${event.route}` }
-        : {}),
+      ...(failed && isLast ? { failed: true } : {}),
     });
     offset += 0.5 + rand() * 1.5;
   }
@@ -225,26 +265,26 @@ function trustedResource(attributes: OtlpKeyValue[]): OtlpKeyValue[] {
 }
 
 async function post(signal: "logs" | "traces", body: unknown): Promise<void> {
-  const response = await fetch(`${OTLP_BASE_URL}/v1/${signal}`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      ...(USE_AUTHENTICATED_GATEWAY
-        ? {
-            authorization: `Bearer ${DEMO_API_KEY}`,
-            "x-versionless-project": PROJECT_NAME,
-          }
-        : {}),
+  await postSeedBatch({
+    url: `${OTLP_BASE_URL}/v1/${signal}`,
+    body,
+    headers: USE_AUTHENTICATED_GATEWAY
+      ? {
+          authorization: `Bearer ${DEMO_API_KEY}`,
+          "x-versionless-project": PROJECT_NAME,
+        }
+      : undefined,
+    onRetry: ({ attempt, maxAttempts, delayMs }) => {
+      console.log(
+        `Collector ${signal} queue is busy; retrying batch in ${delayMs}ms (attempt ${attempt}/${maxAttempts})…`,
+      );
     },
-    body: JSON.stringify(body),
   });
-  if (!response.ok) {
-    throw new Error(
-      `Collector ${signal} ingest failed (${response.status}): ${await response.text()}`,
-    );
-  }
 }
 
+// The local Collector's ClickHouse exporter queue accepts fewer than 2,000
+// records at once. Keep batches comfortably below that boundary and let the
+// bounded retry above absorb normal exporter backpressure.
 const LOG_BATCH = 500;
 for (let offset = 0; offset < events.length; offset += LOG_BATCH) {
   const request = telemetryEventsToOtlp(
@@ -254,6 +294,11 @@ for (let offset = 0; offset < events.length; offset += LOG_BATCH) {
   const resource = request.resourceLogs[0]!.resource!;
   resource.attributes = trustedResource(resource.attributes ?? []);
   await post("logs", request);
+  if (offset > 0 && offset % 40_000 === 0) {
+    console.log(
+      `Seeded ${offset.toLocaleString()} / ${events.length.toLocaleString()} request logs…`,
+    );
+  }
 }
 
 const arbitraryTraceId = randomBytes(16).toString("hex");
@@ -326,5 +371,5 @@ await post("traces", arbitraryTrace);
 spanCount++;
 
 console.log(
-  `Done — ${events.length + 1} logs and ${traces.length + 1} traces (${spanCount} spans) written through the Collector. Open the dashboard: http://localhost:3001/insights`,
+  `Done — ${scenario.versions.length} versions, ${scenario.contracts.length} uploaded contracts, ${events.length + 1} logs, and ${traces.length + 1} traces (${spanCount} spans) written through the Collector. Open the dashboard: http://localhost:3001/insights`,
 );
