@@ -48,11 +48,21 @@ schema-correct query than to omit the dashboard.`;
 const MAX_TOOL_ROWS = 200;
 
 const MODEL_CACHE_TTL_MS = 5 * 60 * 1000;
+const DEFAULT_AI_BASE_URL = "http://localhost:8317/v1";
 
-if (
-  env.NODE_ENV === "production" &&
-  env.AI_BASE_URL.startsWith("http://localhost")
-) {
+/**
+ * `SKIP_ENV_VALIDATION=1` intentionally returns the raw runtime environment,
+ * so schema defaults are not available in deployed functions. Keep the chat
+ * default at its point of use so an unconfigured optional feature cannot crash
+ * every server route during module evaluation.
+ */
+export function resolveAiBaseUrl(value: string | undefined): string {
+  return value?.trim() || DEFAULT_AI_BASE_URL;
+}
+
+const aiBaseUrl = resolveAiBaseUrl(env.AI_BASE_URL);
+
+if (env.NODE_ENV === "production" && aiBaseUrl.startsWith("http://localhost")) {
   console.warn(
     "[chat] AI_BASE_URL still points at localhost; the assistant will fail in production",
   );
@@ -175,7 +185,7 @@ export async function listChatModels(
 ): Promise<ChatModelSummary[]> {
   if (modelCache && modelCache.expires > Date.now()) return modelCache.models;
 
-  const base = env.AI_BASE_URL.replace(/\/$/, "");
+  const base = aiBaseUrl.replace(/\/$/, "");
   const response = await fetchImpl(`${base}/models`, {
     headers: aiHeaders(),
   });
@@ -301,7 +311,7 @@ const defaultDependencies: ChatRouteDependencies = {
   listModels: () => listChatModels(),
   runModel({ modelId, system, messages, tools }) {
     const model = createOpenAICompatible({
-      baseURL: env.AI_BASE_URL,
+      baseURL: aiBaseUrl,
       apiKey: env.AI_API_KEY,
     })(modelId);
     const result = streamText({
