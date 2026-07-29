@@ -1,0 +1,27 @@
+apps/dashboard/src/bootstrap.test.ts
+  s_dd8d569cad0881::t_d44d9534588740 1-28
+vercel.json
+  s_dd8d569cad0881::t_d44d9534588740 18
+apps/dashboard/src/main.tsx
+  s_dd8d569cad0881::t_d44d9534588740 4,7,47-54,57
+apps/dashboard/src/bootstrap.ts
+  s_dd8d569cad0881::t_d44d9534588740 1-12
+vercel.test.ts
+  s_dd8d569cad0881::t_d44d9534588740 1-17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "43ee515800401cb11941420fa904b72ad106d694",
+  "prompts": {},
+  "sessions": {
+    "s_dd8d569cad0881": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fac1a-865a-7f81-9d70-c30aa6c005e3",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    }
+  }
+}
