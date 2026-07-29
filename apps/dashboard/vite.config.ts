@@ -9,6 +9,9 @@ export default defineConfig({
   // keep dev and prod URL spaces identical so absolute links never fork.
   base: "/dashboard/",
   build: {
+    // Vercel Services preserve the public request path. Mirror the mount in
+    // the artifact tree so /dashboard/assets/* resolves before the SPA fallback.
+    outDir: "dist/dashboard",
     modulePreload: false,
     rollupOptions: {
       input: {

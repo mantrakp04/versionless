@@ -3,30 +3,14 @@ import { describe, expect, test } from "bun:test";
 import config from "./vercel.json";
 
 describe("dashboard Vercel routing", () => {
-  test("strips the public mount before serving built files", () => {
+  test("serves mounted build files before applying the SPA fallback", () => {
+    expect(config.services.dashboard.outputDirectory).toBe("dist");
     expect(config.services.dashboard.routes).toEqual([
-      {
-        src: "/dashboard",
-        transforms: [
-          {
-            type: "request.path",
-            op: "set",
-            args: "/",
-          },
-        ],
-      },
-      {
-        src: "/dashboard/(.*)",
-        transforms: [
-          {
-            type: "request.path",
-            op: "set",
-            args: "/$1",
-          },
-        ],
-      },
       { handle: "filesystem" },
-      { src: "/.*", dest: "/index.html" },
+      {
+        src: "/dashboard(?:/.*)?",
+        dest: "/dashboard/index.html",
+      },
     ]);
   });
 

@@ -13,33 +13,14 @@
       "framework": "vite",
       "installCommand": "cd ../.. && bun install",
       "buildCommand": "bun run build",
+      "outputDirectory": "dist",
       "routes": [
-        {
-          "src": "/dashboard",
-          "transforms": [
-            {
-              "type": "request.path",
-              "op": "set",
-              "args": "/"
-            }
-          ]
-        },
-        {
-          "src": "/dashboard/(.*)",
-          "transforms": [
-            {
-              "type": "request.path",
-              "op": "set",
-              "args": "/$1"
-            }
-          ]
-        },
         {
           "handle": "filesystem"
         },
         {
-          "src": "/.*",
-          "dest": "/index.html"
+          "src": "/dashboard(?:/.*)?",
+          "dest": "/dashboard/index.html"
         }
       ]
     },
