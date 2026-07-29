@@ -71,6 +71,12 @@ const uiMessageSchema = z.object({
 export const chatRequestSchema = z.object({
   projectId: z.uuid(),
   messages: z.array(uiMessageSchema).min(1).max(MAX_MESSAGES),
+  /**
+   * Kept in the published request shape for older dashboard clients. Model
+   * selection is server-owned; this value is accepted but intentionally not
+   * used when constructing the model call.
+   */
+  model: z.string().min(1).max(200).optional(),
 });
 
 type ChatRouteDependencies = {
@@ -332,6 +338,29 @@ export function createChatApp(
   dependencies: ChatRouteDependencies = defaultDependencies,
 ) {
   return new Elysia({ name: "versionless-chat" })
+    .get("/v1/chat/models", async ({ request, status }) => {
+      const startedAt = performance.now();
+      let responseStatus = 200;
+      try {
+        const user = await dependencies.getUser(request);
+        if (!user) {
+          responseStatus = 401;
+          return status(401, { error: "Sign in required" });
+        }
+
+        // Model choice is server-owned now, but this endpoint remains part of
+        // the published API contract for older dashboard clients.
+        return {
+          models: [{ id: env.AI_MODEL, name: env.AI_MODEL }],
+        };
+      } finally {
+        await dependencies.recordTelemetry?.(
+          "GET /v1/chat/models",
+          responseStatus,
+          Math.round(performance.now() - startedAt),
+        );
+      }
+    })
     .post(
       "/v1/chat",
       async ({ body, request, status }) => {

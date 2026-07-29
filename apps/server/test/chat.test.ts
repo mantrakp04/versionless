@@ -30,6 +30,14 @@ function chatRequest(body: unknown, authenticated = true) {
   });
 }
 
+function modelsRequest(authenticated = true) {
+  return new Request("http://localhost/v1/chat/models", {
+    headers: authenticated
+      ? { authorization: "Bearer access-token" }
+      : undefined,
+  });
+}
+
 function ask(text: string) {
   return {
     projectId: project.id,
@@ -60,17 +68,50 @@ function deps(overrides: Partial<Parameters<typeof createChatApp>[0]> = {}) {
   return { app, captured };
 }
 
+describe("GET /v1/chat/models", () => {
+  test("preserves the published endpoint with the server-selected model", async () => {
+    const telemetry: Array<{ route: string; status: number }> = [];
+    const { app } = deps({
+      recordTelemetry: async (route, status) => {
+        telemetry.push({ route, status });
+      },
+    });
+
+    const response = await app.handle(modelsRequest());
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      models: [{ id: "gpt-5.6-luna", name: "gpt-5.6-luna" }],
+    });
+    expect(telemetry).toEqual([
+      { route: "GET /v1/chat/models", status: 200 },
+    ]);
+  });
+
+  test("fails closed when the caller is signed out", async () => {
+    const { app } = deps();
+
+    const response = await app.handle(modelsRequest(false));
+
+    expect(response.status).toBe(401);
+    expect(await response.json()).toEqual({ error: "Sign in required" });
+  });
+});
+
 describe("POST /v1/chat", () => {
   test("builds a project-scoped prompt and tools for an authorized caller", async () => {
     const { app, captured } = deps();
+    const request = {
+      ...ask("what is my p95 this week?"),
+      model: "caller-selected-model",
+    };
 
-    const response = await app.handle(
-      chatRequest(ask("what is my p95 this week?")),
-    );
+    const response = await app.handle(chatRequest(request));
 
     expect(response.status).toBe(200);
     expect(captured).toHaveLength(1);
     const call = captured[0]!;
+    // The legacy field remains accepted, but cannot override server policy.
     expect(call.modelId).toBe("gpt-5.6-luna");
     expect(call.system).toContain("billing");
     expect(call.system).toContain("2026-05-14");
