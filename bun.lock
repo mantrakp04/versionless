@@ -268,6 +268,7 @@
     },
     "packages/api": {
       "name": "@versionless/api",
+      "version": "0.0.0",
       "dependencies": {
         "@clickhouse/client-web": "catalog:",
         "@hexclave/js": "^1.0.52",
@@ -287,6 +288,7 @@
     },
     "packages/cli": {
       "name": "@versionless/cli",
+      "version": "0.1.0",
       "bin": {
         "versionless": "./bin/versionless.ts",
       },
@@ -323,6 +325,7 @@
     },
     "packages/core": {
       "name": "@versionless/core",
+      "version": "0.1.0",
       "devDependencies": {
         "@types/bun": "catalog:",
         "@versionless/config": "workspace:*",
@@ -380,6 +383,7 @@
     },
     "packages/query-catalog": {
       "name": "@versionless/query-catalog",
+      "version": "0.1.0",
       "devDependencies": {
         "@types/bun": "catalog:",
         "@versionless/config": "workspace:*",

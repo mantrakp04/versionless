@@ -1,10 +1,27 @@
 {
   "name": "@versionless/query-catalog",
+  "version": "0.1.0",
+  "description": "Curated analytics queries used by the Versionless CLI.",
   "type": "module",
+  "files": [
+    "src",
+    "README.md"
+  ],
   "exports": {
     ".": {
       "default": "./src/index.ts"
     }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mantrakp04/versionless.git",
+    "directory": "packages/query-catalog"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "bun": ">=1.3.0"
   },
   "scripts": {
     "generate": "VITE_HEXCLAVE_PROJECT_ID=00000000-0000-4000-8000-000000000001 VITE_SERVER_URL=/api SKIP_ENV_VALIDATION=1 bun run scripts/generate.ts",

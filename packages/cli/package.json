@@ -1,6 +1,13 @@
 {
   "name": "@versionless/cli",
+  "version": "0.1.0",
+  "description": "CLI for API surface snapshots, compatibility checks, and version transform verification.",
   "type": "module",
+  "files": [
+    "bin",
+    "src",
+    "README.md"
+  ],
   "exports": {
     ".": {
       "default": "./src/index.ts"
@@ -16,9 +23,20 @@
   "bin": {
     "versionless": "./bin/versionless.ts"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mantrakp04/versionless.git",
+    "directory": "packages/cli"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "bun": ">=1.3.0"
+  },
   "dependencies": {
-    "@versionless/core": "workspace:*",
-    "@versionless/query-catalog": "workspace:*"
+    "@versionless/core": "workspace:0.1.0",
+    "@versionless/query-catalog": "workspace:0.1.0"
   },
   "devDependencies": {
     "@orpc/server": "catalog:",
