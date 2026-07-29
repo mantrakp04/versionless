@@ -1,9 +1,10 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { HexclaveProvider, HexclaveTheme } from "@hexclave/react";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 
+import { dismissBootstrapShell } from "./bootstrap";
 import { ClientErrorState } from "./components/client-error-state";
 import Loader, { AppShellSkeleton } from "./components/loader";
 import { hexclaveClientApp } from "./hexclave/client";
@@ -43,7 +44,15 @@ if (!rootElement) {
   throw new Error("Root element not found");
 }
 
+function DashboardRoot() {
+  useEffect(() => {
+    dismissBootstrapShell(document);
+  }, []);
+
+  return <RouterProvider router={router} />;
+}
+
 void import("./index.css").then(() => {
   const root = ReactDOM.createRoot(rootElement);
-  root.render(<RouterProvider router={router} />);
+  root.render(<DashboardRoot />);
 });

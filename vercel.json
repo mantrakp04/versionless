@@ -15,7 +15,7 @@
       "buildCommand": "bun run build",
       "rewrites": [
         {
-          "source": "/(.*)",
+          "source": "/((?!.*\\.).*)",
           "destination": "/index.html"
         }
       ]
