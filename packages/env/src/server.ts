@@ -2,21 +2,26 @@ import "dotenv/config";
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
+import {
+  localClickhouseUrl,
+  localCorsOrigin,
+  localDatabaseUrl,
+} from "./local";
 import { getVercelOrigin } from "./vercel";
 
+const isProduction = process.env.NODE_ENV === "production";
 const vercelOrigin = getVercelOrigin();
-const defaultAiBaseUrl =
-  process.env.NODE_ENV === "production"
-    ? "https://openrouter.ai/api/v1"
-    : "http://localhost:8317/v1";
-const defaultAiModel =
-  process.env.NODE_ENV === "production"
-    ? "openai/gpt-5.6-luna"
-    : "gpt-5.6-luna";
-// The dashboard's fixed dev port. Production has no fallback beyond the
-// Vercel origin: an unset CORS_ORIGIN must fail validation loudly.
-const defaultCorsOrigin =
-  process.env.NODE_ENV === "production" ? undefined : "http://localhost:3001";
+const defaultAiBaseUrl = isProduction
+  ? "https://openrouter.ai/api/v1"
+  : "http://localhost:8317/v1";
+const defaultAiModel = isProduction
+  ? "openai/gpt-5.6-luna"
+  : "gpt-5.6-luna";
+// Local docker-compose / dashboard ports. Production has no fallback beyond
+// the Vercel origin for CORS: an unset value must fail validation loudly.
+const defaultCorsOrigin = isProduction ? undefined : localCorsOrigin;
+const defaultDatabaseUrl = isProduction ? undefined : localDatabaseUrl;
+const defaultClickhouseUrl = isProduction ? undefined : localClickhouseUrl;
 
 const runtimeEnv = {
   ...process.env,
@@ -25,6 +30,8 @@ const runtimeEnv = {
   AI_BASE_URL: process.env.AI_BASE_URL || defaultAiBaseUrl,
   AI_MODEL: process.env.AI_MODEL || defaultAiModel,
   CORS_ORIGIN: process.env.CORS_ORIGIN || vercelOrigin || defaultCorsOrigin,
+  DATABASE_URL: process.env.DATABASE_URL || defaultDatabaseUrl,
+  CLICKHOUSE_URL: process.env.CLICKHOUSE_URL || defaultClickhouseUrl,
 };
 
 export const env = createEnv({

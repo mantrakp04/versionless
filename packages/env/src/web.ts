@@ -13,6 +13,20 @@ type RuntimeEnv = Record<string, string | number | boolean | undefined>;
 const runtimeEnv: RuntimeEnv =
   (import.meta as { env?: RuntimeEnv }).env ?? {};
 
+// Local Vite dev talks to apps/server on :3000. Deployed builds are same-origin:
+// vercel.json routes /api to the server service, and getServerUrl resolves a
+// leading-slash path against the current origin.
+const defaultServerUrl =
+  runtimeEnv.DEV === true || runtimeEnv.MODE === "development"
+    ? "http://localhost:3000"
+    : "/api";
+
+const resolvedRuntimeEnv: RuntimeEnv = {
+  ...runtimeEnv,
+  // Resolve before createEnv so SKIP_ENV_VALIDATION still sees the default.
+  VITE_SERVER_URL: runtimeEnv.VITE_SERVER_URL || defaultServerUrl,
+};
+
 export const env = createEnv({
   extends: [viteEnv],
   clientPrefix: "VITE_",
@@ -20,7 +34,7 @@ export const env = createEnv({
     VITE_SERVER_URL: serverUrlSchema,
     VITE_HEXCLAVE_PROJECT_ID: z.string().min(1),
   },
-  runtimeEnv,
+  runtimeEnv: resolvedRuntimeEnv,
   // Read the skip flag from import.meta.env, not process.env: this module is
   // bundled for the browser, where `process` does not exist.
   skipValidation: !!runtimeEnv.SKIP_ENV_VALIDATION,

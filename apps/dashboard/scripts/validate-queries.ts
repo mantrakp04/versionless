@@ -19,6 +19,8 @@
  * their import chain. None of it is used to reach ClickHouse — only
  * `CLICKHOUSE_URL` is — but those modules will not load without it.
  */
+import { localClickhouseUrl } from "@versionless/env/local";
+
 import {
   errorGroupHistoryQueryOptions,
   errorGroupOccurrencesQueryOptions,
@@ -206,16 +208,9 @@ const CASES: Array<{
 
 // Standalone dev/CI tooling reads its one operator-supplied variable directly:
 // pulling in @versionless/env/server would demand the whole server schema
-// (DATABASE_URL, Hexclave keys) this script has no use for.
-const url = process.env.CLICKHOUSE_URL;
-if (!url) {
-  console.error(
-    "Set CLICKHOUSE_URL, e.g.\n" +
-      "  CLICKHOUSE_URL=http://clickhouse:password@localhost:18123/versionless \\\n" +
-      "    bun run --cwd apps/dashboard validate-queries",
-  );
-  process.exit(2);
-}
+// (DATABASE_URL, Hexclave keys) this script has no use for. Unset falls back to
+// the same local docker-compose stack the rest of the workspace defaults to.
+const url = process.env.CLICKHOUSE_URL || localClickhouseUrl;
 
 const parsed = new URL(url);
 const endpoint = `${parsed.protocol}//${parsed.host}`;
