@@ -15,6 +15,26 @@
       "buildCommand": "bun run build",
       "routes": [
         {
+          "src": "/dashboard",
+          "transforms": [
+            {
+              "type": "request.path",
+              "op": "set",
+              "args": "/"
+            }
+          ]
+        },
+        {
+          "src": "/dashboard/(.*)",
+          "transforms": [
+            {
+              "type": "request.path",
+              "op": "set",
+              "args": "/$1"
+            }
+          ]
+        },
+        {
           "handle": "filesystem"
         },
         {
@@ -271,15 +291,13 @@
     {
       "source": "/dashboard",
       "destination": {
-        "service": "dashboard",
-        "path": "/"
+        "service": "dashboard"
       }
     },
     {
       "source": "/dashboard/:path*",
       "destination": {
-        "service": "dashboard",
-        "path": "/:path*"
+        "service": "dashboard"
       }
     },
     {

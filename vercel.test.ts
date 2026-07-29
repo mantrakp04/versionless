@@ -3,14 +3,34 @@ import { describe, expect, test } from "bun:test";
 import config from "./vercel.json";
 
 describe("dashboard Vercel routing", () => {
-  test("serves built files before applying the client-route fallback", () => {
+  test("strips the public mount before serving built files", () => {
     expect(config.services.dashboard.routes).toEqual([
+      {
+        src: "/dashboard",
+        transforms: [
+          {
+            type: "request.path",
+            op: "set",
+            args: "/",
+          },
+        ],
+      },
+      {
+        src: "/dashboard/(.*)",
+        transforms: [
+          {
+            type: "request.path",
+            op: "set",
+            args: "/$1",
+          },
+        ],
+      },
       { handle: "filesystem" },
       { src: "/.*", dest: "/index.html" },
     ]);
   });
 
-  test("strips the public mount before routing into the dashboard service", () => {
+  test("preserves the public path when routing into the dashboard service", () => {
     const rewrites = config.rewrites.filter(
       (rewrite) =>
         rewrite.source === "/dashboard" ||
@@ -21,11 +41,11 @@ describe("dashboard Vercel routing", () => {
     expect(rewrites).toEqual([
       {
         source: "/dashboard",
-        destination: { service: "dashboard", path: "/" },
+        destination: { service: "dashboard" },
       },
       {
         source: "/dashboard/:path*",
-        destination: { service: "dashboard", path: "/:path*" },
+        destination: { service: "dashboard" },
       },
     ]);
   });
