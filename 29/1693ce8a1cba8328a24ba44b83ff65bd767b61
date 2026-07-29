@@ -1,0 +1,24 @@
+apps/server/src/chat.ts
+  s_dd8d569cad0881::t_2785112f968e0e 341-363
+  s_dd8d569cad0881::t_f8971e00690a3f 74-79
+apps/server/test/chat.test.ts
+  s_dd8d569cad0881::t_f8971e00690a3f 104-107,109,114
+  s_dd8d569cad0881::t_2785112f968e0e 33-40,71-99
+  s_dd8d569cad0881::t_6592b8e8d75ca0 100
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "291693ce8a1cba8328a24ba44b83ff65bd767b61",
+  "prompts": {},
+  "sessions": {
+    "s_dd8d569cad0881": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fac1a-865a-7f81-9d70-c30aa6c005e3",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    }
+  }
+}
