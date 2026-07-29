@@ -14,4 +14,17 @@ describe("dashboard Vercel routing", () => {
     expect(source.test("/site.webmanifest")).toBe(false);
     expect(rewrite!.destination).toBe("/index.html");
   });
+
+  test("preserves the dashboard base path when routing into its service", () => {
+    const rewrites = config.rewrites.filter(
+      (rewrite) =>
+        rewrite.source === "/dashboard" ||
+        rewrite.source === "/dashboard/:path*",
+    );
+
+    expect(rewrites).toHaveLength(2);
+    for (const rewrite of rewrites) {
+      expect(rewrite.destination).toEqual({ service: "dashboard" });
+    }
+  });
 });

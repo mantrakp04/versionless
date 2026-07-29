@@ -268,15 +268,13 @@
     {
       "source": "/dashboard",
       "destination": {
-        "service": "dashboard",
-        "path": "/"
+        "service": "dashboard"
       }
     },
     {
       "source": "/dashboard/:path*",
       "destination": {
-        "service": "dashboard",
-        "path": "/:path*"
+        "service": "dashboard"
       }
     },
     {
