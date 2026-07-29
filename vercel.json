@@ -13,10 +13,13 @@
       "framework": "vite",
       "installCommand": "cd ../.. && bun install",
       "buildCommand": "bun run build",
-      "rewrites": [
+      "routes": [
         {
-          "source": "/((?!.*\\.).*)",
-          "destination": "/index.html"
+          "handle": "filesystem"
+        },
+        {
+          "src": "/.*",
+          "dest": "/index.html"
         }
       ]
     },
@@ -268,13 +271,15 @@
     {
       "source": "/dashboard",
       "destination": {
-        "service": "dashboard"
+        "service": "dashboard",
+        "path": "/"
       }
     },
     {
       "source": "/dashboard/:path*",
       "destination": {
-        "service": "dashboard"
+        "service": "dashboard",
+        "path": "/:path*"
       }
     },
     {
