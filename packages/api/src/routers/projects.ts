@@ -18,7 +18,17 @@ import {
 
 type ProjectLoader = (teamId: string) => Promise<Project[]>;
 type ProjectVersionLoader = (projectId: string) => Promise<ProjectVersion[]>;
-type ProjectSunsetLoader = (projectId: string) => Promise<ProjectSunset[]>;
+type ProjectReleaseVersion = Pick<ProjectVersion, "version">;
+type ProjectReleaseVersionLoader = (
+  projectId: string,
+) => Promise<ProjectReleaseVersion[]>;
+type ProjectReleaseSunset = Pick<
+  ProjectSunset,
+  "version" | "after" | "message"
+>;
+type ProjectSunsetLoader = (
+  projectId: string,
+) => Promise<ProjectReleaseSunset[]>;
 
 async function loadProjectsForTeam(teamId: string): Promise<Project[]> {
   return db
@@ -38,11 +48,25 @@ async function loadVersionsForProject(
     .orderBy(desc(projectVersions.version));
 }
 
+async function loadReleaseVersionsForProject(
+  projectId: string,
+): Promise<ProjectReleaseVersion[]> {
+  return db
+    .select({ version: projectVersions.version })
+    .from(projectVersions)
+    .where(eq(projectVersions.projectId, projectId))
+    .orderBy(desc(projectVersions.version));
+}
+
 async function loadSunsetsForProject(
   projectId: string,
-): Promise<ProjectSunset[]> {
+): Promise<ProjectReleaseSunset[]> {
   return db
-    .select()
+    .select({
+      version: projectSunsets.version,
+      after: projectSunsets.after,
+      message: projectSunsets.message,
+    })
     .from(projectSunsets)
     .where(eq(projectSunsets.projectId, projectId))
     .orderBy(asc(projectSunsets.version));
@@ -232,7 +256,7 @@ export interface ProjectReleases {
 export async function loadProjectReleases(
   user: ProjectAccessUser,
   projectId: string,
-  loadVersions: ProjectVersionLoader = loadVersionsForProject,
+  loadVersions: ProjectReleaseVersionLoader = loadReleaseVersionsForProject,
   loadSunsets: ProjectSunsetLoader = loadSunsetsForProject,
   authorizeProject: typeof requireProjectAccess = requireProjectAccess,
 ): Promise<ProjectReleases> {

@@ -6,17 +6,63 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 
+const siteUrl = "https://versionless.vercel.app";
+const demoUrl = `${siteUrl}/demo`;
+const title = "Live API versioning demo | versionless";
+const description =
+  "Try date-based API versioning live: send current and pinned requests, inspect reversible transforms, and compare exact wire responses.";
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "versionless demo",
+  applicationCategory: "DeveloperApplication",
+  operatingSystem: "Web",
+  url: demoUrl,
+  description,
+  isAccessibleForFree: true,
+  isPartOf: {
+    "@type": "WebSite",
+    name: "versionless",
+    url: siteUrl,
+  },
+};
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { title },
+      { name: "description", content: description },
+      { name: "application-name", content: "versionless" },
+      { name: "robots", content: "index, follow, max-image-preview:large" },
+      { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "versionless" },
+      { property: "og:url", content: demoUrl },
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+      { property: "og:image", content: `${siteUrl}/og-image.png` },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
       {
-        name: "description",
-        content:
-          "Live demo of versionless — one API, every version, zero handler forks.",
+        property: "og:image:alt",
+        content: "versionless — API compatibility without version forks",
       },
-      { title: "versionless demo" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: title },
+      { name: "twitter:description", content: description },
+      { name: "twitter:image", content: `${siteUrl}/og-image.png` },
+      { name: "theme-color", content: "#0b0d10" },
+    ],
+    links: [
+      { rel: "canonical", href: demoUrl },
+      { rel: "icon", href: `${siteUrl}/favicon.ico`, sizes: "any" },
+      { rel: "icon", href: `${siteUrl}/favicon.svg`, type: "image/svg+xml" },
+      {
+        rel: "apple-touch-icon",
+        href: `${siteUrl}/apple-touch-icon.png`,
+        sizes: "180x180",
+      },
     ],
   }),
   component: RootComponent,
@@ -27,9 +73,23 @@ function RootComponent() {
     <html lang="en">
       <head>
         <HeadContent />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(jsonLd).replaceAll("<", "\\u003c"),
+          }}
+        />
         <style>{css}</style>
       </head>
       <body>
+        <header className="site-nav">
+          <a href="/">versionless</a>
+          <nav aria-label="Primary">
+            <a href="/docs">docs</a>
+            <a href="/dashboard">dashboard</a>
+            <a href="https://github.com/mantrakp04/versionless">github</a>
+          </nav>
+        </header>
         <Outlet />
         <Scripts />
       </body>
@@ -46,6 +106,15 @@ body {
   color: #e6e8eb;
   font: 15px/1.6 ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
+.site-nav {
+  max-width: 1060px; margin: 0 auto; padding: 24px 24px 0;
+  display: flex; align-items: center; justify-content: space-between;
+  font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.site-nav a { color: #9aa3ad; text-decoration: none; }
+.site-nav a:hover { color: #e6e8eb; }
+.site-nav > a { color: #e6e8eb; font-weight: 600; }
+.site-nav nav { display: flex; gap: 20px; }
 main { max-width: 1060px; margin: 0 auto; padding: 48px 24px 96px; }
 h1 { font-size: 28px; letter-spacing: -0.02em; margin: 0 0 4px; }
 h1 span { color: #6ee7b7; }

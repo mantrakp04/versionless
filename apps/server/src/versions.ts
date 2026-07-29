@@ -1,4 +1,4 @@
-import { and, eq, notInArray } from "drizzle-orm";
+import { and, eq, notInArray, sql } from "drizzle-orm";
 import { publicQueryHttpError } from "@versionless/api/error-policy";
 import { fnv1a, stableStringify } from "@versionless/core";
 import { db } from "@versionless/db";
@@ -151,24 +151,24 @@ export async function saveProjectSunsets(
           ),
         ),
       );
-    for (const sunset of sunsets) {
-      await tx
-        .insert(projectSunsets)
-        .values({
+    await tx
+      .insert(projectSunsets)
+      .values(
+        sunsets.map((sunset) => ({
           projectId,
           version: sunset.version,
           after: sunset.after,
           message: sunset.message ?? null,
-        })
-        .onConflictDoUpdate({
-          target: [projectSunsets.projectId, projectSunsets.version],
-          set: {
-            after: sunset.after,
-            message: sunset.message ?? null,
-            updatedAt: new Date(),
-          },
-        });
-    }
+        })),
+      )
+      .onConflictDoUpdate({
+        target: [projectSunsets.projectId, projectSunsets.version],
+        set: {
+          after: sql`excluded.after`,
+          message: sql`excluded.message`,
+          updatedAt: new Date(),
+        },
+      });
   });
 }
 

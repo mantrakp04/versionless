@@ -7,9 +7,17 @@ node_modules
 dist
 build
 *.tsbuildinfo
+.output
+.vinxi
+.nitro/
+.tanstack/
+.react-router/
+.dev-dist
+dev-dist
+.open-next
 
 # Generated files
-apps/web/src/routeTree.gen.ts
+apps/dashboard/src/routeTree.gen.ts
 
 # Environment variables
 .env

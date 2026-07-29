@@ -9,13 +9,22 @@ const defaultAiBaseUrl =
   process.env.NODE_ENV === "production"
     ? "https://openrouter.ai/api/v1"
     : "http://localhost:8317/v1";
+const defaultAiModel =
+  process.env.NODE_ENV === "production"
+    ? "openai/gpt-5.6-luna"
+    : "gpt-5.6-luna";
+// The dashboard's fixed dev port. Production has no fallback beyond the
+// Vercel origin: an unset CORS_ORIGIN must fail validation loudly.
+const defaultCorsOrigin =
+  process.env.NODE_ENV === "production" ? undefined : "http://localhost:3001";
 
 const runtimeEnv = {
   ...process.env,
   // Resolve dynamic defaults before createEnv so they remain available when
   // SKIP_ENV_VALIDATION returns the raw runtime environment in deployments.
   AI_BASE_URL: process.env.AI_BASE_URL || defaultAiBaseUrl,
-  CORS_ORIGIN: process.env.CORS_ORIGIN ?? vercelOrigin,
+  AI_MODEL: process.env.AI_MODEL || defaultAiModel,
+  CORS_ORIGIN: process.env.CORS_ORIGIN || vercelOrigin || defaultCorsOrigin,
 };
 
 export const env = createEnv({
@@ -42,8 +51,8 @@ export const env = createEnv({
     // server in development, OpenRouter in production.
     AI_BASE_URL: z.url(),
     AI_API_KEY: z.string().optional(),
-    /** Model used when the client does not pick one from `/v1/chat/models`. */
-    AI_MODEL: z.string().optional(),
+    /** Server-selected model backing the dashboard assistant. */
+    AI_MODEL: z.string().min(1),
     TELEMETRY_SAMPLE_RATE: z.coerce.number().min(0).max(1).default(1),
     VERSIONLESS_INGEST_KEYS: z.string().optional(),
     VERSIONLESS_API_KEY: z.string().optional(),

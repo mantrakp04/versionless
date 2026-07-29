@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>versionless — dashboard</title>
+    <meta
+      name="description"
+      content="Insights dashboard for versionless: version adoption, drift, and migration blockers."
+    />
+    <meta name="application-name" content="versionless" />
+    <meta name="theme-color" content="#111111" />
+    <!-- The dashboard is fully authenticated; the public marketing surface lives in apps/landing. -->
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <style>
+      .bootstrap-shell {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 1.5rem;
+        background: #0a0a0a;
+        color: #fafafa;
+        font-family:
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        text-align: center;
+      }
+
+      .bootstrap-shell h1 {
+        margin: 0;
+        font-size: clamp(2rem, 8vw, 3rem);
+        line-height: 1;
+        letter-spacing: -0.04em;
+      }
+
+      .bootstrap-shell p {
+        margin: 0.75rem 0 0;
+        color: #a1a1aa;
+        font-size: 0.875rem;
+      }
+
+      .bootstrap-shell--ready {
+        z-index: -1;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main
+      id="bootstrap-shell"
+      class="bootstrap-shell"
+      aria-label="Loading dashboard"
+    >
+      <div>
+        <h1>versionless dashboard</h1>
+        <p>Loading dashboard…</p>
+      </div>
+    </main>
+    <div id="app"></div>
+    <script type="module">
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          void import("/src/main.tsx");
+        });
+      });
+    </script>
+  </body>
+</html>

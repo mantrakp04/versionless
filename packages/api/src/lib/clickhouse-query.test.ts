@@ -114,7 +114,11 @@ describe("tenant-isolated ClickHouse queries", () => {
     expect(sql).toContain("FROM `versionless`.otel_logs");
     expect(sql).not.toContain("FROM `versionless`.otel_traces");
     expect(sql).toContain("EventName = 'versionless.request'");
-    expect(sql).toContain("countIf(toUInt16OrZero");
+    expect(sql).toContain(
+      "toUInt16OrZero(LogAttributes['http.response.status_code']) AS status_code",
+    );
+    expect(sql).toContain("countIf(status_code >= 400)");
+    expect(sql).toContain("AND notEmpty(project_id)");
   });
 
   test("widens a rollup an earlier deploy already created", () => {
@@ -157,14 +161,15 @@ describe("tenant-isolated ClickHouse queries", () => {
 
     // A materialized view's SELECT is fixed at creation and IF NOT EXISTS will
     // not rewrite it, so a widened rollup needs a new generation name.
-    expect(created).toContain("versionless_rollup_daily_mv_v2");
+    expect(created).toContain("versionless_rollup_daily_mv_v3");
     expect(dropped).toEqual([
       "DROP VIEW IF EXISTS `versionless`.versionless_rollup_daily_mv",
+      "DROP VIEW IF EXISTS `versionless`.versionless_rollup_daily_mv_v2",
     ]);
     // Dropping the generation we are about to create would leave no view at
     // all on every restart.
     for (const drop of dropped) {
-      expect(drop).not.toContain("versionless_rollup_daily_mv_v2");
+      expect(drop).not.toContain("versionless_rollup_daily_mv_v3");
     }
   });
 
@@ -181,10 +186,10 @@ describe("tenant-isolated ClickHouse queries", () => {
     // lets the overview separate "no client pinned" from "we never recorded it"
     // on days rolled up before the attribute existed.
     expect(sql).toContain(
-      "countIf(notEmpty(LogAttributes['versionless.version.source'])) AS sourced",
+      "countIf(notEmpty(version_source)) AS sourced",
     );
     expect(sql).toContain(
-      "countIf(LogAttributes['versionless.version.source'] = 'default') AS unpinned",
+      "countIf(version_source = 'default') AS unpinned",
     );
   });
 
@@ -212,8 +217,11 @@ describe("tenant-isolated ClickHouse queries", () => {
     expect(mvIndex).toBeLessThan(executed.indexOf(backfill));
     // Re-running provisioning must not double-count, and the guard must not be
     // trippable by traffic landing on today between the two statements.
+    expect(backfill).toContain("PREWHERE Timestamp >=");
     expect(backfill).toContain("Timestamp < toDateTime(today())");
-    expect(backfill).toContain("WHERE day < today()) = 0");
+    expect(backfill).toContain("NOT EXISTS");
+    expect(backfill).toContain("PREWHERE day < today()");
+    expect(backfill).not.toContain("SELECT count()");
   });
 
   test("executes arbitrary SQL with trusted tenancy and resource settings", async () => {
@@ -252,10 +260,16 @@ describe("tenant-isolated ClickHouse queries", () => {
       SQL_team_id: "team_1",
       readonly: "1",
       allow_ddl: 0,
+      prefer_column_name_to_alias: 1,
       max_execution_time: 60,
       max_result_rows: String(MAX_RESULT_ROWS),
       max_result_bytes: String(MAX_RESULT_BYTES),
       result_overflow_mode: "throw",
+      read_overflow_mode: "throw",
+      timeout_overflow_mode: "throw",
+      max_bytes_before_external_sort: "128000000",
+      max_bytes_before_external_group_by: "128000000",
+      max_temporary_data_on_disk_size_for_query: "1000000000",
     });
   });
 });

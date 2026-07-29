@@ -1,0 +1,9 @@
+@import "@versionless/ui/globals.css";
+
+.stack-scope .text-zinc-500 {
+  color: #52525b !important;
+}
+
+.dark .stack-scope .text-zinc-500 {
+  color: #a1a1aa !important;
+}

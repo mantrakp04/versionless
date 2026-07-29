@@ -77,7 +77,7 @@ versionless <command> [options]
   login      Authenticate with Hexclave
   logout     Remove the stored login
   whoami     Verify the current login
-  query      Run project-scoped read-only ClickHouse SQL
+  query      Search the query catalog or run project-scoped ClickHouse SQL
 ```
 
 Every command accepts `--config <path>` (default: walk up from cwd looking
@@ -93,9 +93,21 @@ for `versionless.config.ts`), `--json` (machine-readable output), and
 | `generate` | *(globals only)* |
 | `explain <route>` | `--version <v>` — requested client version (default: the oldest release). Route forms: `"GET /users/:id"`, `trpc:user.get`, or a bare procedure `user.get`. |
 | `changelog` | `--out <file>` — write to a file instead of stdout. |
-| `query` | `--project <uuid>` — telemetry project. Supply SQL with `--sql`, `--file`, stdin (`--file -`), or a positional argument. `--params <json>` binds ClickHouse parameters; `--timeout <ms>` caps execution to 1–60 seconds; `--server-url <url>` overrides the hosted API. |
+| `query` | `search [terms]` lists matching built-in queries; `get <name>` retrieves one. Raw execution uses `--project <uuid>` and SQL from `--sql`, `--file`, stdin (`--file -`), or a positional argument. `--params <json>` binds ClickHouse parameters; `--timeout <ms>` caps execution to 1–60 seconds; `--server-url <url>` overrides the hosted API. |
 
 ## Querying project telemetry
+
+Search the built-in catalog of dashboard-tested queries, then retrieve the
+parameterized SQL by name:
+
+```bash
+versionless query search "consumer outreach"
+versionless query get outreach-consumers
+versionless query get rollup-totals --json
+```
+
+Catalog search and retrieval are local and require neither authentication nor
+a project ID. Each definition contains `name`, `description`, and `query`.
 
 Authenticate once, then query either standard Collector table:
 

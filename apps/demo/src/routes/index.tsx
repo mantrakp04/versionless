@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { env } from "@versionless/env/vite";
 
 export const Route = createFileRoute("/")({
   component: DemoPage,
@@ -142,7 +143,7 @@ function DemoPage() {
     setBusy(true);
     const started = performance.now();
     try {
-      const base = import.meta.env.BASE_URL; // "/demo/"
+      const base = env.BASE_URL; // "/demo/"
       const res = await action.run(base);
       const durationMs = Math.round(performance.now() - started);
       let body: unknown;

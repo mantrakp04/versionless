@@ -1,0 +1,38 @@
+# Build outputs
+.output
+.vinxi
+.nitro/
+.tanstack/
+.react-router/
+/dist/
+/build/
+/out/
+
+# Deployment
+.vercel
+.netlify
+.wrangler
+.alchemy
+
+# Environment & local files
+.env*
+!.env.example
+.DS_Store
+*.pem
+*.local
+.dev.vars*
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.log*
+
+# TypeScript
+*.tsbuildinfo
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea

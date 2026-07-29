@@ -2,13 +2,10 @@ import type { MetadataRoute } from 'next';
 import { source } from '@/lib/source';
 import { siteUrl } from '@/lib/shared';
 
+// Served at /docs/sitemap.xml; the landing service owns /robots.txt (which
+// lists this sitemap) and the root /sitemap.xml.
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
-    {
-      url: new URL('/', siteUrl).toString(),
-      changeFrequency: 'weekly',
-      priority: 1,
-    },
     ...source.getPages().map((page) => ({
       url: new URL(page.url, siteUrl).toString(),
       changeFrequency: 'weekly' as const,

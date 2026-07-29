@@ -114,6 +114,13 @@ describe("restricted Postgres role provisioning", () => {
       statement.startsWith("CREATE POLICY projects_versionless_project_isolation"),
     )!;
     expect(projectsPolicy).toContain(`current_setting('${PG_TEAM_SETTING}', true)`);
+
+    // project_id/id are indexed UUID columns. Casting those columns to text
+    // makes the policies non-sargable and forces sequential scans.
+    expect(sql).toContain(
+      `NULLIF(current_setting('${PG_PROJECT_SETTING}', true), '')::uuid`,
+    );
+    expect(sql).not.toMatch(/\b(?:id|project_id)::text\b/);
   });
 
   test("escapes the role password instead of interpolating it raw", () => {
@@ -195,20 +202,22 @@ describe("executeProjectPgQuery", () => {
     const texts = executed.map((entry) => entry.text);
     expect(texts[0]).toBe("BEGIN TRANSACTION READ ONLY");
     // Clamped to MAX_QUERY_TIMEOUT_MS rather than honoring the 120s request.
-    expect(texts[1]).toBe("SET LOCAL statement_timeout = 60000");
+    expect(texts[1]).toContain("set_config('statement_timeout', $1, true)");
+    expect(executed[1]?.values).toEqual([
+      "60000ms",
+      PG_PROJECT_SETTING,
+      projectId,
+      PG_TEAM_SETTING,
+      "team_1",
+    ]);
 
     const configured = executed.filter((entry) =>
       entry.text.includes("set_config"),
     );
-    expect(configured.map((entry) => entry.values)).toEqual([
-      [PG_PROJECT_SETTING, projectId],
-      [PG_TEAM_SETTING, "team_1"],
-    ]);
+    expect(configured).toHaveLength(1);
     // Transaction-local (`true`), so the GUCs cannot survive onto the next
     // borrower of this pooled connection.
-    for (const entry of configured) {
-      expect(entry.text).toContain("$1, $2, true");
-    }
+    expect(configured[0]?.text.match(/true\)/g)).toHaveLength(3);
 
     expect(texts).toContain("ROLLBACK");
     expect(released()).toBe(1);

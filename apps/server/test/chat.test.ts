@@ -33,7 +33,6 @@ function chatRequest(body: unknown, authenticated = true) {
 function ask(text: string) {
   return {
     projectId: project.id,
-    model: "test-model",
     messages: [
       { id: "m1", role: "user", parts: [{ type: "text", text }] },
     ],
@@ -50,7 +49,6 @@ function deps(overrides: Partial<Parameters<typeof createChatApp>[0]> = {}) {
         : null,
     authorizeProject: async () => ({ project, team: { id: "team_1" } }),
     loadReleases: async () => ({ current: "2026-05-14" }),
-    listModels: async () => [{ id: "test-model", name: "Test Model" }],
     runModel: (options) => {
       captured.push(options);
       return new Response("streamed", {
@@ -73,11 +71,14 @@ describe("POST /v1/chat", () => {
     expect(response.status).toBe(200);
     expect(captured).toHaveLength(1);
     const call = captured[0]!;
-    expect(call.modelId).toBe("test-model");
+    expect(call.modelId).toBe("gpt-5.6-luna");
     expect(call.system).toContain("billing");
     expect(call.system).toContain("2026-05-14");
     expect(call.system).toContain(
-      "clickhouse_query` and `postgres_query` are your private research",
+      "query_search` and `query_get` expose the shared dashboard query catalog",
+    );
+    expect(call.system).toContain(
+      "clickhouse_query` and `postgres_query` execute SQL",
     );
     expect(call.system).toContain(
       "Every displayed metric must come from a live component",
@@ -86,11 +87,15 @@ describe("POST /v1/chat", () => {
     expect(call.system).toContain(
       "Braced component props may contain only static JSON-like literals",
     );
+    expect(call.system).toContain("Never nest aggregate functions");
+    expect(call.system).toContain("sum(sum(errors))");
     expect(call.system).toContain("<Dashboard>");
     expect(call.system).toContain('source="postgres"');
     expect(Object.keys(call.tools).sort()).toEqual([
       "clickhouse_query",
       "postgres_query",
+      "query_get",
+      "query_search",
     ]);
     expect(call.messages).toEqual([
       { role: "user", content: [{ type: "text", text: "what is my p95 this week?" }] },
@@ -150,7 +155,6 @@ describe("POST /v1/chat", () => {
     const response = await app.handle(
       chatRequest({
         projectId: project.id,
-        model: "test-model",
         messages: [
           {
             id: "m1",
@@ -169,50 +173,43 @@ describe("POST /v1/chat", () => {
   });
 });
 
-describe("GET /v1/chat/models", () => {
-  function modelsRequest(authenticated = true) {
-    return new Request("http://localhost/v1/chat/models", {
-      headers: authenticated ? { authorization: "Bearer access-token" } : {},
-    });
-  }
-
-  test("lists the upstream models for an authenticated caller", async () => {
-    const { app } = deps();
-    const response = await app.handle(modelsRequest());
-    expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({
-      models: [{ id: "test-model", name: "Test Model" }],
-    });
-  });
-
-  test("requires sign-in", async () => {
-    const { app } = deps();
-    expect((await app.handle(modelsRequest(false))).status).toBe(401);
-  });
-
-  test("never forwards the upstream failure to the browser", async () => {
-    const logged: unknown[] = [];
-    const { app } = deps({
-      listModels: async () => {
-        throw new Error(
-          "401 from https://openrouter.ai/api/v1 with key sk-or-v1-secret",
-        );
-      },
-      reportError: (error) => logged.push(error),
-    });
-
-    const response = await app.handle(modelsRequest());
-    expect(response.status).toBe(503);
-    const body = (await response.json()) as { error: string };
-    expect(body.error).toBe("The assistant is unavailable right now.");
-    expect(body.error).not.toContain("sk-or-v1-secret");
-    expect(body.error).not.toContain("openrouter.ai");
-    // The diagnostic still reaches the server log.
-    expect(logged).toHaveLength(1);
-  });
-});
-
 describe("query tools", () => {
+  test("searches and retrieves the shared query catalog", async () => {
+    const tools = createQueryTools({
+      projectId: project.id,
+      teamId: project.teamId,
+    });
+    const options = {} as never;
+
+    const searched = await tools.query_search.execute!(
+      { search: "consumer outreach" },
+      options,
+    );
+    const found = await tools.query_get.execute!(
+      { name: "outreach-consumers" },
+      options,
+    );
+
+    expect(searched).toEqual({
+      queries: [
+        {
+          name: "outreach-consumers",
+          description:
+            "Consumer outreach list with current version, traffic, depth, and last seen.",
+        },
+      ],
+    });
+    expect(found).toEqual({
+      ok: true,
+      query: {
+        name: "outreach-consumers",
+        description:
+          "Consumer outreach list with current version, traffic, depth, and last seen.",
+        query: expect.stringContaining("FROM otel_logs"),
+      },
+    });
+  });
+
   test("passes only the authorized tenancy into both query planes", async () => {
     const clickhouse: unknown[] = [];
     const postgres: unknown[] = [];

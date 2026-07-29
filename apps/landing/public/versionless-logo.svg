@@ -1,0 +1,19 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 520 170"
+  role="img"
+  aria-labelledby="title description"
+>
+  <title id="title">Versionless symbol</title>
+  <desc id="description">
+    A continuous reversible path through successive API versions.
+  </desc>
+
+  <g fill="none" stroke="#111111" stroke-linecap="round" stroke-linejoin="round">
+    <path
+      d="M24 125H154Q164 125 164 115V79Q164 69 174 69H220Q229 69 233 78L253 125Q257 136 262 125L291 39Q294 30 305 30H375Q385 30 385 40V115Q385 125 395 125H494"
+      stroke-width="12"
+    />
+    <path d="M470 125 486 109" stroke-width="12" />
+  </g>
+</svg>

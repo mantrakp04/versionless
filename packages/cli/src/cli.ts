@@ -29,7 +29,7 @@ Commands:
   login      Authenticate the CLI via Hexclave (browser confirmation flow)
   logout     Forget the stored Hexclave login
   whoami     Show and verify the logged-in Hexclave user
-  query      Run project-scoped read-only ClickHouse SQL
+  query      Search the query catalog or run project-scoped ClickHouse SQL
 
 Global options (accepted by every command):
   --config <path>  Path to versionless.config.ts (default: walk up from cwd)

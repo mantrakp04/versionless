@@ -9,6 +9,7 @@ import {
 import { loadProjectReleases } from "@versionless/api/routers/projects";
 import { CURRENT_VERSION, v } from "@versionless/api/versionless";
 import { env } from "@versionless/env/server";
+import { getQuery, searchQueries } from "@versionless/query-catalog";
 import {
   convertToModelMessages,
   stepCountIs,
@@ -47,8 +48,6 @@ schema-correct query than to omit the dashboard.`;
  */
 const MAX_TOOL_ROWS = 200;
 
-const MODEL_CACHE_TTL_MS = 5 * 60 * 1000;
-
 if (
   env.NODE_ENV === "production" &&
   env.AI_BASE_URL.startsWith("http://localhost")
@@ -72,20 +71,7 @@ const uiMessageSchema = z.object({
 export const chatRequestSchema = z.object({
   projectId: z.uuid(),
   messages: z.array(uiMessageSchema).min(1).max(MAX_MESSAGES),
-  /** Chosen from `GET /v1/chat/models`; falls back to the configured default. */
-  model: z.string().min(1).max(200).optional(),
 });
-
-const modelsResponseSchema = z.object({
-  data: z
-    .array(z.object({ id: z.string(), name: z.string().nullish() }).loose())
-    .default([]),
-});
-
-export interface ChatModelSummary {
-  id: string;
-  name: string;
-}
 
 type ChatRouteDependencies = {
   getUser(request: Request): Promise<ProjectAccessUser | null>;
@@ -94,7 +80,6 @@ type ChatRouteDependencies = {
     user: ProjectAccessUser,
     projectId: string,
   ): Promise<{ current: string | null }>;
-  listModels(): Promise<ChatModelSummary[]>;
   /**
    * Seam for tests: takes the fully-built streamText arguments and returns the
    * HTTP response, so the route can be exercised without a live model.
@@ -157,51 +142,8 @@ export function chatStepPolicy(stepNumber: number) {
     : undefined;
 }
 
-function aiHeaders(): Record<string, string> {
-  return env.AI_API_KEY
-    ? { authorization: `Bearer ${env.AI_API_KEY}` }
-    : {};
-}
-
-let modelCache: { models: ChatModelSummary[]; expires: number } | null = null;
-
 /**
- * Reads the OpenAI-standard `GET /models` list. Both plain OpenAI-compatible
- * servers and OpenRouter answer `{data: [{id, …}]}`; OpenRouter adds `name`,
- * so the label prefers it and falls back to the id.
- */
-export async function listChatModels(
-  fetchImpl: typeof globalThis.fetch = globalThis.fetch,
-): Promise<ChatModelSummary[]> {
-  if (modelCache && modelCache.expires > Date.now()) return modelCache.models;
-
-  const base = env.AI_BASE_URL.replace(/\/$/, "");
-  const response = await fetchImpl(`${base}/models`, {
-    headers: aiHeaders(),
-  });
-  if (!response.ok) {
-    // The upstream body may carry keys or internal hostnames — never forward it.
-    throw new Error(`Model listing failed with status ${response.status}`);
-  }
-  const parsed = modelsResponseSchema.safeParse(await response.json());
-  if (!parsed.success) throw new Error("Model listing had an unexpected shape");
-
-  const models = parsed.data.data.map((entry) => ({
-    id: entry.id,
-    name: typeof entry.name === "string" && entry.name.length > 0
-      ? entry.name
-      : entry.id,
-  }));
-  modelCache = { models, expires: Date.now() + MODEL_CACHE_TTL_MS };
-  return models;
-}
-
-export function resetChatModelCache(): void {
-  modelCache = null;
-}
-
-/**
- * The two query tools, bound to a project the caller has already been
+ * Query execution tools are bound to a project the caller has already been
  * authorized for. The tenancy passed to the query planes comes from the
  * authorized project row — never from the request body, and never from
  * anything the model produced.
@@ -227,6 +169,39 @@ export function createQueryTools(options: {
   };
 
   return {
+    query_search: tool({
+      description:
+        "Search the built-in, dashboard-tested SQL query catalog. Returns " +
+        "query names and descriptions; use query_get to retrieve the SQL.",
+      inputSchema: z.object({
+        search: z.string().max(200).optional(),
+      }),
+      execute({ search }) {
+        return {
+          queries: searchQueries(search).map(({ name, description }) => ({
+            name,
+            description,
+          })),
+        };
+      },
+    }),
+    query_get: tool({
+      description:
+        "Get one built-in SQL query by its exact catalog name. Returns its " +
+        "name, description, and parameterized query string.",
+      inputSchema: z.object({
+        name: z.string().min(1).max(100),
+      }),
+      execute({ name }) {
+        const query = getQuery(name);
+        return query
+          ? { ok: true as const, query }
+          : {
+              ok: false as const,
+              error: `Unknown query "${name}". Use query_search to list queries.`,
+            };
+      },
+    }),
     clickhouse_query: tool({
       description:
         "Run a read-only ClickHouse SELECT over this project's telemetry " +
@@ -298,7 +273,6 @@ const defaultDependencies: ChatRouteDependencies = {
   },
   authorizeProject: requireProjectAccess,
   loadReleases: (user, projectId) => loadProjectReleases(user, projectId),
-  listModels: () => listChatModels(),
   runModel({ modelId, system, messages, tools }) {
     const model = createOpenAICompatible({
       baseURL: env.AI_BASE_URL,
@@ -358,32 +332,6 @@ export function createChatApp(
   dependencies: ChatRouteDependencies = defaultDependencies,
 ) {
   return new Elysia({ name: "versionless-chat" })
-    .get("/v1/chat/models", async ({ request, status }) => {
-      const startedAt = performance.now();
-      let responseStatus = 200;
-      try {
-        const user = await dependencies.getUser(request);
-        if (!user) {
-          responseStatus = 401;
-          return status(401, { error: "Sign in required" });
-        }
-        try {
-          return { models: await dependencies.listModels() };
-        } catch (error) {
-          dependencies.reportError?.(error, { route: "chat/models" });
-          responseStatus = 503;
-          return status(503, {
-            error: "The assistant is unavailable right now.",
-          });
-        }
-      } finally {
-        await dependencies.recordTelemetry?.(
-          "GET /v1/chat/models",
-          responseStatus,
-          Math.round(performance.now() - startedAt),
-        );
-      }
-    })
     .post(
       "/v1/chat",
       async ({ body, request, status }) => {
@@ -403,12 +351,6 @@ export function createChatApp(
             });
           }
 
-          const modelId = body.model ?? env.AI_MODEL;
-          if (!modelId) {
-            responseStatus = 400;
-            return status(400, { error: "Pick a model to chat with." });
-          }
-
           try {
             const { project } = await dependencies.authorizeProject(
               user,
@@ -426,7 +368,7 @@ export function createChatApp(
               today: new Date().toISOString().slice(0, 10),
             });
             return await dependencies.runModel({
-              modelId,
+              modelId: env.AI_MODEL,
               system,
               // The parts union is the SDK's own; zod bounded its size above
               // and convertToModelMessages re-validates the contents.

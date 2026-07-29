@@ -2,8 +2,14 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "bunVersion": "1.x",
   "services": {
-    "web": {
-      "root": "apps/web",
+    "landing": {
+      "root": "apps/landing",
+      "framework": "nextjs",
+      "installCommand": "cd ../.. && bun install",
+      "buildCommand": "bun run build"
+    },
+    "dashboard": {
+      "root": "apps/dashboard",
       "framework": "vite",
       "installCommand": "cd ../.. && bun install",
       "buildCommand": "bun run build",
@@ -44,9 +50,121 @@
       "buildCommand": "bun run build"
     }
   },
+  "redirects": [
+    {
+      "source": "/insights",
+      "destination": "/dashboard/insights",
+      "permanent": true
+    },
+    {
+      "source": "/insights/:path*",
+      "destination": "/dashboard/insights/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/keys",
+      "destination": "/dashboard/keys",
+      "permanent": true
+    },
+    {
+      "source": "/handler/:path*",
+      "destination": "/dashboard/handler/:path*",
+      "permanent": false
+    }
+  ],
   "headers": [
     {
-      "source": "/assets/(.*)",
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/dashboard",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/dashboard/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/demo/orgs/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/demo/rpc/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/demo/teams(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/demo/users(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/llms.txt",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/llms-full.txt",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/llms.mdx/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/dashboard/assets/(.*)",
       "headers": [
         {
           "key": "Access-Control-Allow-Origin",
@@ -60,6 +178,13 @@
       "source": "/docs",
       "destination": {
         "service": "docs"
+      }
+    },
+    {
+      "source": "/docs/sitemap.xml",
+      "destination": {
+        "service": "docs",
+        "path": "/sitemap.xml"
       }
     },
     {
@@ -101,13 +226,13 @@
     {
       "source": "/robots.txt",
       "destination": {
-        "service": "docs"
+        "service": "landing"
       }
     },
     {
       "source": "/sitemap.xml",
       "destination": {
-        "service": "docs"
+        "service": "landing"
       }
     },
     {
@@ -141,9 +266,30 @@
       }
     },
     {
+      "source": "/dashboard",
+      "destination": {
+        "service": "dashboard",
+        "path": "/"
+      }
+    },
+    {
+      "source": "/dashboard/:path*",
+      "destination": {
+        "service": "dashboard",
+        "path": "/:path*"
+      }
+    },
+    {
+      "source": "/landing/:path*",
+      "destination": {
+        "service": "landing",
+        "path": "/:path*"
+      }
+    },
+    {
       "source": "/(.*)",
       "destination": {
-        "service": "web"
+        "service": "landing"
       }
     }
   ]

@@ -1,5 +1,10 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import {
+  getQuery,
+  searchQueries,
+  type QueryDefinition,
+} from "@versionless/query-catalog";
 import { CliError } from "../errors";
 import {
   getAccessToken,
@@ -11,9 +16,11 @@ import { GLOBAL_OPTIONS, parseFlags, str } from "./shared";
 
 const DEFAULT_SERVER_URL = "https://api.versionless.dev";
 
-const HELP = `versionless query — run project-scoped ClickHouse SQL
+const HELP = `versionless query — search the catalog or run project-scoped ClickHouse SQL
 
 Usage:
+  versionless query search [terms] [--json]
+  versionless query get <name> [--json]
   versionless query --project <id> --sql "SELECT ..."
   versionless query --project <id> --file query.sql
   versionless query --project <id> "SELECT ..."
@@ -51,6 +58,18 @@ const defaultDependencies: QueryCommandDependencies = {
   write: (output) => process.stdout.write(output),
   readStdin: () => Bun.stdin.text(),
 };
+
+function writeCatalogResult(
+  definition: QueryDefinition,
+  json: boolean,
+  write: (output: string) => void,
+): void {
+  write(
+    json
+      ? `${JSON.stringify(definition, null, 2)}\n`
+      : `${definition.name}\n${definition.description}\n\n${definition.query}\n`,
+  );
+}
 
 function parseParams(raw: string | undefined): Record<string, QueryValue> {
   if (!raw) return {};
@@ -141,6 +160,38 @@ export async function runQuery(
   );
   if (values["help"] === true) {
     dependencies.write(HELP);
+    return 0;
+  }
+
+  const catalogCommand = positionals[0]?.toLowerCase();
+  if (catalogCommand === "search") {
+    const matches = searchQueries(positionals.slice(1).join(" "));
+    if (values["json"] === true) {
+      dependencies.write(`${JSON.stringify(matches, null, 2)}\n`);
+    } else {
+      for (const match of matches) {
+        dependencies.write(`${match.name}\t${match.description}\n`);
+      }
+    }
+    return 0;
+  }
+  if (catalogCommand === "get") {
+    const name = positionals[1];
+    if (!name || positionals.length !== 2) {
+      throw new CliError("Usage: versionless query get <name>", 2);
+    }
+    const definition = getQuery(name);
+    if (!definition) {
+      throw new CliError(
+        `Unknown query "${name}". Run \`versionless query search\` to list queries.`,
+        2,
+      );
+    }
+    writeCatalogResult(
+      definition,
+      values["json"] === true,
+      dependencies.write,
+    );
     return 0;
   }
 

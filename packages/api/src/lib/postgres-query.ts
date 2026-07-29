@@ -111,7 +111,11 @@ export function pgQueryAccessStatements(password: string): string[] {
   USING (${using})`,
   ];
 
-  const scopedToProject = `project_id::text = current_setting(${quoteLiteral(PG_PROJECT_SETTING)}, true)`;
+  // Cast the trusted setting to the indexed UUID type, never the table column
+  // to text. Casting the column prevents Postgres from using the primary/FK
+  // indexes and turns every tenant policy into a sequential scan.
+  const projectSetting = `NULLIF(current_setting(${quoteLiteral(PG_PROJECT_SETTING)}, true), '')::uuid`;
+  const scopedToProject = `project_id = ${projectSetting}`;
 
   return [
     // CREATE ROLE has no IF NOT EXISTS, so the duplicate is caught instead.
@@ -135,7 +139,7 @@ END $$`,
     // a project id alone cannot be replayed against another tenant's row.
     ...isolate(
       "projects",
-      `id::text = current_setting(${quoteLiteral(PG_PROJECT_SETTING)}, true)
+      `id = ${projectSetting}
      AND team_id = current_setting(${quoteLiteral(PG_TEAM_SETTING)}, true)`,
     ),
     // The child tables carry no team column; their project_id is a FK onto a
@@ -278,15 +282,22 @@ export async function executeProjectPgQuery(
     // they expire with the transaction and cannot leak onto the next borrower
     // of this pooled connection.
     await client.query("BEGIN TRANSACTION READ ONLY");
-    await client.query(`SET LOCAL statement_timeout = ${timeoutMs}`);
-    await client.query("SELECT set_config($1, $2, true)", [
-      PG_PROJECT_SETTING,
-      input.projectId,
-    ]);
-    await client.query("SELECT set_config($1, $2, true)", [
-      PG_TEAM_SETTING,
-      input.teamId,
-    ]);
+    // Configure all transaction-local bounds and tenant settings in one server
+    // round-trip. `set_config(..., true)` is equivalent to SET LOCAL and is
+    // parameterizable, so none of the trusted values need interpolation.
+    await client.query(
+      `SELECT
+  set_config('statement_timeout', $1, true),
+  set_config($2, $3, true),
+  set_config($4, $5, true)`,
+      [
+        `${timeoutMs}ms`,
+        PG_PROJECT_SETTING,
+        input.projectId,
+        PG_TEAM_SETTING,
+        input.teamId,
+      ],
+    );
 
     const statement = input.query.trim().replace(/;\s*$/, "");
     // Apply the cap in Postgres rather than after node-postgres has materialized

@@ -5,7 +5,7 @@
  * handler.
  *
  * Every example query here is written against the same tables the dashboard's
- * own query modules use (`apps/web/src/queries/*.ts`) and the DDL in
+ * own query modules use (`apps/dashboard/src/queries/*.ts`) and the DDL in
  * `packages/api/src/lib/clickhouse-query.ts` / `packages/db/src/schema/`.
  */
 
@@ -155,19 +155,26 @@ const EXAMPLES = `## Writing queries
 
 Rules that apply to both stores:
 
-1. **Bound the window.** Every ClickHouse query needs a \`Timestamp\` or \`day\`
+1. **Search before writing.** Use \`query_search\` to find the dashboard-tested
+   query catalog and \`query_get\` to retrieve a parameterized query. Adapt a
+   catalog query when it fits instead of reconstructing the SQL from memory.
+2. **Bound the window.** Every ClickHouse query needs a \`Timestamp\` or \`day\`
    predicate. Default to the range the user implies, 7 days if they imply none.
-2. **Prefer the rollup** over \`otel_logs\` whenever the question fits its
+3. **Prefer the rollup** over \`otel_logs\` whenever the question fits its
    dimensions.
-3. **Aggregate server-side, LIMIT the result.** Return the rows you will
+4. **Aggregate server-side, LIMIT the result.** Return the rows you will
    render, not a window's worth for the browser to reduce.
-4. **Run it before you rely on it.** Call the tool, look at the rows, and only
+5. **Run it before you rely on it.** Call the tool, look at the rows, and only
    then write your answer or embed the query in a component. If a query errors,
    read the message, fix it, and retry — do not narrate the failure.
-5. ClickHouse parameters are named — \`{days: UInt16}\` in the SQL, \`{"days": 7}\`
+6. ClickHouse parameters are named — \`{days: UInt16}\` in the SQL, \`{"days": 7}\`
    in \`params\`. Interpolating user-supplied values into the SQL string is wrong
    even though the connection is read-only.
-6. **Research is bounded.** Make at most six SQL tool calls for one response.
+7. **Never nest aggregate functions.** ClickHouse rejects shapes such as
+   \`sum(sum(errors))\` and \`max(sum(requests))\`. Aggregate once in a subquery,
+   give the result a fresh prefixed alias, then select that alias from the outer
+   query without wrapping it in another aggregate.
+8. **Research is bounded.** Make at most six SQL tool calls for one response.
    For a dashboard, validate one representative query per store plus only the
    unusual query shapes. Do not execute every widget query as a separate tool
    call when it follows an already-validated pattern. Preserve time to render.
@@ -260,10 +267,11 @@ The renderer accepts declarative MDX only:
 - Use only the components listed below. Markdown prose and links remain
   available normally.
 
-The SQL tools and these components have different jobs:
+The query tools and these components have different jobs:
 
-- \`clickhouse_query\` and \`postgres_query\` are your private research and query
-  validation tools. Their returned rows are not the rendered dashboard.
+- \`query_search\` and \`query_get\` expose the shared dashboard query catalog.
+  \`clickhouse_query\` and \`postgres_query\` execute SQL for research and query
+  validation. Their returned rows are not the rendered dashboard.
 - \`<QueryStat>\`, \`<QueryChart>\`, and \`<QueryTable>\` are React components
   backed by React Query. SQL embedded in these components runs in the browser's
   authorized project scope, caches by query and parameters, and refetches as

@@ -371,5 +371,5 @@ await post("traces", arbitraryTrace);
 spanCount++;
 
 console.log(
-  `Done — ${scenario.versions.length} versions, ${scenario.contracts.length} uploaded contracts, ${events.length + 1} logs, and ${traces.length + 1} traces (${spanCount} spans) written through the Collector. Open the dashboard: http://localhost:3001/insights`,
+  `Done — ${scenario.versions.length} versions, ${scenario.contracts.length} uploaded contracts, ${events.length + 1} logs, and ${traces.length + 1} traces (${spanCount} spans) written through the Collector. Open the dashboard: http://localhost:3001/dashboard/insights`,
 );

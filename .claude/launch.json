@@ -2,10 +2,16 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "web",
+      "name": "dashboard",
       "runtimeExecutable": "bun",
-      "runtimeArgs": ["run", "--cwd", "apps/web", "dev"],
+      "runtimeArgs": ["run", "--cwd", "apps/dashboard", "dev"],
       "port": 3001
+    },
+    {
+      "name": "landing",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["run", "--cwd", "apps/landing", "dev"],
+      "port": 3004
     }
   ]
 }

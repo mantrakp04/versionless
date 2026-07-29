@@ -17,7 +17,8 @@
     "versionless": "./bin/versionless.ts"
   },
   "dependencies": {
-    "@versionless/core": "workspace:*"
+    "@versionless/core": "workspace:*",
+    "@versionless/query-catalog": "workspace:*"
   },
   "devDependencies": {
     "@orpc/server": "catalog:",

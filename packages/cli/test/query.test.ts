@@ -15,6 +15,37 @@ function dependencies(
 }
 
 describe("versionless query", () => {
+  test("searches and gets built-in queries without authentication", async () => {
+    const searchOutput: string[] = [];
+    const noNetwork: QueryCommandDependencies["fetch"] = async () => {
+      throw new Error("catalog commands must not fetch");
+    };
+
+    expect(
+      await runQuery(
+        ["search", "consumer", "outreach"],
+        "/tmp",
+        dependencies(noNetwork, searchOutput),
+      ),
+    ).toBe(0);
+    expect(searchOutput.join("")).toContain("outreach-consumers");
+
+    const getOutput: string[] = [];
+    expect(
+      await runQuery(
+        ["get", "rollup-totals", "--json"],
+        "/tmp",
+        dependencies(noNetwork, getOutput),
+      ),
+    ).toBe(0);
+    expect(JSON.parse(getOutput.join(""))).toEqual({
+      name: "rollup-totals",
+      description:
+        "Headline request, error, consumer, latency, depth, and pinning totals.",
+      query: expect.stringContaining("FROM versionless_rollup_daily"),
+    });
+  });
+
   test("sends authenticated raw SQL and renders JSON lines", async () => {
     const output: string[] = [];
     let request: Request | undefined;

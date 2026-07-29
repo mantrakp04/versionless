@@ -27,6 +27,7 @@
     "@versionless/core": "workspace:*",
     "@versionless/db": "workspace:*",
     "@versionless/env": "workspace:*",
+    "@versionless/query-catalog": "workspace:*",
     "ai": "^6.0.230",
     "drizzle-orm": "^0.45.2",
     "elysia": "catalog:",

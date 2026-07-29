@@ -7,7 +7,7 @@ export const CURRENT_VERSION = "2026-07-21";
  * The demo's versionless instance. The demo app dogfoods the full opt-in
  * telemetry loop: its apiKey is a Hexclave team API key for the demo team,
  * pointed at the versionless cloud OTLP gateway, so real button clicks show
- * up on the demo team's dashboard in apps/web.
+ * up on the demo team's dashboard in apps/dashboard.
  */
 export const v = createVersionless({
   project: "versionless demo API",

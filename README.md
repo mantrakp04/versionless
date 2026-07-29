@@ -31,7 +31,9 @@ v.change("2026-05-14", {
 | OpenTelemetry Collector | Standard OTLP/HTTP + gRPC ingestion and ClickHouse export (`otel_logs`, `otel_traces`). |
 
 Plus the demo/cloud apps: `apps/server` (Elysia + tRPC, dogfoods the whole
-loop against itself), `apps/web` (insights dashboard), `apps/docs` (fumadocs).
+loop against itself), `apps/dashboard` (insights dashboard, served under
+`/dashboard`), `apps/landing` (Next.js marketing site at `/`), `apps/docs`
+(fumadocs).
 
 ## Quickstart (this repo)
 
@@ -39,7 +41,7 @@ loop against itself), `apps/web` (insights dashboard), `apps/docs` (fumadocs).
 bun install
 bun start-deps      # postgres + clickhouse + OTel Collector/gateway
 bun run --cwd apps/server seed    # 30 days of synthetic telemetry
-bun dev             # server :3000, web :3001, docs :3002
+bun dev             # server :3000, dashboard :3001, docs :3002, landing :3004
 ```
 
 Try the versioning:
@@ -51,7 +53,7 @@ curl -H 'x-api-version: 2025-01-01' :3000/orgs/t_1    # rewritten to /teams/:id
 curl -sD - -o /dev/null -H 'x-api-version: 2025-01-01' :3000/users/u_1 | grep -iE 'sunset|deprecation'
 ```
 
-Dashboard: <http://localhost:3001/insights> · Docs: <http://localhost:3002/docs>
+Dashboard: <http://localhost:3001/dashboard/insights> · Docs: <http://localhost:3002/docs> · Landing: <http://localhost:3004>
 
 ## Checks
 
@@ -63,7 +65,7 @@ bun run test          # bun test across all packages (turbo)
 ## Stack
 
 Bun workspaces + Turborepo · Elysia + tRPC server · Vite/React 19/TanStack
-Router web · Drizzle + PostgreSQL · ClickHouse (telemetry) · fumadocs ·
+Router dashboard · Next.js landing · Drizzle + PostgreSQL · ClickHouse (telemetry) · fumadocs ·
 deployed via Vercel (`vercel.json`; see `bun run deploy:*`).
 
 Local stack: `bun start-deps` / `stop-deps` / `restart-deps`. Schema scripts:

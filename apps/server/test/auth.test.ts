@@ -7,7 +7,6 @@
 import { describe, expect, test } from "bun:test";
 
 process.env.SKIP_ENV_VALIDATION = "1";
-process.env.CORS_ORIGIN ??= "http://localhost:3001";
 
 const { app } = await import("../src/app");
 const base = "http://localhost";

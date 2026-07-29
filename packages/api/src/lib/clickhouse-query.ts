@@ -116,8 +116,11 @@ export const ROLLUP_TABLE = "versionless_rollup_daily";
  * statements are no-ops on a second run, unlike an unconditional drop-recreate
  * which would open an ingestion gap at every restart.
  */
-const ROLLUP_MV = "versionless_rollup_daily_mv_v2";
-const RETIRED_ROLLUP_MVS = ["versionless_rollup_daily_mv"];
+const ROLLUP_MV = "versionless_rollup_daily_mv_v3";
+const RETIRED_ROLLUP_MVS = [
+  "versionless_rollup_daily_mv",
+  "versionless_rollup_daily_mv_v2",
+];
 /** Columns added after the rollup's first generation; see the ALTERs below. */
 const ROLLUP_ADDED_COLUMNS = ["sourced", "unpinned", "clamped"];
 /** Retention of the raw rows the rollup is backfilled from. */
@@ -132,28 +135,31 @@ const ROLLUP_BACKFILL_DAYS = 180;
  * Tenancy is projected into real columns: row policies on the raw tables filter
  * `ResourceAttributes`, which a rollup row does not carry.
  */
-const ROLLUP_SELECT = `SELECT
+const ROLLUP_SELECT = `WITH
   ResourceAttributes['versionless.team.id'] AS team_id,
   ResourceAttributes['versionless.project.id'] AS project_id,
+  toUInt16OrZero(LogAttributes['http.response.status_code']) AS status_code,
+  toFloat64OrZero(LogAttributes['versionless.latency_ms']) AS latency_ms,
+  toUInt8OrZero(LogAttributes['versionless.transform_count']) AS transform_count,
+  LogAttributes['versionless.consumer.key'] AS consumer_key,
+  LogAttributes['versionless.version.requested'] AS requested_version,
+  LogAttributes['versionless.version.source'] AS version_source
+SELECT
+  team_id,
+  project_id,
   toDate(Timestamp) AS day,
   LogAttributes['versionless.version'] AS version,
   LogAttributes['versionless.route'] AS route,
   LogAttributes['versionless.method'] AS method,
   count() AS requests,
-  countIf(toUInt16OrZero(LogAttributes['http.response.status_code']) >= 400) AS errors,
-  quantilesTDigestState(0.5, 0.95, 0.99)(
-    toFloat64OrZero(LogAttributes['versionless.latency_ms'])
-  ) AS latency,
-  sum(toUInt8OrZero(LogAttributes['versionless.transform_count'])) AS depth_sum,
-  max(toUInt8OrZero(LogAttributes['versionless.transform_count'])) AS depth_max,
-  uniqState(if(
-    empty(LogAttributes['versionless.consumer.key']),
-    'anonymous',
-    LogAttributes['versionless.consumer.key']
-  )) AS consumers,
-  countIf(notEmpty(LogAttributes['versionless.version.requested'])) AS negotiated,
-  countIf(notEmpty(LogAttributes['versionless.version.source'])) AS sourced,
-  countIf(LogAttributes['versionless.version.source'] = 'default') AS unpinned,
+  countIf(status_code >= 400) AS errors,
+  quantilesTDigestState(0.5, 0.95, 0.99)(latency_ms) AS latency,
+  sum(transform_count) AS depth_sum,
+  max(transform_count) AS depth_max,
+  uniqState(if(empty(consumer_key), 'anonymous', consumer_key)) AS consumers,
+  countIf(notEmpty(requested_version)) AS negotiated,
+  countIf(notEmpty(version_source)) AS sourced,
+  countIf(version_source = 'default') AS unpinned,
   countIf(LogAttributes['versionless.clamped'] = 'true') AS clamped`;
 
 const ROLLUP_GROUP_BY = `GROUP BY team_id, project_id, day, version, route, method`;
@@ -227,6 +233,8 @@ TO ${db}.${ROLLUP_TABLE} AS
 ${ROLLUP_SELECT}
 FROM ${db}.otel_logs
 WHERE EventName = 'versionless.request'
+  AND notEmpty(team_id)
+  AND notEmpty(project_id)
 ${ROLLUP_GROUP_BY}`,
 
     // Backfill the history the MV never saw. Bounded to days before today and
@@ -236,10 +244,17 @@ ${ROLLUP_GROUP_BY}`,
     `INSERT INTO ${db}.${ROLLUP_TABLE}
 ${ROLLUP_SELECT}
 FROM ${db}.otel_logs
-WHERE EventName = 'versionless.request'
-  AND Timestamp >= now() - INTERVAL ${ROLLUP_BACKFILL_DAYS} DAY
+PREWHERE Timestamp >= now() - INTERVAL ${ROLLUP_BACKFILL_DAYS} DAY
   AND Timestamp < toDateTime(today())
-  AND (SELECT count() FROM ${db}.${ROLLUP_TABLE} WHERE day < today()) = 0
+WHERE EventName = 'versionless.request'
+  AND notEmpty(team_id)
+  AND notEmpty(project_id)
+  AND NOT EXISTS (
+    SELECT 1
+    FROM ${db}.${ROLLUP_TABLE}
+    PREWHERE day < today()
+    LIMIT 1
+  )
 ${ROLLUP_GROUP_BY}`,
 
     ...isolate("otel_logs", `${project} AND ${team}`),
@@ -333,11 +348,25 @@ export async function executeProjectQuery(
         SQL_team_id: input.teamId,
         readonly: "1",
         allow_ddl: 0,
+        // Generated dashboards use conventional aliases such as
+        // `sum(errors) AS errors`. Prefer the source column when an alias has
+        // the same name so ClickHouse does not expand this into
+        // `sum(sum(errors))`.
+        prefer_column_name_to_alias: 1,
         max_execution_time: timeoutMs / 1000,
         max_result_rows: MAX_RESULT_ROWS.toString(),
         max_result_bytes: MAX_RESULT_BYTES.toString(),
         result_overflow_mode: "throw",
+        read_overflow_mode: "throw",
+        timeout_overflow_mode: "throw",
         max_memory_usage: "256000000",
+        // Spill unusually large sorts/aggregations before they consume the
+        // query's entire memory allowance. Normal dashboard queries remain
+        // in-memory; adversarial/high-cardinality generated queries stay
+        // bounded instead of taking the server down.
+        max_bytes_before_external_sort: "128000000",
+        max_bytes_before_external_group_by: "128000000",
+        max_temporary_data_on_disk_size_for_query: "1000000000",
         max_rows_to_read: "10000000",
         max_bytes_to_read: "1000000000",
       },

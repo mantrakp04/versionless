@@ -1,0 +1,19 @@
+{
+  "name": "@versionless/query-catalog",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "generate": "VITE_HEXCLAVE_PROJECT_ID=00000000-0000-4000-8000-000000000001 VITE_SERVER_URL=/api SKIP_ENV_VALIDATION=1 bun run scripts/generate.ts",
+    "check-types": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "@versionless/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

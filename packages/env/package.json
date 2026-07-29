@@ -6,6 +6,7 @@
   "exports": {
     "./server": "./src/server.ts",
     "./web": "./src/web.ts",
+    "./vite": "./src/vite.ts",
     "./demo": "./src/demo.ts",
     "./vercel": "./src/vercel.ts"
   },
