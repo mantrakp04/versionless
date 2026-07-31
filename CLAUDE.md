@@ -21,11 +21,18 @@ it work" by leaving both shapes in the API or the app.
   - Run the affected package's type check when available: `bun run check-types` inside the package (or `turbo run check-types -F <package>` from the root; `apps/docs` uses `types:check`).
 - Do not run repo-wide `bun run test`, `bun run check-types`, `bun run build`, or equivalent full-suite Turbo commands locally unless the user explicitly requests them. CI is responsible for the full verification suite (see `.github/workflows/ci.yml`).
 - After frontend feature development or any user-visible change to `apps/dashboard`, `apps/landing`, or `apps/docs`, the primary agent must run one integrated verification pass after integrating the work:
-  - Start the local stack (`bun start-deps` — Postgres, ClickHouse, OTel Collector/gateway) and the needed apps (`bun dev:server` on :3000, `bun dev:dashboard` on :3001 under `/dashboard`, `apps/docs` on :3002, `apps/demo` on :3003 under `/demo`, `bun dev:landing` on :3004); seed telemetry with `bun run --cwd apps/server seed` if the insights views need data. (`bun restart-deps && bun dev` gives a fresh-DB integrated run.)
-  - Use the `agent-browser` skill to verify the affected flow in a controlled browser (e.g. <http://localhost:3001/dashboard/insights>). But if u have inbuild browser prefer that.
-  - For versioning-behavior changes, also verify the wire behavior directly, e.g. `curl -H 'x-api-version: 2025-01-01' :3003/demo/users/u_1` against the current shape.
+  - **Claim a port block first.** Every port the stack binds — apps *and* the docker-compose services — is `PORT_PREFIX` (two digits, default `30`) plus a fixed per-service offset from `packages/env/src/ports.ts`. Several checkouts run side by side only if each takes its own block, so before starting anything:
+
+    ```bash
+    export PORT_PREFIX=$(bun run --silent port-prefix)   # first block that is free
+    ```
+
+    `bun run port-prefix --list` shows which blocks are taken and by what. Never start a stack on a prefix another dev server or compose project already holds — pick the next free one instead. Export it once; every command below (docker compose, turbo, the dev servers, the seed script, `bun db:studio`) reads it from the environment, and a command run without it silently lands on the default block.
+  - Start the local stack (`bun start-deps` — Postgres, ClickHouse, OTel Collector/gateway) and the needed apps (`bun dev:server`, `bun dev:dashboard` under `/dashboard`, `apps/docs`, `apps/demo` under `/demo`, `bun dev:landing`); seed telemetry with `bun run --cwd apps/server seed` if the insights views need data. (`bun restart-deps && bun dev` gives a fresh-DB integrated run.) On the default block those land on :3000/:3001/:3002/:3003/:3004; under `PORT_PREFIX=31` they are :3100/:3101/:3102/:3103/:3104, and every URL below shifts with them.
+  - Use the `agent-browser` skill to verify the affected flow in a controlled browser (e.g. <http://localhost:${PORT_PREFIX}01/dashboard/insights>). But if u have inbuild browser prefer that.
+  - For versioning-behavior changes, also verify the wire behavior directly, e.g. `curl -H 'x-api-version: 2025-01-01' :${PORT_PREFIX}03/demo/users/u_1` against the current shape.
   - Subagents must not independently launch dev servers or repeat integrated client verification unless their delegated task explicitly requires it.
-  - Stop dev servers, watchers, and containers started for verification when the focused verification is complete (`bun stop-deps`).
+  - Stop dev servers, watchers, and containers started for verification when the focused verification is complete (`bun stop-deps` with the same `PORT_PREFIX` exported — it tears down that block's compose project, not another checkout's).
 
 ## Client Error Safety
 
@@ -73,7 +80,7 @@ it work" by leaving both shapes in the API or the app.
 - `infra/otel`: Envoy authorization gateway plus the standard OpenTelemetry Collector ClickHouse exporter. Keep OTLP codecs, batching, retries, and storage schema out of application code.
 - `packages/db`: Drizzle + PostgreSQL schema and migrations (`bun db:push` / `db:generate` / `db:migrate` / `db:studio` from the root).
 - `packages/api`: tRPC routers/context shared by server and web.
-- `packages/env`: Typed environment schemas (`server.ts`, `web.ts`). `packages/config`: shared tsconfig. `packages/ui`: shared React components/hooks/styles. Keep env/config schema-and-config-only — no runtime logic.
+- `packages/env`: Typed environment schemas (`server.ts`, `web.ts`) plus `ports.ts` — the single table mapping `PORT_PREFIX` + a two-digit per-service offset to every port the local stack binds (`docker-compose.yml` spells the same offsets). Never hardcode a local port anywhere else. `packages/config`: shared tsconfig. `packages/ui`: shared React components/hooks/styles. Keep env/config schema-and-config-only — no runtime logic.
 - `apps/demo`: TanStack Start + oRPC demo app, served under the `/demo` base path (client AND server routes). Owns the demo change chain (`src/versions.ts`, `src/changes/`), the in-memory demo data, the CLI surface entry (`src/surface.ts` — oRPC extractor + `manual` declarations), and an unauthenticated button page simulating versioned usage. Its telemetry key belongs to the Hexclave "demo" team.
 - `apps/server`: Elysia + tRPC cloud server (Collector authorization in `src/ingest.ts`, query plane, dashboard tRPC). Dogfoods versionless on its own service API via `@versionless/api/versionless`; its telemetry key belongs to the owner's team.
 - `apps/dashboard`: Vite/React 19/TanStack Router insights dashboard (adoption, drift, blockers), served under the `/dashboard` base path (Vite `base` + router `basepath`). Release metadata (versions, sunsets, current) comes from each project's uploaded `versionless snapshot` data via `src/hooks/use-project-releases.ts` — never from hardcoded app constants.

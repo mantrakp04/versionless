@@ -1,6 +1,10 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  // Strict environment mode is Turbo's default: without this, PORT_PREFIX
+  // would not reach `turbo run dev` / `db:push` and a worktree's tasks would
+  // silently bind the default block.
+  "globalPassThroughEnv": ["PORT_PREFIX"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

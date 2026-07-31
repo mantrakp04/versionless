@@ -5,7 +5,7 @@ import { join } from "node:path";
 
 import {
   DEFAULT_CLOUD_API_URL,
-  DEFAULT_DEVELOPMENT_API_URL,
+  developmentApiUrl,
   resolveSnapshotApiUrl,
   uploadSnapshot,
 } from "../src/snapshot/upload";
@@ -33,10 +33,21 @@ describe("snapshot upload", () => {
 
   test("defaults development uploads to the local API", () => {
     expect(resolveSnapshotApiUrl({ env: { NODE_ENV: "development" } })).toBe(
-      DEFAULT_DEVELOPMENT_API_URL,
+      "http://localhost:3000",
     );
-    expect(resolveSnapshotApiUrl({ env: {} })).toBe(
-      DEFAULT_DEVELOPMENT_API_URL,
+    expect(resolveSnapshotApiUrl({ env: {} })).toBe("http://localhost:3000");
+  });
+
+  test("follows the checkout's PORT_PREFIX block in development", () => {
+    expect(developmentApiUrl({ PORT_PREFIX: "31" })).toBe(
+      "http://localhost:3100",
+    );
+    expect(
+      resolveSnapshotApiUrl({ env: { PORT_PREFIX: "42" } }),
+    ).toBe("http://localhost:4200");
+    // A malformed prefix falls back rather than building an invalid port.
+    expect(developmentApiUrl({ PORT_PREFIX: "3" })).toBe(
+      "http://localhost:3000",
     );
   });
 

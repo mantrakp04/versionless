@@ -1,0 +1,9 @@
+# Next.js requires several of its own dependencies (@swc/helpers,
+# baseline-browser-mapping, critters, …) from anchors outside its package
+# root — Turbopack's `[externals]` chunks resolve from `apps/*/.next`. Bun's
+# default isolated layout keeps those under `node_modules/.bun/next@…`, where
+# that walk-up never reaches them, so apps/docs and apps/landing 500 on any
+# cold `.next` (a fresh worktree, or a cleaned build). Hoisted linking gives
+# Next the flat layout it assumes.
+[install]
+linker = "hoisted"

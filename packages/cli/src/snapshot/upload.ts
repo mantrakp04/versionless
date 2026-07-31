@@ -3,7 +3,19 @@ import { readFileSync } from "node:fs";
 import { CliError } from "../errors";
 
 export const DEFAULT_CLOUD_API_URL = "https://api.versionless.dev";
-export const DEFAULT_DEVELOPMENT_API_URL = "http://localhost:3000";
+
+/**
+ * Development uploads target the local API server. This repo lets a checkout
+ * shift its whole port block with PORT_PREFIX (see packages/env/src/ports.ts,
+ * mirrored here because the published CLI takes no workspace dependency), so
+ * a worktree's CLI reaches that worktree's server rather than a sibling's.
+ */
+export function developmentApiUrl(
+  env: Record<string, string | undefined> = process.env,
+): string {
+  const prefix = env.PORT_PREFIX?.trim();
+  return `http://localhost:${/^[1-9][0-9]$/.test(prefix ?? "") ? prefix : "30"}00`;
+}
 
 export interface ResolveSnapshotApiUrlOptions {
   apiUrl?: string;
@@ -21,7 +33,7 @@ export function resolveSnapshotApiUrl({
     env.VERSIONLESS_SERVER_URL?.trim() ||
     (env.NODE_ENV === "production"
       ? DEFAULT_CLOUD_API_URL
-      : DEFAULT_DEVELOPMENT_API_URL)
+      : developmentApiUrl(env))
   ).replace(/\/+$/, "");
 }
 

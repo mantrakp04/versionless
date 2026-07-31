@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "next dev --port=3004",
+    "dev": "next dev --port=${PORT_PREFIX:-30}04",
     "start": "next start",
     "check-types": "next typegen && tsc --noEmit"
   },

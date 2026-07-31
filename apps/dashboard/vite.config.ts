@@ -4,7 +4,12 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { fileURLToPath } from "node:url";
 
+import { localPorts } from "@versionless/env/local";
+
 export default defineConfig({
+  // Expose PORT_PREFIX to the bundle alongside VITE_*, so @versionless/env/web
+  // resolves the same sibling-app ports this dev server binds.
+  envPrefix: ["VITE_", "PORT_PREFIX"],
   // The dashboard is mounted at /dashboard behind the Vercel service router;
   // keep dev and prod URL spaces identical so absolute links never fork.
   base: "/dashboard/",
@@ -27,7 +32,7 @@ export default defineConfig({
     // module graph is public static code, so allow that graph to load without
     // granting the iframe same-origin access to the app.
     cors: true,
-    port: 3001,
+    port: localPorts.dashboard,
   },
   preview: {
     cors: true,
@@ -35,13 +40,11 @@ export default defineConfig({
   resolve: {
     alias: {
       // The package's browser export creates a DOM element at module load.
-      // Use its data-map implementation so the isolated compiler bundle has
-      // no module-load DOM side effects.
+      // Resolve it under Node's conditions instead, so the isolated compiler
+      // bundle gets the data-map implementation with no module-load DOM side
+      // effects — and without hardcoding an install layout.
       "decode-named-character-reference": fileURLToPath(
-        new URL(
-          "./node_modules/decode-named-character-reference/index.js",
-          import.meta.url,
-        ),
+        import.meta.resolve("decode-named-character-reference"),
       ),
     },
     tsconfigPaths: true,

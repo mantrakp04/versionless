@@ -6,6 +6,7 @@ import {
   localClickhouseUrl,
   localCorsOrigin,
   localDatabaseUrl,
+  localPorts,
 } from "./local";
 import { getVercelOrigin } from "./vercel";
 
@@ -66,7 +67,9 @@ export const env = createEnv({
     VERSIONLESS_API_URL: z.url().optional(),
     VERSIONLESS_OTLP_LOGS_URL: z.url().optional(),
     RUN_MIGRATIONS: z.string().optional(),
-    PORT: z.coerce.number().int().positive().default(3000),
+    // Deployments set PORT; locally it follows the PORT_PREFIX block so a
+    // second worktree's server does not fight the first for the socket.
+    PORT: z.coerce.number().int().positive().default(localPorts.server),
     // Platform flags: VERCEL is set by the Vercel runtime, VERSIONLESS by the
     // versionless CLI while importing the app for surface extraction.
     VERCEL: z.string().optional(),

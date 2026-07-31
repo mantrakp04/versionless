@@ -1,4 +1,5 @@
 import { getVercelOrigin } from "@versionless/env/vercel";
+import { devUrls } from "@versionless/env/web";
 
 export function getServerUrl(url: string) {
   const normalized = url.endsWith("/") ? url.slice(0, -1) : url;
@@ -11,6 +12,6 @@ export function getServerUrl(url: string) {
     return `${window.location.origin}${normalized}`;
   }
 
-  const origin = getVercelOrigin() ?? "http://localhost:3000";
+  const origin = getVercelOrigin() ?? devUrls.server;
   return `${origin}${normalized}`;
 }

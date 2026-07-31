@@ -1,6 +1,7 @@
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
+import { resolveLocalUrls, resolvePorts } from "./ports";
 import { env as viteEnv } from "./vite";
 
 const serverUrlSchema = z.union([
@@ -13,13 +14,30 @@ type RuntimeEnv = Record<string, string | number | boolean | undefined>;
 const runtimeEnv: RuntimeEnv =
   (import.meta as { env?: RuntimeEnv }).env ?? {};
 
-// Local Vite dev talks to apps/server on :3000. Deployed builds are same-origin:
-// vercel.json routes /api to the server service, and getServerUrl resolves a
-// leading-slash path against the current origin.
-const defaultServerUrl =
-  runtimeEnv.DEV === true || runtimeEnv.MODE === "development"
-    ? "http://localhost:3000"
-    : "/api";
+// PORT_PREFIX reaches the bundle through each Vite config's `envPrefix`, so
+// one shell variable moves the whole worktree's stack — including the sibling
+// apps this one links to in dev.
+const localUrls = resolveLocalUrls(
+  resolvePorts(runtimeEnv.PORT_PREFIX as string | undefined),
+);
+
+const isDevelopment =
+  runtimeEnv.DEV === true || runtimeEnv.MODE === "development";
+
+/**
+ * Dev-only links to sibling apps, which are separate origins until the Vercel
+ * service router puts them behind one. Deployed builds use same-origin paths.
+ */
+export const devUrls = {
+  server: localUrls.server,
+  docs: `${localUrls.docs}/docs`,
+  dashboard: `${localUrls.dashboard}/dashboard`,
+};
+
+// Local Vite dev talks to apps/server on its prefixed port. Deployed builds are
+// same-origin: vercel.json routes /api to the server service, and getServerUrl
+// resolves a leading-slash path against the current origin.
+const defaultServerUrl = isDevelopment ? devUrls.server : "/api";
 
 const resolvedRuntimeEnv: RuntimeEnv = {
   ...runtimeEnv,

@@ -1,15 +1,20 @@
-name: versionless
+# Every published port is `${PORT_PREFIX:-30}` + the service's two-digit offset
+# from packages/env/src/ports.ts — string concatenation, so the two files spell
+# the same numbers. The project name carries the prefix too, so a second
+# worktree running `PORT_PREFIX=31 bun start-deps` gets its own containers,
+# networks, and volumes instead of colliding with the first.
+name: versionless-${PORT_PREFIX:-30}
 
 services:
   postgres:
     image: postgres:18
-    container_name: versionless-postgres
+    container_name: versionless-${PORT_PREFIX:-30}-postgres
     environment:
       POSTGRES_DB: versionless
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${PORT_PREFIX:-30}05:5432"
     volumes:
       - versionless_postgres_data:/var/lib/postgresql
     healthcheck:
@@ -21,15 +26,15 @@ services:
 
   clickhouse:
     image: clickhouse/clickhouse-server:26.3-alpine
-    container_name: versionless-clickhouse
+    container_name: versionless-${PORT_PREFIX:-30}-clickhouse
     environment:
       CLICKHOUSE_DB: versionless
       CLICKHOUSE_USER: clickhouse
       CLICKHOUSE_PASSWORD: password
       CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
     ports:
-      - "8123:8123"
-      - "9000:9000"
+      - "${PORT_PREFIX:-30}06:8123"
+      - "${PORT_PREFIX:-30}07:9000"
     volumes:
       - versionless_clickhouse_data:/var/lib/clickhouse
       - versionless_clickhouse_logs:/var/log/clickhouse-server
@@ -46,7 +51,7 @@ services:
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.153.0
-    container_name: versionless-otel-collector
+    container_name: versionless-${PORT_PREFIX:-30}-otel-collector
     command: ["--config=/etc/otelcol-contrib/config.yaml"]
     environment:
       CLICKHOUSE_ENDPOINT: tcp://clickhouse:9000
@@ -57,7 +62,7 @@ services:
       - ./infra/otel/collector.yaml:/etc/otelcol-contrib/config.yaml:ro
     ports:
       # Seed-only trusted boundary; public SDK traffic goes through Envoy.
-      - "127.0.0.1:${OTLP_INTERNAL_HTTP_PORT:-14318}:4318"
+      - "127.0.0.1:${PORT_PREFIX:-30}10:4318"
     depends_on:
       clickhouse:
         condition: service_healthy
@@ -69,12 +74,15 @@ services:
       dockerfile: infra/otel/envoy.Dockerfile
       args:
         ENVOY_TARGET: local
-    container_name: versionless-otel-gateway
+        # Envoy authorizes against apps/server on the host, which moved with
+        # the prefix; the port is baked into the rendered bootstrap config.
+        AUTH_PORT: "${PORT_PREFIX:-30}00"
+    container_name: versionless-${PORT_PREFIX:-30}-otel-gateway
     command: ["envoy", "-c", "/etc/envoy/envoy.yaml"]
     ports:
-      - "${OTLP_GRPC_PORT:-4317}:4317"
-      - "${OTLP_HTTP_PORT:-4318}:4318"
-      - "${ENVOY_ADMIN_PORT:-9901}:9901"
+      - "${PORT_PREFIX:-30}08:4317"
+      - "${PORT_PREFIX:-30}09:4318"
+      - "${PORT_PREFIX:-30}11:9901"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:

@@ -38,6 +38,7 @@
     "build": "turbo run build",
     "check-types": "turbo run check-types",
     "test": "turbo run test",
+    "port-prefix": "bun scripts/port-prefix.ts",
     "start-deps": "docker compose up -d",
     "stop-deps": "docker compose down",
     "restart-deps": "docker compose down -v && bun run start-deps && turbo run db:generate && turbo run db:push && bun run --cwd apps/server seed",

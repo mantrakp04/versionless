@@ -12,7 +12,7 @@
   "scripts": {
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
-    "db:studio": "drizzle-kit studio",
+    "db:studio": "drizzle-kit studio --port ${PORT_PREFIX:-30}12",
     "db:migrate": "drizzle-kit migrate",
     "db:check": "bun scripts/check-migrations.ts",
     "check-types": "tsc --noEmit",

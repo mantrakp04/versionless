@@ -1,3 +1,5 @@
+import { devUrls } from "@versionless/env/web";
+
 export function docsHref(isDevelopment: boolean): string {
-  return isDevelopment ? "http://localhost:3002/docs" : "/docs";
+  return isDevelopment ? devUrls.docs : "/docs";
 }

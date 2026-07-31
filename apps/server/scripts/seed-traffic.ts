@@ -33,19 +33,19 @@ import {
   projectSunsets,
   projectVersions,
 } from "@versionless/db/schema/projects";
+import { localCollectorUrl, localCorsOrigin } from "@versionless/env/local";
 import { env } from "@versionless/env/server";
 import { and, eq, inArray } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
 import { resolveSeedTeam } from "../src/seed-team";
 import { createSeedScenario } from "./seed-scenario";
 import { postSeedBatch } from "./seed-transport";
-const LOCAL_COLLECTOR_URL = "http://127.0.0.1:14318";
 const GATEWAY_LOGS_URL = env.VERSIONLESS_OTLP_LOGS_URL;
 const DEMO_API_KEY = env.DEMO_VERSIONLESS_API_KEY;
 const USE_AUTHENTICATED_GATEWAY = Boolean(GATEWAY_LOGS_URL && DEMO_API_KEY);
 const OTLP_BASE_URL = USE_AUTHENTICATED_GATEWAY
   ? GATEWAY_LOGS_URL!.replace(/\/v1\/logs\/?$/, "")
-  : LOCAL_COLLECTOR_URL;
+  : localCollectorUrl;
 const TEAM_ID = await resolveTeamId();
 const PROJECT_NAME = env.SEED_PROJECT_NAME ?? "versionless demo API";
 const now = Date.now();
@@ -371,5 +371,5 @@ await post("traces", arbitraryTrace);
 spanCount++;
 
 console.log(
-  `Done — ${scenario.versions.length} versions, ${scenario.contracts.length} uploaded contracts, ${events.length + 1} logs, and ${traces.length + 1} traces (${spanCount} spans) written through the Collector. Open the dashboard: http://localhost:3001/dashboard/insights`,
+  `Done — ${scenario.versions.length} versions, ${scenario.contracts.length} uploaded contracts, ${events.length + 1} logs, and ${traces.length + 1} traces (${spanCount} spans) written through the Collector. Open the dashboard: ${localCorsOrigin}/dashboard/insights`,
 );

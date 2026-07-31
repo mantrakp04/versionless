@@ -1,4 +1,5 @@
 import { createVersionless } from "@versionless/core";
+import { localOtlpLogsUrl } from "@versionless/env/local";
 import { env } from "@versionless/env/server";
 
 export const CURRENT_VERSION = "2026-07-24";
@@ -35,7 +36,7 @@ export const v = createVersionless({
   serverless: env.NODE_ENV === "production",
   otlpLogsUrl:
     env.VERSIONLESS_OTLP_LOGS_URL ??
-    (env.NODE_ENV === "development" ? "http://localhost:4318/v1/logs" : undefined),
+    (env.NODE_ENV === "development" ? localOtlpLogsUrl : undefined),
   sample: (event) => {
     // Skip the raw HTTP hop of tRPC calls (the tRPC middleware emits the real
     // per-procedure event with a "trpc:" route).

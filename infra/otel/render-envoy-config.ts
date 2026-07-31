@@ -1,5 +1,13 @@
 export type EnvoyTarget = "local" | "railway";
 
+/**
+ * apps/server's default host port. Duplicated from packages/env/src/ports.ts
+ * (`PORT_PREFIX` 30 + offset 00) because the Docker build context copies only
+ * this file and the template — docker-compose passes the real value through
+ * the AUTH_PORT build arg whenever the prefix moves.
+ */
+const DEFAULT_LOCAL_AUTH_PORT = "3000";
+
 const railwayProxyListener = `    - name: versionless_auth_proxy
       address:
         socket_address: { address: 127.0.0.1, port_value: 10000 }
@@ -46,15 +54,25 @@ const railwayTls = `      transport_socket:
           "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
           sni: versionless.vercel.app`;
 
-const valuesByTarget: Record<EnvoyTarget, Record<string, string>> = {
+export interface RenderEnvoyConfigOptions {
+  /**
+   * Host port apps/server listens on. Local only — the Railway topology
+   * authorizes against the public Vercel origin over TLS.
+   */
+  authPort?: string;
+}
+
+const valuesByTarget = (
+  authPort: string,
+): Record<EnvoyTarget, Record<string, string>> => ({
   local: {
-    AUTH_URI: "http://host.docker.internal:3000",
+    AUTH_URI: `http://host.docker.internal:${authPort}`,
     AUTH_CLUSTER: "versionless_auth",
     AUTH_PATH: "/internal/otlp/auth",
     AUTH_PROXY_LISTENER: "",
     AUTH_PROXY_CLUSTER: "",
     AUTH_HOST: "host.docker.internal",
-    AUTH_PORT: "3000",
+    AUTH_PORT: authPort,
     AUTH_TLS: "",
     COLLECTOR_HOST: "otel-collector",
   },
@@ -69,10 +87,14 @@ const valuesByTarget: Record<EnvoyTarget, Record<string, string>> = {
     AUTH_TLS: railwayTls,
     COLLECTOR_HOST: "otel-collector.railway.internal",
   },
-};
+});
 
-export function renderEnvoyConfig(template: string, target: EnvoyTarget): string {
-  const values = valuesByTarget[target];
+export function renderEnvoyConfig(
+  template: string,
+  target: EnvoyTarget,
+  { authPort = DEFAULT_LOCAL_AUTH_PORT }: RenderEnvoyConfigOptions = {},
+): string {
+  const values = valuesByTarget(authPort)[target];
   let rendered = template;
 
   for (const [key, value] of Object.entries(values)) {
@@ -90,23 +112,28 @@ export function renderEnvoyConfig(template: string, target: EnvoyTarget): string
   return `${rendered.replace(/\n{3,}/g, "\n\n").trimEnd()}\n`;
 }
 
+const targets: EnvoyTarget[] = ["local", "railway"];
+
 async function main() {
   const args = Bun.argv.slice(2);
-  const targetIndex = args.indexOf("--target");
-  const outputIndex = args.indexOf("--output");
-  const target = args[targetIndex + 1] as EnvoyTarget | undefined;
-  const output = args[outputIndex + 1];
+  const flag = (name: string) => {
+    const index = args.indexOf(name);
+    return index === -1 ? undefined : args[index + 1];
+  };
+  const target = flag("--target") as EnvoyTarget | undefined;
+  const output = flag("--output");
+  const authPort = flag("--auth-port");
 
-  if (!target || !(target in valuesByTarget) || !output) {
+  if (!target || !targets.includes(target) || !output) {
     throw new Error(
-      "Usage: bun render-envoy-config.ts --target <local|railway> --output <path>",
+      "Usage: bun render-envoy-config.ts --target <local|railway> --output <path> [--auth-port <port>]",
     );
   }
 
   const template = await Bun.file(
     new URL("./envoy.template.yaml", import.meta.url),
   ).text();
-  await Bun.write(output, renderEnvoyConfig(template, target));
+  await Bun.write(output, renderEnvoyConfig(template, target, { authPort }));
 }
 
 if (import.meta.main) {

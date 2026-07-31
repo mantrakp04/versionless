@@ -129,7 +129,13 @@ bunx versionless check      # should pass — this is the CI gate
 ### 3. Condition the repo: AGENTS.md
 
 This step makes compatibility self-maintaining for every future agent session,
-not just this one. Merge `AGENTS.versionless.md` into the project's
+not just this one. Install the Versionless skill in the repo:
+
+```bash
+npx -y skills add mantrakp04/versionless --skill versionless
+```
+
+Then merge `AGENTS.versionless.md` into the project's
 `AGENTS.md` if `init` wrote the alternate file, and make sure the final
 `AGENTS.md` instructs agents to:
 

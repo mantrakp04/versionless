@@ -9,17 +9,22 @@ import {
 } from "@/lib/site";
 
 // Inlined by Next.js at build time; the landing site deliberately takes no
-// @versionless/env dependency (static, env-free — see AGENTS.md).
+// @versionless/env dependency (static, env-free — see AGENTS.md). PORT_PREFIX
+// is mirrored by hand for the same reason: in dev the sibling apps live on
+// their own prefixed ports (see packages/env/src/ports.ts).
 const isDevelopment = process.env.NODE_ENV === "development";
+const portPrefix = process.env.PORT_PREFIX?.trim() || "30";
 
 const productLinks = [
   {
     label: "docs",
-    href: isDevelopment ? "http://localhost:3002/docs" : "/docs",
+    href: isDevelopment ? `http://localhost:${portPrefix}02/docs` : "/docs",
   },
   {
     label: "dashboard",
-    href: isDevelopment ? "http://localhost:3001/dashboard" : "/dashboard",
+    href: isDevelopment
+      ? `http://localhost:${portPrefix}01/dashboard`
+      : "/dashboard",
   },
   { label: "github", href: repoUrl, external: true },
 ];

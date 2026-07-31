@@ -17,6 +17,23 @@ describe("renderEnvoyConfig", () => {
     expect(config).not.toContain("{{");
   });
 
+  test("authorizes against the host API server on its PORT_PREFIX block", () => {
+    const config = renderEnvoyConfig(template, "local", { authPort: "3100" });
+
+    expect(config).toContain("uri: http://host.docker.internal:3100");
+    expect(config).toContain("port_value: 3100");
+    // The gateway's own listeners are container-internal and never move.
+    expect(config).toContain("port_value: 4317");
+    expect(config).toContain("port_value: 4318");
+  });
+
+  test("ignores the local auth port on Railway, which authorizes over TLS", () => {
+    const config = renderEnvoyConfig(template, "railway", { authPort: "3100" });
+
+    expect(config).toContain("port_value: 443");
+    expect(config).not.toContain("3100");
+  });
+
   test("renders the Railway topology", () => {
     const config = renderEnvoyConfig(template, "railway");
 

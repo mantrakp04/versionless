@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const INSTALL_COMMAND = "bun add @versionless/core";
+const SETUP_PROMPT = "setup <docs_server>/SKILL.md";
 
 export function CopyInstallCommand() {
   const [copied, setCopied] = useState(false);
@@ -15,8 +15,8 @@ export function CopyInstallCommand() {
     [],
   );
 
-  async function copyCommand() {
-    await navigator.clipboard.writeText(INSTALL_COMMAND);
+  async function copyPrompt() {
+    await navigator.clipboard.writeText(SETUP_PROMPT);
     setCopied(true);
 
     if (resetTimer.current) clearTimeout(resetTimer.current);
@@ -27,17 +27,15 @@ export function CopyInstallCommand() {
     <div className="install-command">
       <code>
         <span aria-hidden>$ </span>
-        {INSTALL_COMMAND}
+        {SETUP_PROMPT}
       </code>
       <button
-        aria-label={
-          copied ? "Install command copied" : "Copy install command"
-        }
+        aria-label={copied ? "Setup prompt copied" : "Copy setup prompt"}
         className="copy-command"
-        onClick={copyCommand}
+        onClick={copyPrompt}
         type="button"
       >
-        <span aria-live="polite">{copied ? "copied" : "copy"}</span>
+        <span aria-live="polite">{copied ? "copied" : "copy prompt"}</span>
         <svg aria-hidden viewBox="0 0 18 18">
           {copied ? (
             <path d="m3.5 9.5 3.2 3.2 7.8-8" />

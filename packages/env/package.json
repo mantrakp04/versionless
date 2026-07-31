@@ -9,7 +9,11 @@
     "./vite": "./src/vite.ts",
     "./demo": "./src/demo.ts",
     "./vercel": "./src/vercel.ts",
-    "./local": "./src/local.ts"
+    "./local": "./src/local.ts",
+    "./ports": "./src/ports.ts"
+  },
+  "scripts": {
+    "test": "bun test"
   },
   "dependencies": {
     "@t3-oss/env-core": "^0.13.11",

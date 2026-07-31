@@ -4,7 +4,12 @@ WORKDIR /src
 COPY infra/otel/envoy.template.yaml infra/otel/render-envoy-config.ts ./
 
 ARG ENVOY_TARGET=railway
-RUN bun render-envoy-config.ts --target "${ENVOY_TARGET}" --output /tmp/envoy.yaml
+# Local only: the host port apps/server listens on, which follows PORT_PREFIX.
+ARG AUTH_PORT=3000
+RUN bun render-envoy-config.ts \
+      --target "${ENVOY_TARGET}" \
+      --auth-port "${AUTH_PORT}" \
+      --output /tmp/envoy.yaml
 
 FROM envoyproxy/envoy:v1.38.3
 

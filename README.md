@@ -44,6 +44,9 @@ bun run --cwd apps/server seed    # 30 days of synthetic telemetry
 bun dev             # server :3000, dashboard :3001, docs :3002, landing :3004
 ```
 
+Set `PORT_PREFIX` to move the whole stack onto another block — see
+[Running several checkouts at once](#running-several-checkouts-at-once).
+
 Try the versioning:
 
 ```bash
@@ -54,6 +57,38 @@ curl -sD - -o /dev/null -H 'x-api-version: 2025-01-01' :3000/users/u_1 | grep -i
 ```
 
 Dashboard: <http://localhost:3001/dashboard/insights> · Docs: <http://localhost:3002/docs> · Landing: <http://localhost:3004>
+
+## Running several checkouts at once
+
+Every port the stack binds — apps *and* the docker-compose services — is
+`PORT_PREFIX` (default `30`) plus a fixed two-digit offset, so a worktree can
+take a whole block of its own:
+
+```bash
+export PORT_PREFIX=$(bun run --silent port-prefix)   # first block nothing is holding
+bun start-deps          # postgres :3105, clickhouse :3106/:3107, OTLP :3108/:3109
+bun dev                 # server :3100, dashboard :3101, docs :3102, demo :3103, landing :3104
+```
+
+`bun run port-prefix --list` shows which blocks are taken and by what. Export
+the prefix once — docker compose, turbo, the dev servers, the seed script, and
+`bun db:studio` all read it from the environment, and `bun stop-deps` tears
+down only that block's containers.
+
+| offset | service | offset | service |
+| --- | --- | --- | --- |
+| `00` | `apps/server` | `06` | clickhouse HTTP |
+| `01` | `apps/dashboard` | `07` | clickhouse native |
+| `02` | `apps/docs` | `08` | OTLP gateway gRPC |
+| `03` | `apps/demo` | `09` | OTLP gateway HTTP |
+| `04` | `apps/landing` | `10` | Collector (seed-only, loopback) |
+| `05` | postgres | `11` | Envoy admin |
+| | | `12` | `bun db:studio` |
+
+The prefix also names the compose project (`versionless-31`), so containers,
+networks, and volumes are per-checkout rather than shared — each worktree gets
+its own database. `packages/env/src/ports.ts` owns the table; the ports live
+nowhere else. Prefixes are two digits, `10`–`99`.
 
 ## Checks
 
