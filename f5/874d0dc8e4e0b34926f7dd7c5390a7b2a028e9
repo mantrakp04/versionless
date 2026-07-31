@@ -1,0 +1,121 @@
+packages/env/src/ports.ts
+  s_f179ec570f9626::t_796de7ddd061f2 50-51
+  s_f179ec570f9626::t_b0af40ad9d8510 1-49,52-107
+turbo.json
+  s_f179ec570f9626::t_ee2ecc0b275bca 4-7
+CLAUDE.md
+  s_f179ec570f9626::t_53f53597372147 32-33,35
+  s_f179ec570f9626::t_5a518c29a3d7b3 83
+  s_f179ec570f9626::t_95a7f5f9f7138a 24-31
+scripts/port-prefix.ts
+  s_f179ec570f9626::t_35b0499a20cbbd 1-147
+apps/docs/public/SKILL.md
+  s_84e17807c5d735::t_0d9492386a15cb 132-138
+apps/landing/src/components/copy-install-command.tsx
+  s_5312b65346ecec::t_c09bd7c8b1da5e 5,18-19,30,33,35,38
+infra/otel/envoy.Dockerfile
+  s_f179ec570f9626::t_396851c7aed1fe 7-12
+packages/env/src/ports.test.ts
+  s_f179ec570f9626::t_204ea6d03e5326 2
+  s_f179ec570f9626::t_90d58b9b8b9bd3 84-123
+  s_f179ec570f9626::t_9424c8276ec1f1 39
+  s_f179ec570f9626::t_0662b3036084e0 1,3-38,40-83
+apps/landing/package.json
+  s_f179ec570f9626::t_e25f57bff4b55d 7
+docker-compose.yml
+  s_f179ec570f9626::t_206768fe45a84b 1-6,11,17,29,36-37,54,65,77-80,83-85
+apps/dashboard/src/utils/server-url.ts
+  s_f179ec570f9626::t_4e329eda147c56 2
+  s_f179ec570f9626::t_646e78ddb6f66b 15
+packages/env/src/local.ts
+  s_f179ec570f9626::t_8ece1332a4bf58 5-8,21-33
+  s_f179ec570f9626::t_ef67087b5469b0 13-20
+packages/api/src/versionless.ts
+  s_f179ec570f9626::t_f94149d5ee92d2 39
+  s_f179ec570f9626::t_f0e541cfd2a3ab 2
+packages/env/src/web.ts
+  s_f179ec570f9626::t_1207a936f2610d 4
+  s_f179ec570f9626::t_4d775015ca330b 17-40
+packages/db/package.json
+  s_f179ec570f9626::t_7c79d530018579 15
+apps/demo/src/versionless.ts
+  s_f179ec570f9626::t_328713f3e9145a 3
+  s_f179ec570f9626::t_0fab3676ed3889 21-25
+package.json
+  s_f179ec570f9626::t_ad797d316e0082 41
+apps/demo/package.json
+  s_f179ec570f9626::t_e25f57bff4b55d 6
+apps/demo/vite.config.ts
+  s_f179ec570f9626::t_5a704626f542a3 6-7,13-14,16
+infra/otel/render-envoy-config.test.ts
+  s_f179ec570f9626::t_d4e4956b6dfb5b 20-36
+scripts/port-prefix.test.ts
+  s_f179ec570f9626::t_eb4c9f6e074916 1-32
+apps/dashboard/src/components/docs-link.ts
+  s_f179ec570f9626::t_0c32dcec154b8a 1-2,4
+README.md
+  s_f179ec570f9626::t_26a14dc7d9e63d 61-67,69-71,77-92
+  s_f179ec570f9626::t_ed96a9f01b9de5 47-49
+  s_f179ec570f9626::t_f8be65ce4ec4d2 68,72-76
+packages/cli/src/snapshot/upload.ts
+  s_f179ec570f9626::t_2f54831c75c473 6-18
+  s_f179ec570f9626::t_a43f3aa5ffce5b 36
+apps/server/scripts/seed-traffic.ts
+  s_f179ec570f9626::t_c0249b1e8cc43e 374
+  s_f179ec570f9626::t_f4095ecd6c5f6e 48
+  s_f179ec570f9626::t_8197e690c6077d 36
+packages/env/package.json
+  s_f179ec570f9626::t_8683b390d70cfb 12-16
+bunfig.toml
+  s_f179ec570f9626::t_7c38dfcdc19cda 1-9
+apps/landing/src/app/page.tsx
+  s_f179ec570f9626::t_635353d5220058 12-14,16,21,25-27
+packages/cli/test/upload.test.ts
+  s_f179ec570f9626::t_17d6df2717f8bc 8,36,38-50
+packages/env/src/server.ts
+  s_f179ec570f9626::t_c57fc6507a0ccf 70-72
+  s_f179ec570f9626::t_4662b51924af23 9
+apps/dashboard/vite.config.ts
+  s_f179ec570f9626::t_988edc67cceb02 7-8,10-12
+  s_f179ec570f9626::t_540df103aeb593 35
+  s_f179ec570f9626::t_eadc7605836f00 43-45,47
+apps/docs/package.json
+  s_f179ec570f9626::t_e25f57bff4b55d 7
+infra/otel/render-envoy-config.ts
+  s_f179ec570f9626::t_33410806b80cd4 3-10
+  s_f179ec570f9626::t_6db6ff5a9b3f7d 57-67,69,75
+  s_f179ec570f9626::t_906934c3723b1a 90,92-97
+  s_f179ec570f9626::t_6a707304b36e6a 115-116,119-125,127,129,136
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "f5874d0dc8e4e0b34926f7dd7c5390a7b2a028e9",
+  "prompts": {},
+  "sessions": {
+    "s_5312b65346ecec": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fb628-f8cb-7eb2-9f38-6467882ca15a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_84e17807c5d735": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fb631-a834-7be1-b1e9-517f3990fae6",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    },
+    "s_f179ec570f9626": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6cd6c337-2af5-4ccd-8c05-6cc77682a971",
+        "model": "claude-opus-5"
+      },
+      "human_author": "mantrakp04 <mantrakp@gmail.com>"
+    }
+  }
+}
